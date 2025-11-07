@@ -2,6 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import BurgerMenu from '../components/BurgerMenu.vue'
 import { currentTheme } from '../stores/themeStore.js'
+import videoSource from '../assets/flash.mp4'
 
 const isMenuOpen = ref(false)
 
@@ -58,7 +59,7 @@ onMounted(() => {
       playsinline
       preload="auto"
     >
-      <source src="/assets/flash.mp4" type="video/mp4">
+      <source :src="videoSource" type="video/mp4">
       Your browser does not support the video tag.
     </video>
 
