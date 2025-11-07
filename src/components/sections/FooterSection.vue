@@ -36,8 +36,7 @@ const scrollToSection = (sectionId) => {
           <h4 class="theme-text-primary">Kontakt</h4>
           <div class="contact-info">
             <p class="theme-text-secondary">📞 +49 40 98246368</p>
-            <p class="theme-text-secondary">✉️ adjsavedmylife@pallas.world</p>
-            <p class="theme-text-secondary">📱 @pallas.world</p>
+            <p class="theme-text-secondary">adjsavedmylife@pallas.world</p>
           </div>
         </div>
         

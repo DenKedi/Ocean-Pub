@@ -51,7 +51,6 @@ const selectTheme = (themeName) => {
     <div class="theme-selector" :class="{ 'show': showThemeSelector }">
       <div class="theme-header">
         <h3>Design Varianten</h3>
-        <p>Für Kundenpräsentation</p>
       </div>
       
       <div class="theme-options">
