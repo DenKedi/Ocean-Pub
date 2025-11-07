@@ -26,7 +26,22 @@ onMounted(() => {
   // Ensure video starts playing
   const video = document.querySelector('.background-video')
   if (video) {
-    video.play().catch(e => console.log('Video autoplay failed:', e))
+    // Set muted before playing
+    video.muted = true
+    const playPromise = video.play()
+    if (playPromise !== undefined) {
+      playPromise
+        .then(() => {
+          console.log('Video autoplay started successfully')
+        })
+        .catch(e => {
+          console.log('Video autoplay failed:', e)
+          // Retry after a short delay
+          setTimeout(() => {
+            video.play().catch(err => console.log('Video retry failed:', err))
+          }, 1000)
+        })
+    }
   }
 })
 </script>
@@ -43,7 +58,7 @@ onMounted(() => {
       playsinline
       preload="auto"
     >
-      <source src="/src/assets/flash.mp4" type="video/mp4">
+      <source src="/assets/flash.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
 
