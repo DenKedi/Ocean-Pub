@@ -14,9 +14,11 @@ const logger = require('./middleware/logger');
 
 const app = express();
 
-// Middleware
-const allowedDomains = ["http://localhost:5173"];
-
+// CORS Configuration
+const allowedDomains = ["http://localhost:5173", "https://pallas.bleck.it"];
+if (process.env.FRONTEND_URL) {
+  allowedDomains.push(process.env.FRONTEND_URL);
+}
 const corsOptions = {
   origin: function (origin, callback) {
     logger.debug('CORS Origin:', origin);

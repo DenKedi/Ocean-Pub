@@ -1,4 +1,3 @@
-const { def } = require('@vue/shared');
 const mongoose = require('mongoose');
 
 const EventSchema = new mongoose.Schema({
