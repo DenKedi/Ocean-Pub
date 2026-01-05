@@ -32,18 +32,23 @@ const corsOptions = {
     }
   },
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
   credentials: true,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 };
+
+// Apply CORS before other middleware
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
+// Body parsing middleware
 function rawBodySaver(req, res, buf, encoding) {
   if (buf && buf.length) req.rawBody = buf.toString(encoding || 'utf8');
 }
 
-app.use(express.json({ limit: "10mb" }));
+app.use(express.json({ limit: "10mb", verify: rawBodySaver }));
 app.use(express.urlencoded({ extended: true }));
-
-app.use(cors(corsOptions));  // Apply the CORS options
-app.options('*', cors(corsOptions));
-app.use(express.json({ verify: rawBodySaver }));
 
 // Statisches Serving von Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
