@@ -1,717 +1,987 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import MainLayout from '../layouts/MainLayout.vue'
+import api from '../utils/api'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
-// Current date and selected date
-const currentDate = ref(new Date())
-const selectedDate = ref(null)
+gsap.registerPlugin(ScrollTrigger)
 
-// Sample events data
-const events = ref([
-  {
-    id: 1,
-    title: 'World Unity Night',
-    description: 'Kulturen treffen aufeinander – eine Nacht voller internationaler Musik, Tanz und kulinarischer Vielfalt.',
-    date: new Date(2024, 10, 14), // November 14, 2024
-    time: '21:00 Uhr',
-    price: 'Eintritt frei',
-    type: 'Wöchentlich'
-  },
-  {
-    id: 2,
-    title: 'Cultural Food Journey',
-    description: 'Entdecke mit uns die Geschmäcker der Welt. Jede Woche ein anderes Land, authentische Küche.',
-    date: new Date(2024, 10, 12), // November 12, 2024
-    time: '18:00 Uhr',
-    price: '20€ pro Person',
-    type: 'Wöchentlich'
-  },
-  {
-    id: 3,
-    title: 'Open Stage for All',
-    description: 'Deine Bühne, deine Kunst! Musik, Poetry, Comedy – alle sind willkommen.',
-    date: new Date(2024, 10, 16), // November 16, 2024
-    time: '20:00 Uhr',
-    price: 'Eintritt frei',
-    type: 'Wöchentlich'
-  },
-  {
-    id: 4,
-    title: 'Private Celebration',
-    description: 'Feiere deine besonderen Momente bei PALLAS.WORLD. Von Geburtstagen bis Firmenfeiern.',
-    date: new Date(2024, 10, 20), // November 20, 2024
-    time: '19:00 Uhr',
-    price: 'Ab 30€ pro Person',
-    type: 'Privat'
-  },
-  {
-    id: 5,
-    title: 'World Unity Night',
-    description: 'Kulturen treffen aufeinander – eine Nacht voller internationaler Musik, Tanz und kulinarischer Vielfalt.',
-    date: new Date(2024, 10, 21), // November 21, 2024
-    time: '21:00 Uhr',
-    price: 'Eintritt frei',
-    type: 'Wöchentlich'
+// State
+const events = ref([])
+const categories = ref([])
+const loading = ref(true)
+const error = ref(null)
+const selectedCategory = ref(null)
+const viewMode = ref('grid') // 'grid' or 'list'
+
+// Fetch events from API
+const fetchEvents = async () => {
+  loading.value = true
+  error.value = null
+  try {
+    const params = {}
+    if (selectedCategory.value) {
+      params.category = selectedCategory.value
+    }
+    // Nur zukünftige Events
+    params.startDate = new Date().toISOString()
+    
+    const response = await api.get('/events', { params })
+    events.value = response.data.data || []
+  } catch (err) {
+    console.error('Error fetching events:', err)
+    error.value = 'Events konnten nicht geladen werden'
+  } finally {
+    loading.value = false
   }
-])
-
-// Day headers for calendar
-const dayHeaders = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So']
-
-// Current month and year display
-const currentMonthYear = computed(() => {
-  const months = [
-    'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
-    'Juli', 'August', 'September', 'Oktober', 'November', 'Dezember'
-  ]
-  return `${months[currentDate.value.getMonth()]} ${currentDate.value.getFullYear()}`
-})
-
-// Generate calendar dates
-const calendarDates = computed(() => {
-  const year = currentDate.value.getFullYear()
-  const month = currentDate.value.getMonth()
-  
-  // Get first day of month and adjust for Monday start
-  const firstDay = new Date(year, month, 1)
-  const firstDayWeekday = (firstDay.getDay() + 6) % 7 // Convert Sunday=0 to Monday=0
-  
-  // Get last day of month
-  const lastDay = new Date(year, month + 1, 0)
-  const daysInMonth = lastDay.getDate()
-  
-  const dates = []
-  
-  // Add previous month's trailing dates
-  const prevMonth = new Date(year, month - 1, 0)
-  for (let i = firstDayWeekday - 1; i >= 0; i--) {
-    const day = prevMonth.getDate() - i
-    const date = new Date(year, month - 1, day)
-    dates.push({
-      key: `prev-${day}`,
-      day,
-      date,
-      isCurrentMonth: false,
-      hasEvent: hasEventOnDate(date),
-      isToday: isToday(date)
-    })
-  }
-  
-  // Add current month's dates
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month, day)
-    dates.push({
-      key: `curr-${day}`,
-      day,
-      date,
-      isCurrentMonth: true,
-      hasEvent: hasEventOnDate(date),
-      isToday: isToday(date)
-    })
-  }
-  
-  // Add next month's leading dates to complete the grid
-  const totalCells = Math.ceil(dates.length / 7) * 7
-  let nextDay = 1
-  while (dates.length < totalCells) {
-    const date = new Date(year, month + 1, nextDay)
-    dates.push({
-      key: `next-${nextDay}`,
-      day: nextDay,
-      date,
-      isCurrentMonth: false,
-      hasEvent: hasEventOnDate(date),
-      isToday: isToday(date)
-    })
-    nextDay++
-  }
-  
-  return dates
-})
-
-// Check if date has events
-const hasEventOnDate = (date) => {
-  return events.value.some(event => 
-    event.date.toDateString() === date.toDateString()
-  )
 }
 
-// Check if date is today
-const isToday = (date) => {
-  const today = new Date()
-  return date.toDateString() === today.toDateString()
+// Fetch categories for filter
+const fetchCategories = async () => {
+  try {
+    const response = await api.get('/categories')
+    categories.value = response.data.data || []
+  } catch (err) {
+    console.error('Error fetching categories:', err)
+  }
 }
 
-// Filtered events based on selected date
-const filteredEvents = computed(() => {
-  if (!selectedDate.value) {
-    return events.value.sort((a, b) => a.date - b.date)
-  }
-  
-  return events.value.filter(event => 
-    event.date.toDateString() === selectedDate.value.toDateString()
-  )
-})
-
-// Format selected date
-const formatSelectedDate = computed(() => {
-  if (!selectedDate.value) return ''
-  
-  return selectedDate.value.toLocaleDateString('de-DE', {
-    day: 'numeric',
-    month: 'long',
+// Format date
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('de-DE', {
+    weekday: 'short',
+    day: '2-digit',
+    month: 'short',
     year: 'numeric'
+  })
+}
+
+// Format time
+const formatTime = (dateString) => {
+  const date = new Date(dateString)
+  return date.toLocaleTimeString('de-DE', {
+    hour: '2-digit',
+    minute: '2-digit'
+  }) + ' Uhr'
+}
+
+// Format time range
+const formatTimeRange = (startTime, endTime) => {
+  const start = formatTime(startTime)
+  if (!endTime) return start
+  const end = new Date(endTime).toLocaleTimeString('de-DE', {
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+  return `${start} - ${end} Uhr`
+}
+
+// Format price
+const formatPrice = (price) => {
+  if (!price || price === 0) return 'Eintritt frei'
+  return `${price}€`
+}
+
+// Get image URL with fallback
+const getImageUrl = (event) => {
+  if (event.eventImageUrl) return event.eventImageUrl
+  if (event.category?.defaultImageUrl) return event.category.defaultImageUrl
+  return '/images/fallback-placeholder.png'
+}
+
+// Format rooms
+const formatRooms = (rooms) => {
+  if (!rooms || rooms.length === 0) return ''
+  return rooms.join(' & ')
+}
+
+// Filter by category
+const filterByCategory = (categoryId) => {
+  selectedCategory.value = categoryId === selectedCategory.value ? null : categoryId
+  fetchEvents()
+}
+
+// Group events by date
+const eventsByDate = computed(() => {
+  const grouped = {}
+  events.value.forEach(event => {
+    const dateKey = new Date(event.startTime).toLocaleDateString('de-DE')
+    if (!grouped[dateKey]) {
+      grouped[dateKey] = {
+        dateLabel: formatDate(event.startTime),
+        events: []
+      }
+    }
+    grouped[dateKey].events.push(event)
+  })
+  return Object.values(grouped)
+})
+
+// Parallax refs
+const eventsPage = ref(null)
+const backgroundLayer = ref(null)
+let scrollTrigger = null
+
+// Initialize parallax
+const initParallax = () => {
+  if (scrollTrigger) scrollTrigger.kill()
+  
+  // Set initial position as requested
+  // Using fromTo to ensure animation works starting from -20
+  if (backgroundLayer.value && eventsPage.value) {
+    scrollTrigger = gsap.fromTo(backgroundLayer.value, 
+      { yPercent: -20 }, // Start position
+      {
+        yPercent: -40,   // Move further up to create parallax effect
+        ease: 'none',
+        scrollTrigger: {
+          trigger: eventsPage.value,
+          start: 'top top',
+          end: 'bottom top',
+          scrub: true,
+        }
+      }
+    ).scrollTrigger
+  }
+}
+
+onMounted(() => {
+  fetchCategories()
+  fetchEvents().then(() => {
+    nextTick(() => {
+      initParallax()
+    })
   })
 })
 
-// Calendar navigation
-const previousMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() - 1, 1)
-}
-
-const nextMonth = () => {
-  currentDate.value = new Date(currentDate.value.getFullYear(), currentDate.value.getMonth() + 1, 1)
-}
-
-// Select date
-const selectDate = (dateObj) => {
-  if (dateObj.hasEvent) {
-    selectedDate.value = dateObj.date
-  } else {
-    selectedDate.value = null
-  }
-}
-
-// Format event date parts
-const formatEventDay = (date) => {
-  return date.getDate().toString().padStart(2, '0')
-}
-
-const formatEventMonth = (date) => {
-  const months = ['JAN', 'FEB', 'MÄR', 'APR', 'MAI', 'JUN', 'JUL', 'AUG', 'SEP', 'OKT', 'NOV', 'DEZ']
-  return months[date.getMonth()]
-}
+onUnmounted(() => {
+  if (scrollTrigger) scrollTrigger.kill()
+  ScrollTrigger.getAll().forEach(st => st.kill())
+})
 </script>
 
 <template>
   <MainLayout>
-    <!-- Events Hero Section -->
-    <section class="events-hero">
-      <div class="hero-content">
-        <h1 class="hero-title pallas-heading">PALLAS.WORLD Events</h1>
-        <p class="hero-subtitle">Entdecke einzigartige Erlebnisse – Everybody Welcome</p>
-      </div>
-    </section>
+    <div ref="eventsPage" class="events-page">
+      <!-- Parallax Background -->
+      <div ref="backgroundLayer" class="background-layer"></div>
+      
+      <!-- Hero Header -->
+      <section class="page-hero">
+        <div class="container">
+          <h1 class="page-title pallas-heading">Pallas.Events</h1>
+          <p class="page-subtitle theme-text-secondary">Check Out our Program</p>
+        </div>
+      </section>
 
-    <!-- Calendar Component -->
-    <section class="calendar-section">
-      <div class="container">
-        <div class="calendar-wrapper">
-          <div class="calendar-header">
-            <button @click="previousMonth" class="nav-button">‹</button>
-            <h3 class="month-year">{{ currentMonthYear }}</h3>
-            <button @click="nextMonth" class="nav-button">›</button>
+      <!-- Filter Section -->
+      <section class="filter-section">
+        <div class="container">
+          <div class="filter-bar">
+            <!-- Category Filter -->
+            <div class="category-filters">
+              <button 
+                class="filter-btn"
+                :class="{ active: !selectedCategory }"
+                @click="filterByCategory(null)"
+              >
+                Alle
+              </button>
+              <button 
+                v-for="cat in categories" 
+                :key="cat._id"
+                class="filter-btn"
+                :class="{ active: selectedCategory === cat._id }"
+                :style="{ '--cat-color': cat.color }"
+                @click="filterByCategory(cat._id)"
+              >
+                {{ cat.name }}
+              </button>
+            </div>
+
+            <!-- View Toggle -->
+            <div class="view-toggle">
+              <button 
+                class="toggle-btn" 
+                :class="{ active: viewMode === 'grid' }"
+                @click="viewMode = 'grid'"
+                title="Grid-Ansicht"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"></rect>
+                  <rect x="14" y="3" width="7" height="7"></rect>
+                  <rect x="3" y="14" width="7" height="7"></rect>
+                  <rect x="14" y="14" width="7" height="7"></rect>
+                </svg>
+              </button>
+              <button 
+                class="toggle-btn" 
+                :class="{ active: viewMode === 'list' }"
+                @click="viewMode = 'list'"
+                title="Listen-Ansicht"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6"></line>
+                  <line x1="8" y1="12" x2="21" y2="12"></line>
+                  <line x1="8" y1="18" x2="21" y2="18"></line>
+                  <line x1="3" y1="6" x2="3.01" y2="6"></line>
+                  <line x1="3" y1="12" x2="3.01" y2="12"></line>
+                  <line x1="3" y1="18" x2="3.01" y2="18"></line>
+                </svg>
+              </button>
+            </div>
           </div>
-          
-          <div class="calendar-grid">
-            <div class="calendar-day-header" v-for="day in dayHeaders" :key="day">{{ day }}</div>
-            <div 
-              v-for="date in calendarDates" 
-              :key="date.key"
-              class="calendar-day"
-              :class="{
-                'other-month': !date.isCurrentMonth,
-                'has-event': date.hasEvent,
-                'today': date.isToday
-              }"
-              @click="selectDate(date)"
+        </div>
+      </section>
+
+      <!-- Request CTA -->
+      <section class="request-cta">
+        <div class="container">
+          <div class="cta-content">
+            <p class="cta-text">Du möchtest bei uns veranstalten? Jetzt Anfragen unter</p>
+            <router-link to="/request" class="cta-button">
+              Pallas.Request
+            </router-link>
+          </div>
+        </div>
+      </section>
+
+      <!-- Events Content -->
+      <section class="events-content">
+        <div class="container">
+          <!-- Loading State -->
+          <div v-if="loading" class="loading-state">
+            <div class="spinner"></div>
+            <p>Events werden geladen...</p>
+          </div>
+
+          <!-- Error State -->
+          <div v-else-if="error" class="error-state">
+            <p>{{ error }}</p>
+            <button class="retry-btn" @click="fetchEvents">Erneut versuchen</button>
+          </div>
+
+          <!-- Empty State -->
+          <div v-else-if="events.length === 0" class="empty-state">
+            <p>Keine kommenden Events gefunden</p>
+          </div>
+
+          <!-- Grid View -->
+          <div v-else-if="viewMode === 'grid'" class="events-grid">
+            <article 
+              v-for="event in events" 
+              :key="event._id" 
+              class="event-card theme-container-bg"
             >
-              <span class="date-number">{{ date.day }}</span>
-              <div v-if="date.hasEvent" class="event-indicator"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    
-    <!-- Events List -->
-    <section class="events-list-section">
-      <div class="container">
-        <h3 class="events-list-title">
-          {{ selectedDate ? `Events am ${formatSelectedDate}` : 'Alle Events' }}
-        </h3>
-        
-        <div class="event-item" v-for="event in filteredEvents" :key="event.id">
-          <div class="event-date">
-            <div class="event-day">{{ formatEventDay(event.date) }}</div>
-            <div class="event-month">{{ formatEventMonth(event.date) }}</div>
-          </div>
-          
-          <div class="event-content">
-            <div class="event-time">{{ event.time }}</div>
-            <h4 class="event-title">{{ event.title }}</h4>
-            <p class="event-description">{{ event.description }}</p>
-            <div class="event-meta">
-              <span class="event-price">{{ event.price }}</span>
-              <span class="event-type">{{ event.type }}</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+              <!-- Event Image (Square) -->
+              <div class="event-image-container">
+                <img 
+                  :src="getImageUrl(event)" 
+                  :alt="event.title"
+                  class="event-image"
+                  loading="lazy"
+                />
+                <div 
+                  v-if="event.category" 
+                  class="event-category-badge"
+                  :style="{ backgroundColor: event.category.color }"
+                >
+                  {{ event.category.name }}
+                </div>
+                <div v-if="event.extra_label" class="event-extra-label">
+                  {{ event.extra_label }}
+                </div>
+              </div>
 
-    <!-- Call to Action -->
-    <section class="events-cta">
-      <div class="container">
-        <div class="cta-content">
-          <h2 class="cta-title">Verpasse keine Events!</h2>
-          <p class="cta-description">
-            Folge uns auf Instagram oder ruf uns an für aktuelle Event-Updates und Reservierungen.
-          </p>
-          <div class="cta-buttons">
-            <a href="https://www.instagram.com/pallas_world/" target="_blank" class="cta-btn instagram">
-              📸 @pallas_world folgen
-            </a>
-            <a href="tel:+4940982463680" class="cta-btn phone">
-              📞 +49 40 98246368
-            </a>
+              <!-- Event Details -->
+              <div class="event-details">
+                <h3 class="event-title">{{ event.title }}</h3>
+                
+                <div class="event-meta">
+                  <div class="meta-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                      <line x1="16" y1="2" x2="16" y2="6"></line>
+                      <line x1="8" y1="2" x2="8" y2="6"></line>
+                      <line x1="3" y1="10" x2="21" y2="10"></line>
+                    </svg>
+                    <span>{{ formatDate(event.startTime) }}</span>
+                  </div>
+                  
+                  <div class="meta-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polyline points="12 6 12 12 16 14"></polyline>
+                    </svg>
+                    <span>{{ formatTimeRange(event.startTime, event.endTime) }}</span>
+                  </div>
+
+                  <div v-if="event.room && event.room.length > 0" class="meta-item">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                      <circle cx="12" cy="10" r="3"></circle>
+                    </svg>
+                    <span>{{ formatRooms(event.room) }}</span>
+                  </div>
+                </div>
+
+                <p v-if="event.description" class="event-description theme-text-secondary">
+                  {{ event.description }}
+                </p>
+
+                <div class="event-footer">
+                  <span class="event-price" :class="{ free: !event.price || event.price === 0 }">
+                    {{ formatPrice(event.price) }}
+                  </span>
+                </div>
+              </div>
+            </article>
+          </div>
+
+          <!-- List View -->
+          <div v-else class="events-list">
+            <div v-for="dateGroup in eventsByDate" :key="dateGroup.dateLabel" class="date-group">
+              <h3 class="date-header">{{ dateGroup.dateLabel }}</h3>
+              
+              <article 
+                v-for="event in dateGroup.events" 
+                :key="event._id" 
+                class="event-list-item theme-container-bg"
+              >
+                <!-- Event Image (Square, smaller) -->
+                <div class="list-image-container">
+                  <img 
+                    :src="getImageUrl(event)" 
+                    :alt="event.title"
+                    class="list-image"
+                    loading="lazy"
+                  />
+                </div>
+
+                <!-- Event Info -->
+                <div class="list-content">
+                  <div class="list-header">
+                    <h4 class="list-title">{{ event.title }}</h4>
+                    <span 
+                      v-if="event.category" 
+                      class="list-category"
+                      :style="{ color: event.category.color }"
+                    >
+                      {{ event.category.name }}
+                    </span>
+                  </div>
+                  
+                  <div class="list-meta">
+                    <span class="list-time">{{ formatTimeRange(event.startTime, event.endTime) }}</span>
+                    <span v-if="event.room && event.room.length > 0" class="list-room">
+                      {{ formatRooms(event.room) }}
+                    </span>
+                  </div>
+
+                  <p v-if="event.description" class="list-description theme-text-muted">
+                    {{ event.description }}
+                  </p>
+                </div>
+
+                <!-- Price -->
+                <div class="list-price-container">
+                  <span class="list-price" :class="{ free: !event.price || event.price === 0 }">
+                    {{ formatPrice(event.price) }}
+                  </span>
+                  <span v-if="event.extra_label" class="list-extra">{{ event.extra_label }}</span>
+                </div>
+              </article>
+            </div>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
+    </div>
   </MainLayout>
 </template>
 
 <style scoped>
-/* Events Hero */
-.events-hero {
-  min-height: 60vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+/* PALLAS Accent Colors */
+:root {
+  --pallas-orange: #FF9d66;
+  --pallas-orange-bright: #FFE4D6;
+  --pallas-orange-dark: #E8B89E;
+}
+
+.events-page {
+  min-height: 100vh;
+  background: #000000;
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+/* Parallax background layer */
+.background-layer {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 160vh; /* Increased height to prevent gaps */
+  background-image: url('/src/assets/pictures/decke5.png');
+  background-size: cover;
+  background-position: center top;
+  background-repeat: no-repeat;
+  opacity: 0.5;
+  z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.events-page > section {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero */
+.page-hero {
+  padding: 8rem 0 3rem;
   text-align: center;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(10px);
+  position: relative;
+  z-index: 1;
 }
 
-.hero-content {
-  max-width: 800px;
-  padding: 0 2rem;
+.page-hero::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, #FF9d66, transparent);
 }
 
-.hero-title {
-  font-size: clamp(3rem, 8vw, 5rem);
-  color: white !important;
+.page-title {
+  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-weight: 400;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   margin-bottom: 1rem;
-  font-weight: 700 !important;
-  letter-spacing: 0.1em;
+  color: #fff !important;
 }
 
-.hero-subtitle {
-  font-size: 1.5rem;
-  color: rgba(255, 255, 255, 0.8) !important;
-  margin-bottom: 2rem;
-  font-weight: 300 !important;
+.page-subtitle {
+  font-size: 1rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5) !important;
 }
 
+/* Container */
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
 }
 
-/* Calendar Section */
-.calendar-section {
-  padding: 4rem 0;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(15px);
+/* Request CTA */
+.request-cta {
+  padding: 0.5rem 0;
+  position: relative;
+  z-index: 1;
 }
 
-.calendar-wrapper {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 2rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
+.cta-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  padding: 0.75rem 1rem;
+  background: transparent;
+  border: none;
+  border-radius: 0;
 }
 
-.calendar-header {
+.cta-text {
+  font-size: 0.85rem;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.5) !important;
+  margin: 0;
+}
+
+.cta-button {
+  padding: 0.4rem 0.8rem;
+  background: transparent;
+  border: 1px solid rgba(255, 157, 102, 0.4);
+  color: rgba(255, 157, 102, 0.8) !important;
+  font-size: 0.8rem;
+  font-weight: 400;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.cta-button:hover {
+  border-color: #FF9d66;
+  color: #FF9d66 !important;
+}
+
+/* Filter Section */
+.filter-section {
+  padding: 1.5rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+.filter-bar {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 2rem;
+  gap: 2rem;
+  flex-wrap: wrap;
 }
 
-.nav-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
-  color: white;
-  font-size: 1.5rem;
-  width: 40px;
-  height: 40px;
+.category-filters {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 0.6rem 1.2rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.6);
+  font-family: 'Montserrat', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
   cursor: pointer;
   transition: all 0.3s ease;
+  border-radius: 0;
+}
+
+.filter-btn:hover {
+  border-color: #FF9d66;
+  color: #FF9d66;
+}
+
+.filter-btn.active {
+  background: #FF9d66;
+  border-color: #FF9d66;
+  color: #000 !important;
+}
+
+.view-toggle {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.toggle-btn {
+  padding: 0.6rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
-.nav-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
+.toggle-btn:hover {
+  border-color: #FF9d66;
+  color: #FF9d66;
 }
 
-.month-year {
-  color: white !important;
-  font-size: 1.5rem;
-  font-weight: 600 !important;
-  margin: 0;
-  letter-spacing: 0.1em;
+.toggle-btn.active {
+  background: #FF9d66;
+  border-color: #FF9d66;
+  color: #000 !important;
 }
 
-.calendar-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 1px;
+/* Events Content */
+.events-content {
+  padding: 4rem 0;
+  position: relative;
+  z-index: 1;
+}
+
+/* Loading, Error, Empty States */
+.loading-state,
+.error-state,
+.empty-state {
+  text-align: center;
+  padding: 6rem 2rem;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 2px solid var(--theme-border);
+  border-top-color: var(--theme-textPrimary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 1rem;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.retry-btn {
+  margin-top: 1rem;
+  padding: 0.8rem 2rem;
+  background: transparent;
+  border: 1px solid var(--theme-border);
+  color: var(--theme-textPrimary);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.retry-btn:hover {
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+}
+
+/* Grid View */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.event-card {
+  border-radius: 0;
+  overflow: hidden;
+  border: none;
+  background: #111;
+  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
+  position: relative;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.event-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 3px;
+  height: 0;
+  background: #FF9d66;
+  transition: height 0.4s ease;
+  z-index: 2;
+}
+
+.event-card:hover::before {
+  height: 100%;
+}
+
+.event-card:hover {
+  box-shadow: 0 20px 40px rgba(226, 114, 75, 0.15);
+}
+
+.event-image-container {
+  position: relative;
+  width: 100%;
+  padding-top: 100%; /* Square aspect ratio */
   overflow: hidden;
 }
 
-.calendar-day-header {
-  background: rgba(255, 255, 255, 0.15);
-  color: white !important;
-  text-align: center;
-  padding: 1rem 0.5rem;
-  font-weight: 600 !important;
-  font-size: 0.9rem;
-  letter-spacing: 0.05em;
+.event-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(20%) contrast(1.1);
 }
 
-.calendar-day {
-  background: rgba(0, 0, 0, 0.3);
-  min-height: 60px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  position: relative;
-  padding: 0.5rem;
+.event-category-badge {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  border-radius: 0;
+  background: #FF9d66 !important;
+  color: #000 !important;
 }
 
-.calendar-day:hover {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.calendar-day.other-month {
-  opacity: 0.4;
-}
-
-.calendar-day.today {
-  background: rgba(255, 255, 255, 0.2);
-  border: 2px solid rgba(255, 255, 255, 0.5);
-}
-
-.calendar-day.has-event {
-  background: rgba(255, 255, 255, 0.15);
-  cursor: pointer;
-}
-
-.calendar-day.has-event:hover {
-  background: rgba(255, 255, 255, 0.25);
-  transform: scale(1.05);
-}
-
-.date-number {
-  color: white !important;
-  font-weight: 600 !important;
-  font-size: 0.95rem;
-}
-
-.event-indicator {
-  width: 6px;
-  height: 6px;
-  background: #00ff88;
-  border-radius: 50%;
-  margin-top: 4px;
-  box-shadow: 0 0 10px rgba(0, 255, 136, 0.6);
-}
-
-/* Events List */
-.events-list-section {
-  padding: 4rem 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(10px);
-}
-
-.events-list-title {
-  color: white !important;
-  font-size: 1.8rem;
-  font-weight: 600 !important;
-  margin-bottom: 2rem;
-  text-align: center;
-  letter-spacing: 0.05em;
-}
-
-.event-item {
-  display: flex;
-  gap: 2rem;
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 16px;
-  padding: 2rem;
-  margin-bottom: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
-}
-
-.event-item:hover {
-  background: rgba(255, 255, 255, 0.12);
-  transform: translateY(-2px);
-  border-color: rgba(255, 255, 255, 0.25);
-}
-
-.event-date {
-  flex-shrink: 0;
-  text-align: center;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
-  padding: 1rem;
-  width: 80px;
-  height: 80px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-.event-day {
-  color: white !important;
-  font-size: 1.8rem;
-  font-weight: 700 !important;
-  line-height: 1;
-}
-
-.event-month {
-  color: rgba(255, 255, 255, 0.8) !important;
-  font-size: 0.8rem;
-  font-weight: 600 !important;
+.event-extra-label {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.4rem 0.8rem;
+  background: #FF9d66;
+  color: #000 !important;
+  font-size: 0.65rem;
+  font-weight: 700;
   letter-spacing: 0.1em;
-  margin-top: 0.2rem;
+  text-transform: uppercase;
+  border-radius: 0;
 }
 
-.event-content {
+.event-details {
+  padding: 1.25rem;
+  background: #111;
+  display: flex;
+  flex-direction: column;
   flex: 1;
 }
 
-.event-time {
-  color: #00ff88 !important;
-  font-size: 0.9rem;
-  font-weight: 600 !important;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
 .event-title {
-  color: white !important;
-  font-size: 1.4rem;
-  font-weight: 600 !important;
-  margin: 0 0 1rem 0;
-  line-height: 1.2;
-}
-
-.event-description {
-  color: rgba(255, 255, 255, 0.8) !important;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  font-size: 0.95rem;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-clamp: 2; /* Added for standard line-clamp property */
+  line-height: 1.3;
 }
 
 .event-meta {
   display: flex;
-  gap: 1rem;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  letter-spacing: 0.02em;
+}
+
+.meta-item svg {
+  opacity: 0.5;
+  flex-shrink: 0;
+  color: #FF9d66 !important;
+}
+
+.event-description {
+  font-size: 0.9rem;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.event-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.75rem;
+  margin-top: auto;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .event-price {
-  background: rgba(255, 255, 255, 0.15);
-  color: white !important;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
   font-size: 0.9rem;
-  font-weight: 600 !important;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
 }
 
-.event-type {
-  background: rgba(0, 255, 136, 0.2);
-  color: #00ff88 !important;
-  padding: 0.5rem 1rem;
-  border-radius: 20px;
-  font-size: 0.85rem;
-  font-weight: 600 !important;
-  border: 1px solid rgba(0, 255, 136, 0.3);
+.event-price.free {
+  color: #FF9d66 !important;
 }
 
-/* CTA Section */
-.events-cta {
-  padding: 4rem 0;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(15px);
-  text-align: center;
-}
-
-.cta-content {
-  max-width: 600px;
-  margin: 0 auto;
-}
-
-.cta-title {
-  color: white !important;
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-  font-weight: 700 !important;
-}
-
-.cta-description {
-  color: rgba(255, 255, 255, 0.8) !important;
-  margin-bottom: 2rem;
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-.cta-buttons {
+/* List View */
+.events-list {
   display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 3rem;
 }
 
-.cta-btn {
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 600 !important;
-  transition: all 0.3s ease;
+.date-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.date-header {
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #FF9d66;
+  color: #FF9d66 !important;
   display: inline-block;
 }
 
-.cta-btn.instagram {
-  background: linear-gradient(45deg, #f09433, #dc2743);
-  color: white !important;
+.event-list-item {
+  display: grid;
+  grid-template-columns: 100px 1fr auto;
+  gap: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 0;
+  border: none;
+  border-left: 3px solid transparent;
+  background: #111;
+  transition: all 0.3s ease;
+  align-items: center;
 }
 
-.cta-btn.phone {
-  background: rgba(255, 255, 255, 0.1);
-  color: white !important;
-  border: 2px solid rgba(255, 255, 255, 0.3);
+.event-list-item:hover {
+  border-left-color: #FF9d66;
+  background: #1a1a1a;
 }
 
-.cta-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+.list-image-container {
+  width: 100px;
+  height: 125px;
+  border-radius: 0;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.list-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(20%) contrast(1.1);
+  transition: filter 0.3s ease;
+}
+
+.event-list-item:hover .list-image {
+  filter: grayscale(0%) contrast(1.05);
+}
+
+.list-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.list-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.list-title {
+  font-size: 1rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.list-category {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #FF9d66 !important;
+}
+
+.list-meta {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.list-description {
+  font-size: 0.85rem;
+  line-height: 1.5;
+  margin: 0;
+  display: -webkit-box;
+  line-clamp: 2;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.list-price-container {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.5rem;
+}
+
+.list-price {
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.list-price.free {
+  color: #FF9d66 !important;
+}
+
+.list-extra {
+  font-size: 0.65rem;
+  padding: 0.3rem 0.6rem;
+  background: #FF9d66;
+  color: #000 !important;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  border-radius: 0;
 }
 
 /* Mobile Optimization */
 @media (max-width: 768px) {
-  .calendar-wrapper {
-    padding: 1.5rem;
+  .page-hero {
+    padding: 6rem 0 3rem;
   }
-  
-  .calendar-header {
-    margin-bottom: 1.5rem;
+
+  .container {
+    padding: 0 1rem;
   }
-  
-  .month-year {
-    font-size: 1.2rem;
-  }
-  
-  .nav-button {
-    width: 35px;
-    height: 35px;
-    font-size: 1.2rem;
-  }
-  
-  .calendar-day {
-    min-height: 50px;
-    padding: 0.3rem;
-  }
-  
-  .date-number {
-    font-size: 0.85rem;
-  }
-  
-  .event-indicator {
-    width: 4px;
-    height: 4px;
-    margin-top: 2px;
-  }
-  
-  .event-item {
+
+  .filter-bar {
     flex-direction: column;
+    align-items: stretch;
+  }
+
+  .category-filters {
+    justify-content: center;
+  }
+
+  .view-toggle {
+    justify-content: center;
+  }
+
+  .events-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .event-list-item {
+    grid-template-columns: 80px 1fr;
     gap: 1rem;
-    padding: 1.5rem;
   }
-  
-  .event-date {
-    width: 60px;
-    height: 60px;
-    align-self: flex-start;
+
+  .list-image-container {
+    width: 80px;
+    height: 80px;
   }
-  
-  .event-day {
-    font-size: 1.4rem;
-  }
-  
-  .event-month {
-    font-size: 0.7rem;
-  }
-  
-  .event-title {
-    font-size: 1.2rem;
-  }
-  
-  .event-description {
-    font-size: 0.9rem;
-  }
-  
-  .event-meta {
-    gap: 0.5rem;
-  }
-  
-  .event-price,
-  .event-type {
-    font-size: 0.8rem;
-    padding: 0.4rem 0.8rem;
-  }
-  
-  .cta-buttons {
-    flex-direction: column;
+
+  .list-price-container {
+    grid-column: 1 / -1;
+    flex-direction: row;
+    justify-content: space-between;
     align-items: center;
-  }
-  
-  .cta-btn {
-    width: 100%;
-    max-width: 300px;
+    padding-top: 1rem;
+    border-top: 1px solid var(--theme-border);
   }
 }
 
 @media (max-width: 480px) {
-  .calendar-day {
-    min-height: 40px;
-  }
-  
-  .calendar-day-header {
-    padding: 0.8rem 0.3rem;
-    font-size: 0.8rem;
-  }
-  
-  .date-number {
-    font-size: 0.8rem;
+  .filter-btn {
+    padding: 0.5rem 0.8rem;
+    font-size: 0.85rem;
   }
 }
 </style>

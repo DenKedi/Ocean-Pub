@@ -1,81 +1,87 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import BurgerMenu from '../components/BurgerMenu.vue'
-import { currentTheme } from '../stores/themeStore.js'
-import videoSource from '../assets/flash.mp4'
+import { ref, onMounted, computed } from "vue";
+import BurgerMenu from "../components/BurgerMenu.vue";
+import { currentTheme } from "../stores/themeStore.js";
+import iconImage from "../assets/icons/Pallas_Logo_III-cropped.svg";
 
-const isMenuOpen = ref(false)
+const props = defineProps({
+  bgImage: {
+    type: String,
+    default: null
+  }
+});
+
+const isMenuOpen = ref(false);
 
 const toggleMenu = () => {
-  isMenuOpen.value = !isMenuOpen.value
-}
+  isMenuOpen.value = !isMenuOpen.value;
+};
 
 const scrollToSection = (sectionId) => {
-  const element = document.getElementById(sectionId)
+  const element = document.getElementById(sectionId);
   if (element) {
-    element.scrollIntoView({ behavior: 'smooth' })
+    element.scrollIntoView({ behavior: "smooth" });
   }
-  isMenuOpen.value = false
-}
-
-// Computed property to determine if video should be shown
-const shouldShowVideo = computed(() => {
-  return currentTheme.value !== 'minimal-flat'
-})
-
-onMounted(() => {
-  // Ensure video starts playing
-  const video = document.querySelector('.background-video')
-  if (video) {
-    // Set muted before playing
-    video.muted = true
-    const playPromise = video.play()
-    if (playPromise !== undefined) {
-      playPromise
-        .then(() => {
-          console.log('Video autoplay started successfully')
-        })
-        .catch(e => {
-          console.log('Video autoplay failed:', e)
-          // Retry after a short delay
-          setTimeout(() => {
-            video.play().catch(err => console.log('Video retry failed:', err))
-          }, 1000)
-        })
-    }
-  }
-})
+  isMenuOpen.value = false;
+};
 </script>
 
 <template>
   <div class="main-layout">
-    <!-- Video Background - Only shown for non-minimal-flat themes -->
-    <video 
-      v-if="shouldShowVideo"
-      class="background-video" 
-      autoplay 
-      muted 
-      loop 
-      playsinline
-      preload="auto"
-    >
-      <source :src="videoSource" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
+    <!-- Background Image -->
+    <div
+      v-if="props.bgImage"
+      class="background-image"
+      :style="{ backgroundImage: `url(${props.bgImage})` }"
+    ></div>
 
     <!-- Burger Menu -->
     <BurgerMenu :is-open="isMenuOpen" @toggle="toggleMenu" />
 
     <!-- Navigation Overlay -->
     <nav class="main-nav" :class="{ 'nav-open': isMenuOpen }">
-      <router-link to="/" @click="isMenuOpen = false" class="nav-link">Home</router-link>
-      <a @click="scrollToSection('ueber-uns')" class="nav-link">Über uns</a>
-      <a @click="scrollToSection('speisekarte')" class="nav-link">Speisekarte</a>
-      <router-link to="/events" @click="isMenuOpen = false" class="nav-link">Events</router-link>
-      <a @click="scrollToSection('instagram')" class="nav-link">Instagram</a>
-      <a @click="scrollToSection('kontakt')" class="nav-link">Kontakt</a>
-      <router-link to="/impressum" @click="isMenuOpen = false" class="nav-link legal">Impressum</router-link>
-      <router-link to="/datenschutz" @click="isMenuOpen = false" class="nav-link legal">Datenschutz</router-link>
+      <div class="nav-logo">
+        <img :src="iconImage" alt="Pallas Logo" class="logo-image" />
+      </div>
+      
+      <div class="nav-content">
+        <router-link to="/" @click="isMenuOpen = false" class="nav-link">
+          <span class="prefix">Pallas</span><span class="dot">.</span>Home
+        </router-link>
+              <router-link to="/drinks" @click="isMenuOpen = false" class="nav-link">
+          <span class="prefix">Pallas</span><span class="dot">.</span>Drinks
+        </router-link>
+        <router-link to="/events" @click="isMenuOpen = false" class="nav-link">
+          <span class="prefix">Pallas</span><span class="dot">.</span>Events
+        </router-link>
+        <router-link to="/parallax" @click="isMenuOpen = false" class="nav-link">
+          <span class="prefix">Pallas</span><span class="dot">.</span>Parallax
+        </router-link>
+        <router-link to="/stories" @click="isMenuOpen = false" class="nav-link">
+          <span class="prefix">Pallas</span><span class="dot">.</span>Stories
+        </router-link>
+        <router-link to="/friends" @click="isMenuOpen = false" class="nav-link">
+          <span class="prefix">Pallas</span><span class="dot">.</span>Friends
+        </router-link>
+        <router-link to="/request" @click="isMenuOpen = false" class="nav-link">
+          <span class="prefix">Pallas</span><span class="dot">.</span>Request
+        </router-link>
+      </div>
+
+      <div class="nav-footer">
+        <router-link
+          to="/impressum"
+          @click="isMenuOpen = false"
+          class="footer-link"
+          >Impressum</router-link
+        >
+        <router-link
+          to="/datenschutz"
+          @click="isMenuOpen = false"
+          class="footer-link"
+          >Datenschutz</router-link
+        >
+      </div>
     </nav>
 
     <!-- Content Slot -->
@@ -93,16 +99,17 @@ onMounted(() => {
   overflow-x: hidden;
 }
 
-.background-video {
+.background-image {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
   height: 100vh;
-  object-fit: cover;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   z-index: 0;
-  opacity: 0.8;
-  pointer-events: none;
+  opacity: 0.6;
 }
 
 .main-content {
@@ -118,18 +125,60 @@ onMounted(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 0.95);
+  background: rgba(0, 0, 0, 1);
   display: none;
   flex-direction: column;
-  justify-content: center;
+  justify-content: space-between;
   align-items: center;
-  gap: 1rem;
   z-index: 999;
-  backdrop-filter: blur(10px);
+  padding: 4rem 2rem 2rem;
 }
 
 .main-nav.nav-open {
   display: flex;
+}
+
+.nav-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 0 0.5rem;
+}
+
+.logo-image {
+  width: 80px;
+  height: auto;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+
+.nav-content {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  flex: 1;
+}
+
+.nav-footer {
+  display: flex;
+  gap: 2rem;
+  padding: 0.5rem 0 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.footer-link {
+  color: rgba(255, 255, 255, 0.3);
+  text-decoration: none;
+  font-size: 0.7rem;
+  font-weight: 200;
+  letter-spacing: 0.05em;
+  transition: color 0.3s ease;
+}
+
+.footer-link:hover {
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .nav-link {
@@ -147,16 +196,17 @@ onMounted(() => {
   margin: 0.2rem 0;
 }
 
-.nav-link:hover {
-  color: #87CEEB;
-  border-bottom-color: #87CEEB;
+.nav-link .prefix {
+  opacity: 0;
+  transition: opacity 0.8s ease-in-out !important;
 }
 
-.nav-link.legal {
-  font-size: 0.9rem;
-  padding: 0.3rem 0;
-  opacity: 0.7;
-  margin-top: 1rem;
+.nav-link:hover .prefix {
+  opacity: 1;
+}
+
+.nav-link:hover {
+  color: #87ceeb;
 }
 
 /* Desktop Navigation */
@@ -164,7 +214,7 @@ onMounted(() => {
   .main-nav {
     display: none !important; /* Hide overlay nav on desktop */
   }
-  
+
   .main-nav.nav-open {
     display: flex !important;
   }
@@ -173,12 +223,27 @@ onMounted(() => {
 /* Mobile Optimization */
 @media (max-width: 767px) {
   .nav-link {
-    font-size: 1rem;
-    padding: 0.4rem 0;
+    font-size: 1.8rem;
+    padding: 1rem 0;
+    margin: 0.5rem 0;
   }
-  
-  .nav-link.legal {
-    font-size: 0.85rem;
+
+  .nav-link .prefix,
+  .nav-link .dot {
+    display: none;
+  }
+
+  .nav-content {
+    gap: 2rem;
+  }
+
+  .footer-link {
+    font-size: 0.8rem;
+  }
+
+  .nav-footer {
+    gap: 2.5rem;
+    padding: 1rem 0 2rem;
   }
 }
 </style>

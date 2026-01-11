@@ -85,9 +85,8 @@ const selectTheme = (themeName) => {
 }
 
 .burger-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
+  background: transparent;
+  border: none;
   padding: 0.5rem;
   cursor: pointer;
   display: flex;
@@ -97,13 +96,10 @@ const selectTheme = (themeName) => {
   gap: 3px;
   width: 40px;
   height: 40px;
-  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
 }
 
 .burger-button:hover {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.6);
   transform: scale(1.05);
 }
 
@@ -131,14 +127,12 @@ const selectTheme = (themeName) => {
 
 /* Theme Button */
 .theme-button {
-  background: rgba(255, 255, 255, 0.1);
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-radius: 6px;
+  background: transparent;
+  border: none;
   padding: 0.5rem;
   cursor: pointer;
   width: 40px;
   height: 40px;
-  backdrop-filter: blur(10px);
   transition: all 0.3s ease;
   font-size: 1rem;
   display: flex;
@@ -149,8 +143,6 @@ const selectTheme = (themeName) => {
 
 .theme-button:hover,
 .theme-button.active {
-  background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.6);
   transform: scale(1.05);
 }
 

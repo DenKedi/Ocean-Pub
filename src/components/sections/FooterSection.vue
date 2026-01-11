@@ -35,8 +35,9 @@ const scrollToSection = (sectionId) => {
         <div class="footer-section contact-section">
           <h4 class="theme-text-primary">Kontakt</h4>
           <div class="contact-info">
-            <p class="theme-text-secondary">📞 +49 40 98246368</p>
-            <p class="theme-text-secondary">adjsavedmylife@pallas.world</p>
+            <span class="contact-item theme-text-secondary">+49 40 98246368</span>
+            <span class="contact-item theme-text-secondary">adjsavedmylife@pallas.world</span>
+            <a href="https://instagram.com/pallas_world" target="_blank" class="contact-item footer-link theme-text-secondary">@pallas_world</a>
           </div>
         </div>
         
@@ -51,8 +52,8 @@ const scrollToSection = (sectionId) => {
         </div>
       </div>
       
-      <div class="footer-bottom">
-        <p class="theme-text-muted">&copy; 2023 PALLAS.WORLD. All rights reserved.</p>
+      <div class="footer-bottom"> 
+        <p class="theme-text-muted">&copy; 2026 PALLAS.WORLD. All rights reserved.</p>
       </div>
     </div>
   </footer>
@@ -89,10 +90,9 @@ const scrollToSection = (sectionId) => {
 .footer-content {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1fr;
-  gap: 4rem;
+  gap: 2rem;
   margin-bottom: 3rem;
   padding: 3rem 0;
-  border-bottom: 1px solid var(--theme-border);
 }
 
 .footer-section {
@@ -101,7 +101,8 @@ const scrollToSection = (sectionId) => {
 
 .footer-section h4 {
   font-size: 1.1rem;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
+  margin-top: 0;
   font-weight: 400;
   letter-spacing: 0.1em;
   text-transform: uppercase;
@@ -110,8 +111,8 @@ const scrollToSection = (sectionId) => {
 }
 
 .footer-section p {
-  line-height: 1.7;
-  margin-bottom: 0.8rem;
+  line-height: 1.8;
+  margin: 0 0 0.8rem 0;
   font-family: 'Source Sans 3', sans-serif;
   font-weight: 400;
   font-size: 0.95rem;
@@ -119,20 +120,29 @@ const scrollToSection = (sectionId) => {
   color: #ffffff !important;
 }
 
-.footer-address {
-  margin-top: 1rem;
+.footer-section p:last-child {
+  margin-bottom: 0;
 }
 
 .footer-links {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.8rem;
 }
 
 .contact-info {
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.8rem;
+}
+
+.contact-item {
+  display: block;
+  padding: 0.3rem 0;
+  font-family: 'Source Sans 3', sans-serif;
+  font-weight: 400;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
 }
 
 .footer-link {

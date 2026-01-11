@@ -1,76 +1,50 @@
 import { ref, reactive } from 'vue'
 
-// Theme Store für verschiedene Design-Varianten
-export const currentTheme = ref('berlin-bar')
+// Theme Store for different design concepts
+export const currentTheme = ref('glassmorphism')
 
 export const themes = reactive({
-  'berlin-bar': {
-    name: 'Main',
-    description: 'Sophisticated glassmorphism design with minimal transparency',
+  'glassmorphism': {
+    name: 'Glassmorphism',
+    description: 'Frosted glass effect with subtle transparency and blur',
     colors: {
-      sectionBg: 'rgba(0, 0, 0, 0.3)',
-      containerBg: 'rgba(0, 0, 0, 0.4)',
-      itemBg: 'rgba(0, 0, 0, 0.3)',
-      textPrimary: '#ffffff',
-      textSecondary: '#ffffff',
-      textMuted: '#ffffff',
-      border: 'rgba(255, 255, 255, 0.1)',
-      borderHover: 'rgba(255, 255, 255, 0.25)',
-    },
-    effects: {
-      backdropBlur: '15px',
-      borderRadius: '4px',
-      shadow: '0 5px 25px rgba(0, 0, 0, 0.2)',
-      shadowHover: '0 15px 50px rgba(0, 0, 0, 0.3)',
-    }
-  },
-  
-  'glass-luxe': {
-    name: 'Glass Luxe',
-    description: 'Ultra-transparent glassmorphism with heavy blur effects',
-    colors: {
-      sectionBg: 'rgba(255, 255, 255, 0.02)',
-      containerBg: 'rgba(255, 255, 255, 0.08)',
-      itemBg: 'rgba(255, 255, 255, 0.06)',
+      sectionBg: 'rgba(255, 255, 255, 0.05)',
+      containerBg: 'rgba(255, 255, 255, 0.1)',
+      itemBg: 'rgba(255, 255, 255, 0.08)',
       textPrimary: '#ffffff',
       textSecondary: 'rgba(255, 255, 255, 0.9)',
-      textMuted: 'rgba(255, 255, 255, 0.8)',
-      border: 'rgba(255, 255, 255, 0.15)',
-      borderHover: 'rgba(255, 255, 255, 0.3)',
+      textMuted: 'rgba(255, 255, 255, 0.7)',
+      border: 'rgba(255, 255, 255, 0.18)',
+      borderHover: 'rgba(255, 255, 255, 0.35)',
     },
     effects: {
-      backdropBlur: '25px',
-      borderRadius: '12px',
-      shadow: '0 8px 40px rgba(0, 0, 0, 0.3)',
-      shadowHover: '0 20px 60px rgba(0, 0, 0, 0.4)',
+      backdropBlur: '20px',
+      borderRadius: '16px',
+      shadow: '0 8px 32px rgba(0, 0, 0, 0.37)',
+      shadowHover: '0 12px 48px rgba(0, 0, 0, 0.45)',
+      borderWidth: '1px',
     }
   },
   
-  'minimal-flat': {
-    name: 'Minimal Flat Design',
-    description: 'Clean flat design with video only in hero section',
+  'minimalist': {
+    name: 'Minimalist',
+    description: 'Clean and simple with ample white space',
     colors: {
-      sectionBg: 'rgb(18, 18, 18)',
-      containerBg: 'rgba(255, 255, 255, 0.05)',
-      itemBg: 'rgba(255, 255, 255, 0.03)',
-      textPrimary: 'rgb(255, 255, 255)',
-      textSecondary: 'rgba(255, 255, 255, 0.8)',
+      sectionBg: 'rgba(0, 0, 0, 0.02)',
+      containerBg: 'rgba(0, 0, 0, 0.05)',
+      itemBg: 'rgba(0, 0, 0, 0.03)',
+      textPrimary: '#ffffff',
+      textSecondary: 'rgba(255, 255, 255, 0.85)',
       textMuted: 'rgba(255, 255, 255, 0.6)',
-      border: 'rgba(255, 255, 255, 0.1)',
-      borderHover: 'rgba(255, 255, 255, 0.2)',
-      // Section-spezifische Hintergründe
-      aboutBg: 'rgb(16, 16, 16)',
-      menuBg: 'rgb(20, 20, 20)',
-      eventsBg: 'rgb(14, 14, 14)',
-      instagramBg: 'rgb(22, 22, 22)',
-      contactBg: 'rgb(12, 12, 12)',
-      footerBg: 'rgb(10, 10, 10)',
+      border: 'rgba(255, 255, 255, 0.08)',
+      borderHover: 'rgba(255, 255, 255, 0.15)',
     },
     effects: {
       backdropBlur: '0px',
-      borderRadius: '8px',
-      shadow: '0 2px 10px rgba(0, 0, 0, 0.3)',
-      shadowHover: '0 4px 20px rgba(0, 0, 0, 0.4)',
+      borderRadius: '2px',
+      shadow: 'none',
+      shadowHover: '0 2px 8px rgba(255, 255, 255, 0.1)',
+      borderWidth: '1px',
     }
   }
 })
@@ -100,7 +74,7 @@ const applyThemeToCSS = (theme) => {
 
 // Theme beim App-Start laden
 export const initTheme = () => {
-  const savedTheme = localStorage.getItem('pallas-theme') || 'berlin-bar'
+  const savedTheme = localStorage.getItem('pallas-theme') || 'glassmorphism'
   setTheme(savedTheme)
 }
 

@@ -1,6 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import HomePage from '../views/HomePage.vue'
+import StoriesPage from '../views/StoriesPage.vue'
 import EventsPage from '../views/EventsPage.vue'
+import ParallaxPage from '../views/ParallaxPage.vue'
+import DrinksPage from '../views/DrinksPage.vue'
+import FriendsPage from '../views/FriendsPage.vue'
 import ImpressumPage from '../components/pages/ImpressumPage.vue'
 import DatenschutzPage from '../components/pages/DatenschutzPage.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
@@ -13,9 +17,29 @@ const routes = [
     component: HomePage
   },
   {
+    path: '/stories',
+    name: 'Stories',
+    component: StoriesPage
+  },
+  {
     path: '/events',
     name: 'Events', 
     component: EventsPage
+  },
+  {
+    path: '/parallax',
+    name: 'Parallax',
+    component: ParallaxPage
+  },
+  {
+    path: '/drinks',
+    name: 'Drinks',
+    component: DrinksPage
+  },
+  {
+    path: '/friends',
+    name: 'Friends',
+    component: FriendsPage
   },
   {
     path: '/impressum',
@@ -38,6 +62,11 @@ const routes = [
     name: 'AdminDashboard',
     component: AdminDashboard,
     meta: { requiresAuth: true }
+  },
+  // Catch-all redirect to home for non-existent pages
+  {
+    path: '/:pathMatch(.*)*',
+    redirect: '/'
   }
 ]
 

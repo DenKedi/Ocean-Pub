@@ -1,18 +1,17 @@
 <script setup>
 import MainLayout from '../layouts/MainLayout.vue'
 import HeroSection from '../components/sections/HeroSection.vue'
-import AboutSection from '../components/sections/AboutSection.vue'
-import MenuSection from '../components/sections/MenuSection.vue'
+import EventsPreviewSection from '../components/sections/EventsPreviewSection.vue'
 import InstagramSection from '../components/sections/InstagramSection.vue'
 import ContactSection from '../components/sections/ContactSection.vue'
 import FooterSection from '../components/sections/FooterSection.vue'
+import backgroundImage from '../assets/pictures/sitzecke.jpg'
 </script>
 
 <template>
-  <MainLayout>
+  <MainLayout :bg-image="backgroundImage">
     <HeroSection />
-    <AboutSection />
-    <MenuSection />
+    <EventsPreviewSection />
     <InstagramSection />
     <ContactSection />
     <FooterSection />

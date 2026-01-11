@@ -1,6 +1,7 @@
 <script setup>
-import { computed, onMounted } from 'vue'
-import { currentTheme } from '../../stores/themeStore.js'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId)
@@ -9,47 +10,23 @@ const scrollToSection = (sectionId) => {
   }
 }
 
-// Computed property to determine if video should be shown in hero
-const shouldShowHeroVideo = computed(() => {
-  return currentTheme.value === 'minimal-flat'
-})
-
-onMounted(() => {
-  // Ensure hero video starts playing when minimal-flat theme is active
-  if (shouldShowHeroVideo.value) {
-    const video = document.querySelector('.hero-background-video')
-    if (video) {
-      video.play().catch(e => console.log('Hero video autoplay failed:', e))
-    }
-  }
-})
+const goToEvents = () => {
+  router.push('/events')
+}
 </script>
 
 <template>
   <section id="home" class="hero-section theme-section-bg">
-    <!-- Video Background - Only for minimal-flat theme and only in hero -->
-    <video 
-      v-if="shouldShowHeroVideo"
-      class="hero-background-video" 
-      autoplay 
-      muted 
-      loop 
-      playsinline
-      preload="auto"
-    >
-      <source src="/src/assets/flash.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
     
-    <div class="hero-content theme-container-bg">
-      <h1 class="hero-title theme-text-primary pallas-title">PALLAS</h1>
-      <p class="hero-subtitle theme-text-secondary pallas-subtitle">Restaurant | Bar | Club</p>
+    <div class="hero-content">
+      <img src="@/assets/icons/Pallas_Logo_II.svg" alt="Pallas Logo" class="hero-logo" />
+      <p class="hero-subtitle theme-text-secondary pallas-subtitle">Everybody Welcome</p>
       <div class="hero-buttons">
-        <button @click="scrollToSection('reservierung')" class="cta-button primary theme-button theme-text-primary">
-          Reservierung
+        <button @click="scrollToSection('drinks')" class="cta-button primary theme-button theme-text-primary">
+          Pallas.Drinks
         </button>
-        <button @click="scrollToSection('speisekarte')" class="cta-button secondary theme-button theme-text-secondary">
-          Speisekarte
+        <button @click="goToEvents" class="cta-button secondary theme-button theme-text-secondary">
+          Pallas.Events
         </button>
       </div>
     </div>
@@ -70,18 +47,6 @@ onMounted(() => {
 .hero-section.theme-section-bg {
   background: transparent !important;
   backdrop-filter: none !important;
-}
-
-.hero-background-video {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  z-index: 1;
-  opacity: 0.8;
-  pointer-events: none;
 }
 
 .hero-section::before {
@@ -108,30 +73,22 @@ onMounted(() => {
   backdrop-filter: none !important;
 }
 
-.hero-title {
-  font-size: clamp(4rem, 10vw, 8rem);
-  font-weight: 300;
-  margin-bottom: 1.5rem;
-  text-shadow: 
-    0 0 40px rgba(255, 255, 255, 0.1),
-    0 0 80px rgba(255, 255, 255, 0.05);
-  letter-spacing: 0.3em;
-  font-family: 'Montserrat', sans-serif;
-  text-transform: uppercase;
-  position: relative;
-  filter: brightness(1.1);
-  color: #ffffff !important;
+.hero-logo {
+  width: 100%;
+  max-width: clamp(300px, 60vw, 600px);
+  height: auto;
+  margin-bottom: 2rem;
+  filter: brightness(1) drop-shadow(0 0 40px rgba(255, 255, 255, 0.15));
+  animation: logoFloat 6s ease-in-out infinite;
 }
 
-.hero-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 60%;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, var(--theme-border), transparent);
+@keyframes logoFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
 }
 
 .hero-subtitle {
@@ -222,6 +179,16 @@ onMounted(() => {
 
 /* Mobile Optimization */
 @media (max-width: 767px) {
+  .parallax-image-container {
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  
+  .parallax-image {
+    width: clamp(150px, 40vw, 250px);
+  }
+  
   .hero-content {
     padding: 3rem 2rem;
     margin: 1rem;

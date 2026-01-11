@@ -1,6 +1,6 @@
 /* Theme System - CSS Custom Properties */
 :root {
-  /* Default Theme: Berlin Bar */
+  /* Default Theme Variables */
   --theme-sectionBg: rgba(0, 0, 0, 0.1);
   --theme-containerBg: rgba(0, 0, 0, 0.4);
   --theme-itemBg: rgba(0, 0, 0, 0.3);
@@ -12,13 +12,9 @@
   
   --theme-backdropBlur: 0px;
   --theme-borderRadius: 4px;
+  --theme-borderWidth: 1px;
   --theme-shadow: 0 5px 25px rgba(0, 0, 0, 0.2);
   --theme-shadowHover: 0 15px 50px rgba(0, 0, 0, 0.3);
-  
-  --theme-accentBlueDark: rgb(40 82 169);
-  --theme-accentBlueLight: rgb(169 243 230);
-  --theme-accentOrangeDark: rgb(241 109 25);
-  --theme-accentOrangeLight: rgb(217 168 111);
 }
 
 /* Theme-aware utility classes */
@@ -32,13 +28,14 @@
   backdrop-filter: blur(calc(var(--theme-backdropBlur) * 0.6)) !important;
   border-radius: var(--theme-borderRadius) !important;
   box-shadow: var(--theme-shadow) !important;
+  border: var(--theme-borderWidth) solid var(--theme-border) !important;
 }
 
 .theme-item-bg {
   background: var(--theme-itemBg) !important;
   backdrop-filter: blur(calc(var(--theme-backdropBlur) * 0.4)) !important;
   border-radius: var(--theme-borderRadius) !important;
-  border: 1px solid var(--theme-border) !important;
+  border: var(--theme-borderWidth) solid var(--theme-border) !important;
   box-shadow: var(--theme-shadow) !important;
 }
 
@@ -59,32 +56,20 @@
   color: var(--theme-textMuted) !important;
 }
 
-/* Special handling for gradient backgrounds */
-.theme-gradient-bg {
-  background: var(--theme-sectionBg) !important;
-}
-
 /* Smooth transitions for theme changes */
-* {
-  transition: background 0.4s ease, 
-              border-color 0.4s ease, 
-              color 0.4s ease, 
-              box-shadow 0.4s ease !important;
+/* Note: transform excluded to allow GSAP animations to work properly */
+:root {
+  --theme-transition-duration: 0.4s;
 }
 
-/* Override specific backdrop-filter for certain themes */
-[data-theme="glass-luxe"] {
-  --theme-backdropBlur: 40px;
-}
-
-[data-theme="cyber-noir"] {
-  --theme-backdropBlur: 10px;
-}
-
-[data-theme="minimal-white"] {
-  --theme-backdropBlur: 15px;
-}
-
-[data-theme="retro-gradient"] {
-  --theme-backdropBlur: 20px;
+.theme-section-bg,
+.theme-container-bg,
+.theme-item-bg,
+.theme-text-primary,
+.theme-text-secondary,
+.theme-text-muted {
+  transition: background var(--theme-transition-duration) ease, 
+              border-color var(--theme-transition-duration) ease, 
+              color var(--theme-transition-duration) ease, 
+              box-shadow var(--theme-transition-duration) ease;
 }

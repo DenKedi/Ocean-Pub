@@ -9,6 +9,7 @@ import 'vue-advanced-cropper/dist/style.css'
 const router = useRouter()
 const { state: authState, logout } = useAuth()
 const API_URL = import.meta.env.VITE_API_URL
+const BASE_URL = import.meta.env.BASE_URL || 'https://pallas.bleck.it'
 
 // State
 const events = ref([])
@@ -440,7 +441,9 @@ async function handleCategorySubmit() {
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <img src="@/assets/Pallas_Logo_III.svg" alt="Pallas Logo" class="logo" />
+        <a :href="BASE_URL" class="logo-link">
+          <img src="@/assets/icons/Pallas_Logo_III.svg" alt="Pallas Logo" class="logo" />
+        </a>
         <button @click="toggleMobileMenu" class="hamburger-btn">
           <span></span>
           <span></span>
@@ -797,6 +800,17 @@ async function handleCategorySubmit() {
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.logo-link {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+.logo-link:hover {
+  opacity: 0.8;
 }
 
 .sidebar-header .logo {
