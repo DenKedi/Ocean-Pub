@@ -54,9 +54,6 @@ const scrollToSection = (sectionId) => {
         <router-link to="/events" @click="isMenuOpen = false" class="nav-link">
           <span class="prefix">Pallas</span><span class="dot">.</span>Events
         </router-link>
-        <router-link to="/parallax" @click="isMenuOpen = false" class="nav-link">
-          <span class="prefix">Pallas</span><span class="dot">.</span>Parallax
-        </router-link>
         <router-link to="/stories" @click="isMenuOpen = false" class="nav-link">
           <span class="prefix">Pallas</span><span class="dot">.</span>Stories
         </router-link>
