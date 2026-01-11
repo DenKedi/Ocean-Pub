@@ -18,6 +18,7 @@
               allowtransparency="true"
               loading="lazy"
               class="theme-item-bg"
+              allow="encrypted-media; fullscreen"
             ></iframe>
           </div>
 
@@ -30,6 +31,7 @@
               allowtransparency="true"
               loading="lazy"
               class="theme-item-bg"
+              allow="encrypted-media; fullscreen"
             ></iframe>
           </div>
         </div>

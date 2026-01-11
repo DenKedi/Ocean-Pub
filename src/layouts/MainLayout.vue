@@ -132,6 +132,8 @@ const scrollToSection = (sectionId) => {
   align-items: center;
   z-index: 999;
   padding: 4rem 2rem 2rem;
+  overflow-y: auto; /* Allow scrolling */
+  overflow-x: hidden;
 }
 
 .main-nav.nav-open {
@@ -209,6 +211,18 @@ const scrollToSection = (sectionId) => {
   color: #87ceeb;
 }
 
+/* Mobile Nav Optimization */
+@media (max-width: 768px) {
+  .nav-link {
+    font-size: 1rem; /* Reduced from 1.2rem */
+    padding: 0.2rem 0;
+  }
+  
+  .logo-image {
+    width: 60px; /* Smaller logo */
+  }
+}
+
 /* Desktop Navigation */
 @media (min-width: 1024px) {
   .main-nav {
@@ -223,8 +237,8 @@ const scrollToSection = (sectionId) => {
 /* Mobile Optimization */
 @media (max-width: 767px) {
   .nav-link {
-    font-size: 1.8rem;
-    padding: 1rem 0;
+    font-size: 1rem;
+    padding: 0.5rem 0;
     margin: 0.5rem 0;
   }
 

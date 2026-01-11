@@ -26,7 +26,7 @@
     
     <div class="container">
       <h2 class="section-title theme-text-primary">Demnächst</h2>
-      <p class="section-subtitle theme-text-secondary">Erlebe unvergessliche Momente bei PALLAS</p>
+      <p class="section-subtitle theme-text-secondary">Folgende Events haben wir für dich in der Pipeline</p>
       
       <!-- Loading State -->
       <div v-if="isLoading" class="loading-state">
@@ -563,7 +563,9 @@ onMounted(() => {
   
   .event-image {
     width: 100%;
-    height: 180px;
+    /* Fix: Squared image on mobile */
+    height: auto;
+    aspect-ratio: 1/1; 
   }
   
   .event-button {

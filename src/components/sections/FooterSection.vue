@@ -201,15 +201,27 @@ const scrollToSection = (sectionId) => {
   }
   
   .footer-content {
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    grid-template-columns: 1fr; /* Force single column on mobile/tablet */
+    gap: 3rem;
+    text-align: center;
+  }
+
+  /* Center items */
+  .contact-info, .brand-section, .links-section, .legal-section {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
   }
 }
 
+/* Fix Underscore on Phone Numbers */
+.contact-item {
+  display: block;
+  margin-bottom: 0.5rem;
+  text-decoration: none !important;
+}
+
 @media (max-width: 480px) {
-  .footer-content {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
+/* Merged into 768px block mostly, but keeping specific overrides if needed */
 }
 </style>

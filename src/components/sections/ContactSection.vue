@@ -66,6 +66,31 @@
   min-width: 500px;
 }
 
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .section-title {
+    font-size: 1.5rem; /* Further reduced from 2rem */
+    letter-spacing: 0.1em; /* Reduced spacing */
+  }
+  
+  .hours-card {
+    min-width: auto;
+    width: 100%;
+    padding: 1.5rem 1rem; /* Compact padding */
+  }
+  
+  .day-row {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 1rem 0; /* Reduced padding */
+  }
+
+  .day, .time {
+    font-size: 0.95rem; /* Smaller text */
+  }
+}
+
 .day-row {
   display: flex;
   justify-content: space-between;

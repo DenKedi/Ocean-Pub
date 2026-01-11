@@ -465,6 +465,14 @@ onUnmounted(() => {
   text-transform: uppercase;
   margin-bottom: 1rem;
   color: #fff !important;
+  word-wrap: break-word; /* Ensure long words break */
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    letter-spacing: 0.05em; /* Reduce spacing significantly on mobile */
+    font-size: 2.5rem; /* Ensure it fits */
+  }
 }
 
 .page-subtitle {
