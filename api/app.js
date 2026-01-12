@@ -52,6 +52,7 @@ app.use(express.urlencoded({ extended: true }));
 
 // Statisches Serving von Uploads
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+app.use('/images', express.static(path.join(__dirname, 'public/images')));
 
 // Basic route
 app.get('/', (req, res) => res.send('API Running'));

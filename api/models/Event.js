@@ -58,7 +58,7 @@ EventSchema.virtual('finalImageUrl').get(function() {
     if (this.category && this.category.defaultImageUrl) {
         return this.category.defaultImageUrl;
     }
-    return '/images/fallback-placeholder.png'; 
+    return '/images/event_default.webp'; 
 });
 
 module.exports = mongoose.model('Event', EventSchema);

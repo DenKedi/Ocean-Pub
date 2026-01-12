@@ -88,7 +88,7 @@ const formatPrice = (price) => {
 const getImageUrl = (event) => {
   if (event.eventImageUrl) return event.eventImageUrl
   if (event.category?.defaultImageUrl) return event.category.defaultImageUrl
-  return '/images/fallback-placeholder.webp'
+  return '/images/placeholders/event_default_bw.webp'
 }
 
 // Format rooms
@@ -282,6 +282,7 @@ onUnmounted(() => {
                   :alt="event.title"
                   class="event-image"
                   loading="lazy"
+                  @error="$event.target.src = '/images/placeholders/event_default_bw.webp'"
                 />
                 <div 
                   v-if="event.category" 
@@ -357,6 +358,7 @@ onUnmounted(() => {
                     :alt="event.title"
                     class="list-image"
                     loading="lazy"
+                    @error="$event.target.src = '/images/placeholders/event_default_bw.webp'"
                   />
                 </div>
 
@@ -706,6 +708,18 @@ onUnmounted(() => {
   height: 100%;
   object-fit: cover;
   filter: grayscale(20%) contrast(1.1);
+  background-color: #1a1a1a;
+}
+
+.event-image[src*="event_default_bw"] {
+  filter: grayscale(100%);
+}
+
+/* Deactivate hover effects for placeholders */
+.event-card:hover .event-image[src*="event_default_bw"],
+.event-image[src*="event_default_bw"]:hover {
+    filter: grayscale(100%);
+    transform: none;
 }
 
 .event-category-badge {
@@ -857,6 +871,16 @@ onUnmounted(() => {
   object-fit: cover;
   filter: grayscale(20%) contrast(1.1);
   transition: filter 0.3s ease;
+  background-color: #1a1a1a;
+}
+
+.list-image[src*="event_default_bw"] {
+  filter: grayscale(100%);
+}
+
+.event-list-item:hover .list-image[src*="event_default_bw"],
+.list-image[src*="event_default_bw"]:hover {
+    filter: grayscale(100%);
 }
 
 .event-list-item:hover .list-image {
