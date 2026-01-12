@@ -8,9 +8,9 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 
 // Background and foreground images
-import spinneFullImg from '../assets/pictures/spinne_full.png'
-import spinneFrontImg from '../assets/pictures/spinne_front.png'
-import decke5Img from '../assets/pictures/decke5.png'
+import spinneFullImg from '../assets/pictures/spinne_full.webp'
+import spinneFrontImg from '../assets/pictures/spinne_front.webp'
+import decke5Img from '../assets/pictures/decke5.webp'
 
 // GSAP Parallax - refs for elements
 const parallaxPage = ref(null)
@@ -136,12 +136,12 @@ onUnmounted(() => {
   <MainLayout>
     <div ref="parallaxPage" class="parallax-page">
       
-      <!-- DEEP BACKGROUND LAYER - decke5.png (slowest scroll = furthest away) -->
+      <!-- DEEP BACKGROUND LAYER - decke5.webp (slowest scroll = furthest away) -->
       <div ref="deepBackgroundLayer" class="parallax-layer deep-background-layer">
         <div class="deep-bg-image" :style="{ backgroundImage: `url(${decke5Img})` }"></div>
       </div>
       
-      <!-- BACKGROUND LAYER - spinne_full.png (slower scroll = further away) -->
+      <!-- BACKGROUND LAYER - spinne_full.webp (slower scroll = further away) -->
       <div ref="backgroundLayer" class="parallax-layer background-layer">
         <!-- Left blurred edge -->
         <div class="blur-edge blur-left" :style="{ backgroundImage: `url(${spinneFullImg})` }"></div>
@@ -151,7 +151,7 @@ onUnmounted(() => {
         <div class="blur-edge blur-right" :style="{ backgroundImage: `url(${spinneFullImg})` }"></div>
       </div>
       
-      <!-- FOREGROUND LAYER - spinne_front.png (faster scroll = closer) -->
+      <!-- FOREGROUND LAYER - spinne_front.webp (faster scroll = closer) -->
       <div ref="foregroundLayer" class="parallax-layer foreground-layer">
         <!-- Image Container -->
         <div class="foreground-image-container">

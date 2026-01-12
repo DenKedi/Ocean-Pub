@@ -88,7 +88,7 @@ const formatPrice = (price) => {
 const getImageUrl = (event) => {
   if (event.eventImageUrl) return event.eventImageUrl
   if (event.category?.defaultImageUrl) return event.category.defaultImageUrl
-  return '/images/fallback-placeholder.png'
+  return '/images/fallback-placeholder.webp'
 }
 
 // Format rooms
@@ -424,7 +424,7 @@ onUnmounted(() => {
   left: 0;
   width: 100vw;
   height: 160vh; /* Increased height to prevent gaps */
-  background-image: url('/src/assets/pictures/decke5.png');
+  background-image: url('/src/assets/pictures/decke5.webp');
   background-size: cover;
   background-position: center top;
   background-repeat: no-repeat;

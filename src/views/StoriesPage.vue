@@ -8,14 +8,14 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger'
 gsap.registerPlugin(ScrollTrigger)
 
 // Background and foreground images
-import spinneFullImg from '../assets/pictures/spinne_full.png'
-import spinneFrontImg from '../assets/pictures/spinne_front.png'
+import spinneFullImg from '../assets/pictures/spinne_full.webp'
+import spinneFrontImg from '../assets/pictures/spinne_front.webp'
 import logoV from '../assets/icons/Pallas_Logo_V.svg'
-import djs1Img from '../assets/pictures/stories/supreme/djs1.png'
-import barkeeper1Img from '../assets/pictures/stories/supreme/barkeeper1.png'
-import floor1Img from '../assets/pictures/stories/supreme/floor1.png'
-import flyer1Img from '../assets/pictures/stories/supreme/flyer1.png'
-import plattenImg from '../assets/pictures/stories/supreme/platten.png'
+import djs1Img from '../assets/pictures/stories/supreme/djs1.webp'
+import barkeeper1Img from '../assets/pictures/stories/supreme/barkeeper1.webp'
+import floor1Img from '../assets/pictures/stories/supreme/floor1.webp'
+import flyer1Img from '../assets/pictures/stories/supreme/flyer1.webp'
+import plattenImg from '../assets/pictures/stories/supreme/platten.webp'
 
 // GSAP Parallax - refs for elements
 const parallaxPage = ref(null)
@@ -29,6 +29,7 @@ const supremeFgLayer = ref(null)
 const supremeTitle = ref(null)
 const gallerySection = ref(null)
 const galleryImages = ref([])
+const isLoading = ref(true)
 
 // Store ScrollTrigger instances for cleanup
 let scrollTriggers = []
@@ -186,8 +187,28 @@ const initParallax = () => {
 }
 
 onMounted(() => {
-  nextTick(() => {
-    initParallax()
+  const imagesToLoad = [
+    spinneFullImg,
+    spinneFrontImg,
+    djs1Img,
+    floor1Img,
+    flyer1Img,
+    plattenImg
+  ]
+
+  Promise.all(imagesToLoad.map(src => {
+    return new Promise((resolve) => {
+      const img = new Image()
+      img.src = src
+      img.onload = resolve
+      img.onerror = resolve
+    })
+  })).then(() => {
+    isLoading.value = false
+    nextTick(() => {
+      initParallax()
+      ScrollTrigger.refresh()
+    })
   })
 })
 
@@ -203,7 +224,10 @@ onUnmounted(() => {
 
 <template>
   <MainLayout>
-    <div ref="parallaxPage" class="parallax-page">
+    <div v-if="isLoading" class="loading-overlay">
+      <div class="loader-spinner"></div>
+    </div>
+    <div v-else ref="parallaxPage" class="parallax-page">
       
       <!-- BACKGROUND LAYER - spinne_full.png -->
       <div ref="backgroundLayer" class="parallax-layer background-layer">
@@ -308,6 +332,35 @@ onUnmounted(() => {
   z-index: -1;
   pointer-events: none;
 }
+
+.loading-overlay {
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  justify-content: center;
+  align-items: center;
+  background: black;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 9999;
+}
+
+.loader-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  border-top-color: #fff;
+  animation: spin 1s ease-in-out infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
 
 /* Parallax Layers - Common Styles */
 .parallax-layer {
