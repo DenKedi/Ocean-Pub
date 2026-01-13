@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import api from '../utils/api'
+import bgImage from '@/assets/pictures/decke5.webp'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -166,7 +167,9 @@ onUnmounted(() => {
   <MainLayout>
     <div ref="eventsPage" class="events-page">
       <!-- Parallax Background -->
-      <div ref="backgroundLayer" class="background-layer"></div>
+      <div ref="backgroundLayer" class="background-layer">
+        <img :src="bgImage" alt="" class="parallax-bg-image" fetchpriority="high" />
+      </div>
       
       <!-- Hero Header -->
       <section class="page-hero">
@@ -424,14 +427,17 @@ onUnmounted(() => {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100vw;
-  height: 160vh; /* Increased height to prevent gaps */
-  background-image: url('/src/assets/pictures/decke5.webp');
-  background-size: cover;
-  background-position: center top;
-  background-repeat: no-repeat;
   opacity: 0.5;
   z-index: 0;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.parallax-bg-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center top;
   pointer-events: none;
   will-change: transform;
 }
