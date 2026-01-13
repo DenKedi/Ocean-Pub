@@ -80,6 +80,12 @@ h1 {
   color: #ffffff;
 }
 
+/* Ensure CTA buttons use the primary Pallas font */
+.cta-button {
+  font-family: var(--font-primary) !important;
+}
+
+
 .pallas-subtitle {
   font-family: var(--font-secondary);
   font-weight: 400;

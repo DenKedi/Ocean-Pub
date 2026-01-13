@@ -248,7 +248,9 @@ onUnmounted(() => {
       <!-- Hero Header -->
       <section ref="heroSection" class="page-hero">
         <div class="container">
-          <img :src="logoV" alt="Pallas Logo" class="hero-logo" />
+          <router-link to="/">
+            <img :src="logoV" alt="Pallas Logo" class="hero-logo" />
+          </router-link>
           <p class="page-subtitle theme-text-secondary">These are our Stories</p>
         </div>
       </section>
@@ -583,6 +585,12 @@ onUnmounted(() => {
   margin-bottom: 2rem;
   /* Make white and add shadow */
   filter: brightness(0) invert(1) drop-shadow(0 0 20px rgba(0,0,0,0.5));
+  transition: transform 0.3s ease;
+}
+
+.hero-logo:hover {
+  transform: scale(1.05);
+  cursor: pointer;
 }
 
 .page-subtitle {

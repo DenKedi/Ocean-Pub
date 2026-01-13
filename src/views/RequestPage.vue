@@ -4,11 +4,11 @@ import MainLayout from '../layouts/MainLayout.vue'
 
 <template>
   <MainLayout>
-    <div class="drinks-page">
+    <div class="request-page">
       <section class="content-section theme-section-bg">
         <div class="container">
-          <h1 class="page-title theme-text-primary">Pallas.Drinks</h1>
-          <p class="page-subtitle theme-text-secondary">Unsere Speisekarte wird bald verfügbar sein</p>
+          <h1 class="page-title theme-text-primary">Pallas.Request</h1>
+          <p class="page-subtitle theme-text-secondary">Sende uns deine Anfrage</p>
         </div>
       </section>
     </div>
@@ -35,10 +35,13 @@ import MainLayout from '../layouts/MainLayout.vue'
   margin-bottom: 1rem;
   font-weight: 300;
   letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-family: var(--font-primary);
 }
 
 .page-subtitle {
-  font-size: clamp(1.2rem, 3vw, 1.5rem);
+  font-family: var(--font-secondary);
+  font-size: 1.25rem;
   opacity: 0.8;
 }
 </style>

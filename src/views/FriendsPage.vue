@@ -1,12 +1,18 @@
+<script setup>
+import MainLayout from '../layouts/MainLayout.vue'
+</script>
+
 <template>
-  <div class="friends-page">
-    <section class="content-section theme-section-bg">
-      <div class="container">
-        <h1 class="page-title theme-text-primary">Pallas.Friends</h1>
-        <p class="page-subtitle theme-text-secondary">Unsere Partner & Freunde</p>
-      </div>
-    </section>
-  </div>
+  <MainLayout>
+    <div class="friends-page">
+      <section class="content-section theme-section-bg">
+        <div class="container">
+          <h1 class="page-title theme-text-primary">Pallas.Friends</h1>
+          <p class="page-subtitle theme-text-secondary">Unsere Partner & Freunde</p>
+        </div>
+      </section>
+    </div>
+  </MainLayout>
 </template>
 
 <style scoped>

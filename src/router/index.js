@@ -5,6 +5,7 @@ import EventsPage from '../views/EventsPage.vue'
 import ParallaxPage from '../views/ParallaxPage.vue'
 import DrinksPage from '../views/DrinksPage.vue'
 import FriendsPage from '../views/FriendsPage.vue'
+import RequestPage from '../views/RequestPage.vue'
 import ImpressumPage from '../components/pages/ImpressumPage.vue'
 import DatenschutzPage from '../components/pages/DatenschutzPage.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
@@ -40,6 +41,11 @@ const routes = [
     path: '/friends',
     name: 'Friends',
     component: FriendsPage
+  },
+  {
+    path: '/request',
+    name: 'Request',
+    component: RequestPage
   },
   {
     path: '/impressum',

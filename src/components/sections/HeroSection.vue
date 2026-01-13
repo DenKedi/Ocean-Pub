@@ -75,7 +75,7 @@ const goToEvents = () => {
 
 .hero-logo {
   width: 100%;
-  max-width: clamp(300px, 60vw, 600px);
+  max-width: clamp(250px, 40vw, 400px);
   height: auto;
   margin-bottom: 2rem;
   filter: brightness(1) drop-shadow(0 0 40px rgba(255, 255, 255, 0.15));
@@ -96,7 +96,7 @@ const goToEvents = () => {
   margin-bottom: 3rem;
   opacity: 0.9;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
-  font-family: 'Source Sans 3', sans-serif;
+  font-family: var(--font-primary);
   font-weight: 400;
   letter-spacing: 0.15em;
   text-transform: uppercase;
@@ -123,7 +123,7 @@ const goToEvents = () => {
   min-width: 180px;
   text-transform: uppercase;
   letter-spacing: 0.2em;
-  font-family: 'Montserrat', sans-serif;
+  font-family: var(--font-primary);
   position: relative;
   overflow: hidden;
   transform-style: preserve-3d;
