@@ -196,6 +196,18 @@ onMounted(() => {
     plattenImg
   ]
 
+  // Safety timeout: Ensure page loads even if an image hangs
+  const safetyTimer = setTimeout(() => {
+    if (isLoading.value) {
+      console.warn('Image loading timed out - forcing render')
+      isLoading.value = false
+      nextTick(() => {
+        initParallax()
+        ScrollTrigger.refresh()
+      })
+    }
+  }, 4000)
+
   Promise.all(imagesToLoad.map(src => {
     return new Promise((resolve) => {
       const img = new Image()
@@ -204,11 +216,14 @@ onMounted(() => {
       img.onerror = resolve
     })
   })).then(() => {
-    isLoading.value = false
-    nextTick(() => {
-      initParallax()
-      ScrollTrigger.refresh()
-    })
+    if (isLoading.value) {
+      clearTimeout(safetyTimer)
+      isLoading.value = false
+      nextTick(() => {
+        initParallax()
+        ScrollTrigger.refresh()
+      })
+    }
   })
 })
 
@@ -317,7 +332,7 @@ onUnmounted(() => {
 
 .parallax-page {
   min-height: 200vh; /* Reduced from 300vh since content is removed */
-  background: #000000;
+  /* background: #000000; Removed to prevent occlusion issues with fixed layers */
   position: relative;
   isolation: isolate;
 }
@@ -618,6 +633,15 @@ onUnmounted(() => {
 @media (max-width: 768px) {
   .page-hero {
     padding: 6rem 0 3rem;
+  }
+
+  /* Optimize performance on mobile */
+  .layer-bg-blur {
+    display: none !important; /* Hide expensive blur calculation on mobile */
+  }
+
+  .parallax-layer {
+     will-change: auto; /* Let browser decide to avoid memory pressure */
   }
 
   .container {
