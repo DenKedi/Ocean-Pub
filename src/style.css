@@ -1,11 +1,4 @@
-/* Import custom fonts */
-@font-face {
-  font-family: 'Krona One';
-  src: url('./assets/fonts/KronaOne-Regular.ttf') format('truetype');
-  font-weight: normal;
-  font-style: normal;
-  font-display: swap;
-}
+/* Import custom fonts - moved to index.html via Google Fonts */
 
 :root {
   /* PALLAS Typography - Custom Fonts */
