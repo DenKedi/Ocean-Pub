@@ -206,6 +206,22 @@ p, span, div, h1, h2, h3, h4, h5, h6 {
   z-index: 100000 !important;
 }
 
+/* vue-easy-lightbox toolbar off (keep only X + arrows) */
+.vel-toolbar {
+  display: none !important;
+}
+
+/* vue-easy-lightbox mobile arrow spacing */
+@media (max-width: 768px) {
+  .vel-btns-wrapper .btn__next {
+    right: 22px !important;
+  }
+
+  .vel-btns-wrapper .btn__prev {
+    left: 22px !important;
+  }
+}
+
 /* Reduce motion for accessibility */
 @media (prefers-reduced-motion: reduce) {
   *,
