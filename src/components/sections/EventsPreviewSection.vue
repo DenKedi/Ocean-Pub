@@ -65,7 +65,11 @@
         <div class="events-grid">
           <div v-for="event in upcomingEvents" :key="event._id" class="event-card theme-container-bg">
             <div class="event-image">
-              <img :src="getEventImageUrl(event)" :alt="event.title" />
+              <img 
+                :src="getEventImageUrl(event)" 
+                :alt="event.title" 
+                @error="$event.target.src = '/images/placeholders/event_default_bw.webp'"
+              />
             </div>
             <div class="event-content">
               <div class="event-header">
@@ -146,7 +150,7 @@ const fetchEvents = async () => {
 // Get proper image URL
 const getEventImageUrl = (event) => {
   const imagePath = event.eventImageUrl || event.category?.defaultImageUrl
-  return imagePath ? getImageUrl(imagePath) : 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Event'
+  return imagePath ? getImageUrl(imagePath) : '/images/placeholders/event_default_bw.webp'
 }
 
 // Get description up to first line break
@@ -344,6 +348,17 @@ onMounted(() => {
   height: 100%;
   object-fit: cover;
   object-position: center;
+  filter: grayscale(20%) contrast(1.1);
+  transition: all 0.5s ease;
+}
+
+.event-image img[src*="event_default_bw"] {
+  filter: grayscale(100%);
+}
+
+.event-card:hover .event-image img:not([src*="event_default_bw"]) {
+  filter: grayscale(0%) contrast(1.05);
+  transform: scale(1.05);
 }
 
 .event-header {

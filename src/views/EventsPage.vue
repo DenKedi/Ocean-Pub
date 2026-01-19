@@ -175,7 +175,7 @@ onUnmounted(() => {
       <section class="page-hero">
         <div class="container">
           <h1 class="page-title pallas-heading">Pallas.Events</h1>
-          <p class="page-subtitle theme-text-secondary">Check Out our Program</p>
+          <p class="page-subtitle theme-text-secondary">Unser Programm für dich</p>
         </div>
       </section>
 

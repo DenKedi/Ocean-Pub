@@ -1,18 +1,4 @@
 <script setup>
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-const scrollToSection = (sectionId) => {
-  const element = document.getElementById(sectionId)
-  if (element) {
-    element.scrollIntoView({ behavior: 'smooth' })
-  }
-}
-
-const goToEvents = () => {
-  router.push('/events')
-}
 </script>
 
 <template>
@@ -21,14 +7,6 @@ const goToEvents = () => {
     <div class="hero-content">
       <img src="@/assets/icons/Pallas_Logo_II.svg" alt="Pallas Logo" class="hero-logo" />
       <p class="hero-subtitle theme-text-secondary pallas-subtitle">Everybody Welcome</p>
-      <div class="hero-buttons">
-        <button @click="scrollToSection('drinks')" class="cta-button primary theme-button theme-text-primary">
-          Pallas.Drinks
-        </button>
-        <button @click="goToEvents" class="cta-button secondary theme-button theme-text-secondary">
-          Pallas.Events
-        </button>
-      </div>
     </div>
   </section>
 </template>
@@ -75,9 +53,9 @@ const goToEvents = () => {
 
 .hero-logo {
   width: 100%;
-  max-width: clamp(250px, 40vw, 400px);
+  max-width: clamp(300px, 50vw, 550px);
   height: auto;
-  margin-bottom: 2rem;
+  margin-bottom: 4rem;
   filter: brightness(1) drop-shadow(0 0 40px rgba(255, 255, 255, 0.15));
   animation: logoFloat 6s ease-in-out infinite;
 }
@@ -93,88 +71,15 @@ const goToEvents = () => {
 
 .hero-subtitle {
   font-size: clamp(1.2rem, 3vw, 2rem);
-  margin-bottom: 3rem;
+  margin-bottom: 0;
   opacity: 0.9;
   text-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
   font-family: var(--font-primary);
   font-weight: 400;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   font-size: 1.1rem;
   color: #ffffff !important;
-}
-
-.hero-buttons {
-  display: flex;
-  gap: 2rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.cta-button {
-  padding: 1.2rem 2.5rem;
-  font-size: 0.9rem;
-  font-weight: 400;
-  border: none;
-  border-radius: 1px;
-  cursor: pointer;
-  transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
-  backdrop-filter: blur(20px);
-  min-width: 180px;
-  text-transform: uppercase;
-  letter-spacing: 0.2em;
-  font-family: var(--font-primary);
-  position: relative;
-  overflow: hidden;
-  transform-style: preserve-3d;
-  color: #ffffff !important;
-}
-
-.cta-button::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-  transition: left 0.6s ease;
-}
-
-.cta-button:hover::before {
-  left: 100%;
-}
-
-.cta-button.primary {
-  border: 1px solid var(--theme-border);
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
-  background: transparent !important;
-}
-
-.cta-button.primary:hover {
-  transform: translateY(-3px) rotateX(5deg);
-  box-shadow: 
-    0 8px 40px rgba(0, 0, 0, 0.4),
-    0 0 20px rgba(255, 255, 255, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.15);
-}
-
-.cta-button.secondary {
-  border: 1px solid var(--theme-border);
-  box-shadow: 
-    0 4px 20px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.02);
-  background: transparent !important;
-}
-
-.cta-button.secondary:hover {
-  transform: translateY(-3px) rotateX(5deg);
-  box-shadow: 
-    0 8px 40px rgba(0, 0, 0, 0.3),
-    0 0 15px rgba(255, 255, 255, 0.05),
-    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 /* Mobile Optimization */
@@ -192,17 +97,6 @@ const goToEvents = () => {
   .hero-content {
     padding: 3rem 2rem;
     margin: 1rem;
-  }
-  
-  .hero-buttons {
-    flex-direction: column;
-    align-items: center;
-    gap: 1.5rem;
-  }
-  
-  .cta-button {
-    width: 100%;
-    max-width: 280px;
   }
 }
 </style>
