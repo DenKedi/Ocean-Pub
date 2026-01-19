@@ -467,19 +467,19 @@ onUnmounted(() => {
 }
 
 .page-title {
-  font-size: clamp(2.5rem, 6vw, 4rem);
+  font-size: clamp(2.2rem, 5.2vw, 3.4rem);
   font-weight: 400;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-bottom: 1rem;
   color: #fff !important;
-  word-wrap: break-word; /* Ensure long words break */
+  white-space: nowrap;
 }
 
 @media (max-width: 768px) {
   .page-title {
-    letter-spacing: 0.05em; /* Reduce spacing significantly on mobile */
-    font-size: 2.5rem; /* Ensure it fits */
+    letter-spacing: 0.04em;
+    font-size: 2.1rem;
   }
 }
 

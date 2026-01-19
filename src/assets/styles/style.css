@@ -180,6 +180,45 @@ p, span, div, h1, h2, h3, h4, h5, h6 {
   font-weight: 400 !important;
 }
 
+/* vue-easy-lightbox overlay fix */
+.vel-app,
+.vel-modal {
+  z-index: 100000 !important;
+}
+
+/* vue-easy-lightbox toolbar off (keep only X + arrows) */
+.vel-modal .vel-toolbar,
+.vel-toolbar,
+.vel-toolbar .toolbar-btn,
+.vel-toolbar .toolbar-btn__zoomin,
+.vel-toolbar .toolbar-btn__zoomout,
+.vel-toolbar .toolbar-btn__resize,
+.vel-toolbar .toolbar-btn__rotate {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* extra guard: hide resize button specifically */
+.vel-modal .vel-toolbar .toolbar-btn__resize {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* vue-easy-lightbox mobile arrow spacing */
+@media (max-width: 768px) {
+  .vel-btns-wrapper .btn__next {
+    right: 28px !important;
+  }
+
+  .vel-btns-wrapper .btn__prev {
+    left: 28px !important;
+  }
+}
+
 /* Remove global background override - let themes handle this */
 
 /* High contrast mode support */

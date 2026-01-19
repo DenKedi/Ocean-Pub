@@ -264,12 +264,13 @@ const closeLightbox = () => {
 }
 
 .page-title {
-  font-size: clamp(2.5rem, 5vw, 4rem);
+  font-size: clamp(2.1rem, 5.2vw, 3.4rem);
   margin-bottom: 1rem;
   font-weight: 300;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   font-family: var(--font-primary);
+  white-space: nowrap;
 }
 
 .page-subtitle {
