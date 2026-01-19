@@ -64,12 +64,12 @@ router.post('/category-image', upload.single('image'), async (req, res) => {
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '-')
       .replace(/-+/g, '-');
-    const filename = `${sanitizedName}-${Date.now()}.jpg`;
+    const filename = `${sanitizedName}-${Date.now()}.webp`;
     const outputPath = path.join(categoriesDir, filename);
 
-    // Bild mit Sharp optimieren (ohne Resize, da bereits zugeschnitten)
+    // Bild mit Sharp zu WebP konvertieren und optimieren
     await sharp(req.file.path)
-      .jpeg({ quality: 85 })
+      .webp({ quality: 85, effort: 4 })
       .toFile(outputPath);
 
     // Temporäre Datei löschen
@@ -114,12 +114,12 @@ router.post('/event-image', upload.single('image'), async (req, res) => {
       .toLowerCase()
       .replace(/[^a-z0-9]/g, '-')
       .replace(/-+/g, '-');
-    const filename = `${sanitizedName}-${Date.now()}.jpg`;
+    const filename = `${sanitizedName}-${Date.now()}.webp`;
     const outputPath = path.join(eventsDir, filename);
 
-    // Bild mit Sharp optimieren (ohne Resize, da bereits zugeschnitten)
+    // Bild mit Sharp zu WebP konvertieren und optimieren
     await sharp(req.file.path)
-      .jpeg({ quality: 85 })
+      .webp({ quality: 85, effort: 4 })
       .toFile(outputPath);
 
     // Temporäre Datei löschen

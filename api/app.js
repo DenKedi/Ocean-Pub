@@ -15,7 +15,7 @@ const logger = require('./middleware/logger');
 const app = express();
 
 // CORS Configuration
-const allowedDomains = ["http://localhost:5173", "https://pallas.bleck.it"];
+const allowedDomains = ["http://localhost:5172", "https://pallas.bleck.it"];
 if (process.env.FRONTEND_URL) {
   allowedDomains.push(process.env.FRONTEND_URL);
 }
@@ -95,5 +95,5 @@ mongoose.connect(process.env.MONGO_URI)
   mongoose.set("debug", false);
 
 // Start the server
-const PORT = process.env.PORT || 5050;
+const PORT = process.env.PORT || 5051;
 app.listen(PORT, () => logger.serverStart(PORT));

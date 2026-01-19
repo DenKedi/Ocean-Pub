@@ -65,7 +65,7 @@
         <div class="events-grid">
           <div v-for="event in upcomingEvents" :key="event._id" class="event-card theme-container-bg">
             <div class="event-image">
-              <img :src="event.finalImageUrl || event.eventImageUrl || 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Event'" :alt="event.title" />
+              <img :src="getEventImageUrl(event)" :alt="event.title" />
             </div>
             <div class="event-content">
               <div class="event-header">
@@ -107,9 +107,10 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/utils/api'
+import { getImageUrl } from '@/utils/imageUrl'
 
 const router = useRouter()
 const upcomingEvents = ref([])
@@ -140,6 +141,12 @@ const fetchEvents = async () => {
   } finally {
     isLoading.value = false
   }
+}
+
+// Get proper image URL
+const getEventImageUrl = (event) => {
+  const imagePath = event.eventImageUrl || event.category?.defaultImageUrl
+  return imagePath ? getImageUrl(imagePath) : 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Event'
 }
 
 // Format date for display
@@ -408,6 +415,7 @@ onMounted(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  white-space: pre-wrap;
 }
 
 .event-footer {

@@ -2,6 +2,7 @@
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import api from '../utils/api'
+import { getImageUrl } from '../utils/imageUrl'
 import bgImage from '@/assets/pictures/decke5.webp'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -86,10 +87,9 @@ const formatPrice = (price) => {
 }
 
 // Get image URL with fallback
-const getImageUrl = (event) => {
-  if (event.eventImageUrl) return event.eventImageUrl
-  if (event.category?.defaultImageUrl) return event.category.defaultImageUrl
-  return '/images/placeholders/event_default_bw.webp'
+const getEventImageUrl = (event) => {
+  const imagePath = event.eventImageUrl || event.category?.defaultImageUrl
+  return imagePath ? getImageUrl(imagePath) : '/images/placeholders/event_default_bw.webp'
 }
 
 // Format rooms
@@ -281,7 +281,7 @@ onUnmounted(() => {
               <!-- Event Image (Square) -->
               <div class="event-image-container">
                 <img 
-                  :src="getImageUrl(event)" 
+                  :src="getEventImageUrl(event)" 
                   :alt="event.title"
                   class="event-image"
                   loading="lazy"
@@ -357,7 +357,7 @@ onUnmounted(() => {
                 <!-- Event Image (Square, smaller) -->
                 <div class="list-image-container">
                   <img 
-                    :src="getImageUrl(event)" 
+                    :src="getEventImageUrl(event)" 
                     :alt="event.title"
                     class="list-image"
                     loading="lazy"
@@ -799,6 +799,7 @@ onUnmounted(() => {
   font-size: 0.9rem;
   line-height: 1.6;
   margin-bottom: 1rem;
+  white-space: pre-wrap;
 }
 
 .event-footer {
@@ -938,6 +939,7 @@ onUnmounted(() => {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  white-space: pre-wrap;
 }
 
 .list-price-container {

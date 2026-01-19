@@ -24,6 +24,16 @@ const scrollToSection = (sectionId) => {
   }
   isMenuOpen.value = false;
 };
+
+// Navigation items for both desktop and mobile
+const navItems = [
+  { path: '/', label: 'Home' },
+  { path: '/events', label: 'Events' },
+  { path: '/stories', label: 'Stories' },
+  { path: '/friends', label: 'Friends' },
+  { path: '/art', label: 'Art' },
+  { path: '/request', label: 'Request' }
+];
 </script>
 
 <template>
@@ -35,33 +45,40 @@ const scrollToSection = (sectionId) => {
       :style="{ backgroundImage: `url(${props.bgImage})` }"
     ></div>
 
-    <!-- Burger Menu -->
-    <BurgerMenu :is-open="isMenuOpen" @toggle="toggleMenu" />
+    <!-- Desktop Navigation Bar -->
+    <nav class="desktop-nav">
+      <div class="desktop-nav-content">
+        <router-link 
+          v-for="item in navItems" 
+          :key="item.path"
+          :to="item.path" 
+          class="desktop-nav-link"
+        >
+          {{ item.label }}
+        </router-link>
+      </div>
+    </nav>
 
-    <!-- Navigation Overlay -->
+    <!-- Burger Menu (Mobile only) -->
+    <div class="mobile-menu-wrapper">
+      <BurgerMenu :is-open="isMenuOpen" @toggle="toggleMenu" />
+    </div>
+
+    <!-- Navigation Overlay (Mobile) -->
     <nav class="main-nav" :class="{ 'nav-open': isMenuOpen }">
       <div class="nav-logo">
         <img :src="iconImage" alt="Pallas Logo" class="logo-image" />
       </div>
       
       <div class="nav-content">
-        <router-link to="/" @click="isMenuOpen = false" class="nav-link">
-          <span class="prefix">Pallas</span><span class="dot">.</span>Home
-        </router-link>
-              <router-link to="/drinks" @click="isMenuOpen = false" class="nav-link">
-          <span class="prefix">Pallas</span><span class="dot">.</span>Drinks
-        </router-link>
-        <router-link to="/events" @click="isMenuOpen = false" class="nav-link">
-          <span class="prefix">Pallas</span><span class="dot">.</span>Events
-        </router-link>
-        <router-link to="/stories" @click="isMenuOpen = false" class="nav-link">
-          <span class="prefix">Pallas</span><span class="dot">.</span>Stories
-        </router-link>
-        <router-link to="/friends" @click="isMenuOpen = false" class="nav-link">
-          <span class="prefix">Pallas</span><span class="dot">.</span>Friends
-        </router-link>
-        <router-link to="/request" @click="isMenuOpen = false" class="nav-link">
-          <span class="prefix">Pallas</span><span class="dot">.</span>Request
+        <router-link 
+          v-for="item in navItems" 
+          :key="item.path"
+          :to="item.path" 
+          @click="isMenuOpen = false" 
+          class="nav-link"
+        >
+          <span class="prefix">Pallas</span><span class="dot">.</span>{{ item.label }}
         </router-link>
       </div>
 
@@ -116,6 +133,71 @@ const scrollToSection = (sectionId) => {
   background: transparent;
 }
 
+/* ===== Desktop Navigation Bar ===== */
+.desktop-nav {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  padding: 1.5rem 3rem;
+}
+
+.desktop-nav-content {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+}
+
+.desktop-nav-link {
+  color: rgba(255, 255, 255, 0.7);
+  text-decoration: none;
+  font-size: 0.75rem;
+  font-weight: 400;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  padding: 0.5rem 0;
+  position: relative;
+  transition: color 0.3s ease;
+}
+
+.desktop-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  width: 0;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.5);
+  transition: all 0.3s ease;
+  transform: translateX(-50%);
+}
+
+.desktop-nav-link:hover {
+  color: rgba(255, 255, 255, 1);
+}
+
+.desktop-nav-link:hover::after {
+  width: 100%;
+}
+
+.desktop-nav-link.router-link-exact-active {
+  color: rgba(255, 255, 255, 1);
+}
+
+.desktop-nav-link.router-link-exact-active::after {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.8);
+}
+
+/* ===== Mobile Menu Wrapper ===== */
+.mobile-menu-wrapper {
+  display: block;
+}
+
+/* ===== Mobile Navigation Overlay ===== */
 .main-nav {
   position: fixed;
   top: 0;
@@ -129,7 +211,7 @@ const scrollToSection = (sectionId) => {
   align-items: center;
   z-index: 999;
   padding: 4rem 2rem 2rem;
-  overflow-y: auto; /* Allow scrolling */
+  overflow-y: auto;
   overflow-x: hidden;
 }
 
@@ -208,30 +290,22 @@ const scrollToSection = (sectionId) => {
   color: #87ceeb;
 }
 
-/* Mobile Nav Optimization */
-@media (max-width: 768px) {
-  .nav-link {
-    font-size: 1rem; /* Reduced from 1.2rem */
-    padding: 0.2rem 0;
-  }
-  
-  .logo-image {
-    width: 60px; /* Smaller logo */
-  }
-}
-
-/* Desktop Navigation */
+/* ===== Desktop: Show navbar, hide burger ===== */
 @media (min-width: 1024px) {
-  .main-nav {
-    display: none !important; /* Hide overlay nav on desktop */
+  .desktop-nav {
+    display: block;
   }
 
-  .main-nav.nav-open {
-    display: flex !important;
+  .mobile-menu-wrapper {
+    display: none;
+  }
+
+  .main-nav {
+    display: none !important;
   }
 }
 
-/* Mobile Optimization */
+/* ===== Mobile Optimization ===== */
 @media (max-width: 767px) {
   .nav-link {
     font-size: 1rem;
@@ -255,6 +329,10 @@ const scrollToSection = (sectionId) => {
   .nav-footer {
     gap: 2.5rem;
     padding: 1rem 0 2rem;
+  }
+  
+  .logo-image {
+    width: 60px;
   }
 }
 </style>

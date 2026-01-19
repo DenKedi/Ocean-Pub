@@ -3,7 +3,7 @@
 :root {
   /* PALLAS Typography - Custom Fonts */
   --font-primary: 'Krona One', 'Montserrat', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-secondary: 'Krona One', 'Source Sans 3', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+--font-secondary:  'Krona One', 'Source Sans 3', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
   
   font-family: 'Krona One', system-ui, sans-serif;
   line-height: 1.5;
