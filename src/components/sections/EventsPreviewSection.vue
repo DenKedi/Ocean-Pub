@@ -80,7 +80,7 @@
                   <span class="month">{{ formatDate(event.startTime).month }}</span>
                 </div>
               </div>
-              <p class="event-description theme-text-secondary">{{ event.description || 'Mehr Informationen folgen bald!' }}</p>
+              <p class="event-description theme-text-secondary">{{ getPreviewDescription(event.description) }}</p>
               <div class="event-footer">
                 <div class="event-meta theme-text-muted">
                   <span class="event-time">{{ formatTime(event.startTime) }}</span>
@@ -147,6 +147,14 @@ const fetchEvents = async () => {
 const getEventImageUrl = (event) => {
   const imagePath = event.eventImageUrl || event.category?.defaultImageUrl
   return imagePath ? getImageUrl(imagePath) : 'https://via.placeholder.com/400x300/1a1a1a/ffffff?text=Event'
+}
+
+// Get description up to first line break
+const getPreviewDescription = (description) => {
+  if (!description) return 'Mehr Informationen folgen bald!'
+  const firstLineBreak = description.indexOf('\n')
+  if (firstLineBreak === -1) return description
+  return description.substring(0, firstLineBreak)
 }
 
 // Format date for display
@@ -406,16 +414,11 @@ onMounted(() => {
   padding: 0;
 }
 
-.event-button {
+.event-description {
   font-size: 0.9rem;
   line-height: 1.5;
   margin-bottom: 0.75rem;
   opacity: 0.9;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  white-space: pre-wrap;
 }
 
 .event-footer {
