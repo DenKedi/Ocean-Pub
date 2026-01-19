@@ -180,6 +180,15 @@ p, span, div, h1, h2, h3, h4, h5, h6 {
   font-weight: 400 !important;
 }
 
+/* iOS auto-linking underline fix */
+a[x-apple-data-detectors],
+a[href^="tel"],
+a[href^="mailto"] {
+  color: inherit !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
 /* vue-easy-lightbox overlay fix */
 .vel-app,
 .vel-modal {
