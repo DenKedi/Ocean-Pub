@@ -25,9 +25,8 @@ const scrollToSection = (sectionId) => {
           <h4 class="theme-text-primary">Navigation</h4>
           <div class="footer-links">
             <a @click="scrollToSection('kontakt')" class="footer-link theme-text-secondary">Kontakt</a>
-            <a @click="scrollToSection('speisekarte')" class="footer-link theme-text-secondary">Speisekarte</a>
+            <a @click="scrollToSection('speisekarte')" class="footer-link theme-text-secondary">Drinks-Menü</a>
             <a @click="scrollToSection('events')" class="footer-link theme-text-secondary">Events</a>
-            <a @click="scrollToSection('ueber-uns')" class="footer-link theme-text-secondary">Über uns</a>
           </div>
         </div>
         
@@ -219,6 +218,15 @@ const scrollToSection = (sectionId) => {
   display: block;
   margin-bottom: 0.5rem;
   text-decoration: none !important;
+}
+
+/* iOS auto-linking (tel/mail) underline fix */
+:deep(a[x-apple-data-detectors]),
+:deep(a[href^="tel"]),
+:deep(a[href^="mailto"]) {
+  color: inherit !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
 }
 
 @media (max-width: 480px) {
