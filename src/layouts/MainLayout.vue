@@ -1,7 +1,6 @@
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, onUnmounted } from "vue";
 import BurgerMenu from "../components/BurgerMenu.vue";
-import { currentTheme } from "../stores/themeStore.js";
 import iconImage from "../assets/icons/Pallas_Logo_III-cropped.svg";
 
 const props = defineProps({
@@ -12,10 +11,34 @@ const props = defineProps({
 });
 
 const isMenuOpen = ref(false);
+const isNavHidden = ref(false);
+const lastScrollY = ref(0);
 
 const toggleMenu = () => {
   isMenuOpen.value = !isMenuOpen.value;
 };
+
+const handleScroll = () => {
+  const currentScrollY = window.scrollY;
+  
+  // Show navbar if scrolling up or at the very top
+  // Hide navbar if scrolling down and past 50px
+  if (currentScrollY > lastScrollY.value && currentScrollY > 50) {
+    isNavHidden.value = true;
+  } else {
+    isNavHidden.value = false;
+  }
+  
+  lastScrollY.value = currentScrollY;
+};
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll, { passive: true });
+});
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll);
+});
 
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId);
@@ -46,7 +69,7 @@ const navItems = [
     ></div>
 
     <!-- Desktop Navigation Bar -->
-    <nav class="desktop-nav">
+    <nav class="desktop-nav" :class="{ 'nav-hidden': isNavHidden }">
       <div class="desktop-nav-content">
         <router-link 
           v-for="item in navItems" 
@@ -142,6 +165,11 @@ const navItems = [
   right: 0;
   z-index: 1000;
   padding: 1.5rem 3rem;
+  transition: transform 0.3s ease;
+}
+
+.desktop-nav.nav-hidden {
+  transform: translateY(-100%);
 }
 
 .desktop-nav-content {
