@@ -3,7 +3,6 @@ import HomePage from '../views/HomePage.vue'
 import StoriesPage from '../views/StoriesPage.vue'
 import EventsPage from '../views/EventsPage.vue'
 import ParallaxPage from '../views/ParallaxPage.vue'
-import DrinksPage from '../views/DrinksPage.vue'
 import FriendsPage from '../views/FriendsPage.vue'
 import RequestPage from '../views/RequestPage.vue'
 import ImpressumPage from '../components/pages/ImpressumPage.vue'
@@ -35,7 +34,9 @@ const routes = [
   {
     path: '/drinks',
     name: 'Drinks',
-    component: DrinksPage
+    beforeEnter() {
+      window.location.href = `${import.meta.env.BASE_URL}Karte_Pallas.pdf`
+    }
   },
   {
     path: '/friends',
