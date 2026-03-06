@@ -9,6 +9,7 @@ import 'vue-advanced-cropper/dist/style.css'
 const router = useRouter()
 const { state: authState, logout } = useAuth()
 const API_URL = import.meta.env.VITE_API_URL
+const API_BASE = import.meta.env.VITE_API_BASE_URL
 const BASE_URL = import.meta.env.BASE_URL || 'https://pallas.bleck.it'
 
 // State
@@ -18,6 +19,7 @@ const loading = ref(true)
 const showEventModal = ref(false)
 const showCategoryModal = ref(false)
 const showCropperModal = ref(false)
+const showPreview = ref(false)
 const editingEvent = ref(null)
 
 // Form State
@@ -30,7 +32,9 @@ const form = ref({
   endTime: '',
   price: 0,
   eventImageUrl: '',
-  extra_label: ''
+  extra_label: '',
+  link_text: '',
+  link_url: ''
 })
 const formError = ref('')
 const formLoading = ref(false)
@@ -63,45 +67,97 @@ const activeContextMenu = ref(null)
 // Mobile Menu State
 const mobileMenuOpen = ref(false)
 
-// Computed
-const sortedEvents = computed(() => {
-  const sorted = [...events.value].sort((a, b) => {
-    let aVal, bVal
-    
-    switch (sortBy.value) {
-      case 'title':
-        aVal = a.title?.toLowerCase() || ''
-        bVal = b.title?.toLowerCase() || ''
-        break
-      case 'category':
-        aVal = a.category?.name?.toLowerCase() || ''
-        bVal = b.category?.name?.toLowerCase() || ''
-        break
-      case 'startTime':
-        aVal = new Date(a.startTime)
-        bVal = new Date(b.startTime)
-        break
-      case 'price':
-        aVal = a.price || 0
-        bVal = b.price || 0
-        break
-      default:
-        return 0
-    }
-    
-    if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1
-    if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1
-    return 0
-  })
-  
-  return sorted
-})
+// History section collapse
+const historyOpen = ref(false)
 
+// Section Navigation State
+const activeSection = ref('events')
+
+// Rooms State
+const roomsData = ref({ sketch1: [], sketch2: [] })
+const roomsLoading = ref(false)
+const roomsSaving = ref(false)
+const roomsSaveSuccess = ref(false)
+const editingRoom = ref(null)       // { sketch, index }
+const roomForm = ref({})
+const roomFeatureInput = ref('')
+const roomImageInput = ref(null)
+const roomImagesUploading = ref(false)
+const dragImageIdx = ref(null)
+const dragOverIdx = ref(null)
+
+// Computed
 const stats = computed(() => ({
   total: events.value.length,
   upcoming: events.value.filter(e => new Date(e.startTime) >= new Date()).length,
   categories: categories.value.length
 }))
+
+const futureEvents = computed(() => {
+  const n = new Date()
+  return [...events.value]
+    .filter(e => new Date(e.startTime) >= n)
+    .sort((a, b) => {
+      let aVal, bVal
+      switch (sortBy.value) {
+        case 'title':    aVal = a.title?.toLowerCase() || ''; bVal = b.title?.toLowerCase() || ''; break
+        case 'category': aVal = a.category?.name?.toLowerCase() || ''; bVal = b.category?.name?.toLowerCase() || ''; break
+        case 'price':    aVal = a.price || 0; bVal = b.price || 0; break
+        default:         aVal = new Date(a.startTime); bVal = new Date(b.startTime)
+      }
+      if (aVal < bVal) return sortOrder.value === 'asc' ? -1 : 1
+      if (aVal > bVal) return sortOrder.value === 'asc' ? 1 : -1
+      return 0
+    })
+})
+
+const pastEvents = computed(() => {
+  const n = new Date()
+  return [...events.value]
+    .filter(e => new Date(e.startTime) < n)
+    .sort((a, b) => new Date(b.startTime) - new Date(a.startTime)) // always newest first
+})
+
+const previewData = computed(() => {
+  const cat = categories.value.find(c => c._id === form.value.category)
+  const image = eventImagePreview.value || (cat?.defaultImageUrl ? getFullImageUrl(cat.defaultImageUrl) : null) || '/images/placeholders/event_default_bw.webp'
+  return {
+    title: form.value.title || 'Event-Titel',
+    description: form.value.description,
+    image,
+    category: cat || null,
+    extra_label: form.value.extra_label,
+    startTime: form.value.startTime,
+    endTime: form.value.endTime,
+    room: form.value.room ? form.value.room.split(',').map(r => r.trim()).filter(Boolean) : [],
+    price: parseFloat(form.value.price) || 0,
+    link_text: form.value.link_text,
+    link_url: form.value.link_url,
+  }
+})
+
+function previewFormatDate(dateStr) {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleDateString('de-DE', { weekday: 'short', day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+function previewFormatTime(dateStr) {
+  if (!dateStr) return ''
+  return new Date(dateStr).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr'
+}
+
+function previewFormatTimeRange(start, end) {
+  if (!start) return ''
+  const s = previewFormatTime(start)
+  if (!end) return s
+  const e = new Date(end).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' })
+  return `${s} – ${e} Uhr`
+}
+
+function previewFormatPrice(price) {
+  if (!price || price === 0) return 'Eintritt frei'
+  return `${price}€`
+}
 
 function setSorting(field) {
   if (sortBy.value === field) {
@@ -138,7 +194,7 @@ const selectedCategoryImage = computed(() => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([fetchEvents(), fetchCategories()])
+  await Promise.all([fetchEvents(), fetchCategories(), fetchRooms()])
   loading.value = false
   
   // Close context menu on click outside
@@ -150,6 +206,112 @@ onBeforeUnmount(() => {
 })
 
 // Methods
+async function fetchRooms() {
+  roomsLoading.value = true
+  try {
+    const { data } = await api.get('/rooms')
+    roomsData.value = data
+  } catch (err) {
+    console.error('Fehler beim Laden der Räume:', err)
+  } finally {
+    roomsLoading.value = false
+  }
+}
+
+function openRoomEditor(sketch, index) {
+  const spot = roomsData.value[sketch][index]
+  editingRoom.value = { sketch, index }
+  roomForm.value = JSON.parse(JSON.stringify(spot))
+  if (!Array.isArray(roomForm.value.features)) roomForm.value.features = []
+  if (!Array.isArray(roomForm.value.images)) roomForm.value.images = []
+  roomFeatureInput.value = ''
+}
+
+function addRoomFeature() {
+  const val = roomFeatureInput.value.trim()
+  if (val && !roomForm.value.features.includes(val)) {
+    roomForm.value.features.push(val)
+  }
+  roomFeatureInput.value = ''
+}
+
+function removeRoomFeature(index) {
+  roomForm.value.features.splice(index, 1)
+}
+
+async function saveRoom() {
+  if (!editingRoom.value) return
+  roomsSaving.value = true
+  roomsSaveSuccess.value = false
+  try {
+    const { sketch, index } = editingRoom.value
+    const { id, images, ...fields } = roomForm.value
+    await api.patch(`/rooms/${sketch}/${id}`, fields)
+    roomsData.value[sketch][index] = { ...roomsData.value[sketch][index], ...fields }
+    roomsSaveSuccess.value = true
+    setTimeout(() => { roomsSaveSuccess.value = false }, 3000)
+  } catch (err) {
+    console.error('Fehler beim Speichern:', err)
+    alert('Fehler beim Speichern der Raumdaten.')
+  } finally {
+    roomsSaving.value = false
+  }
+}
+
+async function uploadRoomImages(event) {
+  const files = event.target.files
+  if (!files?.length) return
+  roomImagesUploading.value = true
+  try {
+    const { sketch, index } = editingRoom.value
+    const id = roomsData.value[sketch][index].id
+    const formData = new FormData()
+    for (const file of files) formData.append('images', file)
+    const { data } = await api.post(`/rooms/${sketch}/${id}/images`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    roomForm.value.images = data.images
+    roomsData.value[sketch][index].images = data.images
+  } catch (e) {
+    alert('Fehler beim Hochladen der Bilder.')
+  } finally {
+    roomImagesUploading.value = false
+    event.target.value = ''
+  }
+}
+
+async function deleteRoomImage(filename) {
+  if (!confirm(`Bild "${filename}" wirklich löschen?`)) return
+  const { sketch, index } = editingRoom.value
+  const id = roomsData.value[sketch][index].id
+  try {
+    const { data } = await api.delete(`/rooms/${sketch}/${id}/images/${encodeURIComponent(filename)}`)
+    roomForm.value.images = data.images
+    roomsData.value[sketch][index].images = data.images
+  } catch (e) {
+    alert('Fehler beim Löschen des Bildes.')
+  }
+}
+
+async function onImageDrop(targetIdx) {
+  const fromIdx = dragImageIdx.value
+  dragOverIdx.value = null
+  dragImageIdx.value = null
+  if (fromIdx === null || fromIdx === targetIdx) return
+  const imgs = [...roomForm.value.images]
+  const [moved] = imgs.splice(fromIdx, 1)
+  imgs.splice(targetIdx, 0, moved)
+  roomForm.value.images = imgs
+  const { sketch, index } = editingRoom.value
+  const id = roomsData.value[sketch][index].id
+  try {
+    await api.put(`/rooms/${sketch}/${id}/images/order`, { images: imgs })
+    roomsData.value[sketch][index].images = imgs
+  } catch (e) {
+    console.error('Reihenfolge konnte nicht gespeichert werden', e)
+  }
+}
+
 async function fetchEvents() {
   try {
     const { data } = await api.get('/events?limit=100')
@@ -185,7 +347,9 @@ function openEditEventModal(event) {
     endTime: event.endTime ? formatDateTimeLocal(event.endTime) : '',
     price: event.price || 0,
     eventImageUrl: event.eventImageUrl || '',
-    extra_label: event.extra_label || ''
+    extra_label: event.extra_label || '',
+    link_text: event.link_text || '',
+    link_url: event.link_url || ''
   }
   // Vorschau für bestehendes Event-Bild
   if (event.eventImageUrl) {
@@ -210,7 +374,9 @@ function resetForm() {
     endTime: '',
     price: 0,
     eventImageUrl: '',
-    extra_label: ''
+    extra_label: '',
+    link_text: '',
+    link_url: ''
   }
   eventImageFile.value = null
   eventImagePreview.value = ''
@@ -268,7 +434,9 @@ async function handleSubmit() {
       endTime: form.value.endTime ? new Date(form.value.endTime).toISOString() : null,
       price: parseFloat(form.value.price) || 0,
       eventImageUrl: eventImageUrl || null,
-      extra_label: form.value.extra_label || null
+      extra_label: form.value.extra_label || null,
+      link_text: form.value.link_text || null,
+      link_url: form.value.link_url || null
     }
 
     if (editingEvent.value) {
@@ -453,8 +621,11 @@ async function handleCategorySubmit() {
       
       <div class="mobile-menu-wrapper" :class="{ open: mobileMenuOpen }">
         <nav class="sidebar-nav">
-          <a href="#" class="nav-item active">
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'events' }" @click.prevent="activeSection = 'events'">
             Events
+          </a>
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'rooms' }" @click.prevent="activeSection = 'rooms'">
+            Räume
           </a>
         </nav>
 
@@ -486,9 +657,9 @@ async function handleCategorySubmit() {
       <div v-else class="content-body">
 
         <!-- All Events -->
-        <section class="section">
+        <section v-if="activeSection === 'events'" class="section">
           <div class="section-header">
-            <h2>Alle Events ({{ events.length }})</h2>
+            <h2>Demnächst <span class="event-count">({{ futureEvents.length }})</span></h2>
             <div class="sort-controls">
               <label>Sortieren nach:</label>
               <select v-model="sortBy" class="sort-select">
@@ -502,12 +673,10 @@ async function handleCategorySubmit() {
               </button>
             </div>
           </div>
-          
-          <div v-if="events.length === 0" class="empty-state">
-            <p>Keine Events vorhanden</p>
-            <button @click="openNewEventModal" class="btn-secondary">
-              Event erstellen
-            </button>
+
+          <div v-if="futureEvents.length === 0" class="empty-state">
+            <p>Keine kommenden Events vorhanden</p>
+            <button @click="openNewEventModal" class="btn-secondary">Event erstellen</button>
           </div>
 
           <div v-else class="events-table">
@@ -531,7 +700,7 @@ async function handleCategorySubmit() {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="event in sortedEvents" :key="event._id">
+                <tr v-for="event in futureEvents" :key="event._id">
                   <td>{{ event.title }}</td>
                   <td>
                     <span class="category-badge" :style="{ backgroundColor: event.category?.color || '#333' }">
@@ -543,16 +712,53 @@ async function handleCategorySubmit() {
                   <td>{{ event.price ? `${event.price} €` : 'Kostenlos' }}</td>
                   <td class="actions">
                     <div class="context-menu-wrapper">
-                      <button @click.stop="toggleContextMenu(event._id)" class="btn-context-menu" title="Aktionen">
-                        ⋮
-                      </button>
+                      <button @click.stop="toggleContextMenu(event._id)" class="btn-context-menu" title="Aktionen">⋮</button>
                       <div v-if="activeContextMenu === event._id" class="context-menu" @click.stop>
-                        <button @click="openEditEventModal(event); closeContextMenu()" class="context-menu-item">
-                          Bearbeiten
-                        </button>
-                        <button @click="deleteEvent(event); closeContextMenu()" class="context-menu-item danger">
-                          Löschen
-                        </button>
+                        <button @click="openEditEventModal(event); closeContextMenu()" class="context-menu-item">Bearbeiten</button>
+                        <button @click="deleteEvent(event); closeContextMenu()" class="context-menu-item danger">Löschen</button>
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- History -->
+          <div class="history-header" @click="historyOpen = !historyOpen">
+            <h2>Vergangene Events <span class="event-count">({{ pastEvents.length }})</span></h2>
+            <span class="history-toggle">{{ historyOpen ? '↑' : '↓' }}</span>
+          </div>
+
+          <div v-if="historyOpen" class="events-table history-table">
+            <table>
+              <thead>
+                <tr>
+                  <th>Titel</th>
+                  <th>Kategorie</th>
+                  <th>Datum</th>
+                  <th>Raum</th>
+                  <th>Preis</th>
+                  <th>Aktionen</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="event in pastEvents" :key="event._id" class="past-row">
+                  <td>{{ event.title }}</td>
+                  <td>
+                    <span class="category-badge" :style="{ backgroundColor: event.category?.color || '#333' }">
+                      {{ event.category?.name || 'Keine' }}
+                    </span>
+                  </td>
+                  <td>{{ formatDate(event.startTime) }}</td>
+                  <td>{{ Array.isArray(event.room) ? event.room.join(', ') : event.room }}</td>
+                  <td>{{ event.price ? `${event.price} €` : 'Kostenlos' }}</td>
+                  <td class="actions">
+                    <div class="context-menu-wrapper">
+                      <button @click.stop="toggleContextMenu(event._id)" class="btn-context-menu" title="Aktionen">⋮</button>
+                      <div v-if="activeContextMenu === event._id" class="context-menu" @click.stop>
+                        <button @click="openEditEventModal(event); closeContextMenu()" class="context-menu-item">Bearbeiten</button>
+                        <button @click="deleteEvent(event); closeContextMenu()" class="context-menu-item danger">Löschen</button>
                       </div>
                     </div>
                   </td>
@@ -561,131 +767,354 @@ async function handleCategorySubmit() {
             </table>
           </div>
         </section>
+
+        <!-- Rooms Section -->
+        <section v-if="activeSection === 'rooms'" class="section">
+          <div class="section-header">
+            <h2>Räume &amp; Hotspots</h2>
+          </div>
+
+          <div v-if="roomsLoading" class="loading-state"><div class="spinner"></div></div>
+          <div v-else class="rooms-editor">
+
+            <!-- Spot List -->
+            <div class="rooms-spot-list">
+              <div
+                v-for="(sketch, sketchKey) in roomsData"
+                :key="sketchKey"
+                class="rooms-sketch-group"
+              >
+                <p class="rooms-sketch-label">{{ sketchKey === 'sketch1' ? 'Sketch 1 – Bar/DJ' : 'Sketch 2 – Weitere Räume' }}</p>
+                <button
+                  v-for="(spot, idx) in sketch"
+                  :key="spot.id"
+                  class="rooms-spot-btn"
+                  :class="{ active: editingRoom && editingRoom.sketch === sketchKey && editingRoom.index === idx }"
+                  @click="openRoomEditor(sketchKey, idx)"
+                >
+                  {{ spot.label }}
+                </button>
+              </div>
+            </div>
+
+            <!-- Editor Form -->
+            <div v-if="editingRoom" class="rooms-form">
+              <h3 class="rooms-form-title">{{ roomForm.label }}</h3>
+
+              <div class="form-group">
+                <label>Label</label>
+                <input v-model="roomForm.label" class="form-input" />
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Kapazität</label>
+                  <input v-model="roomForm.capacity" class="form-input" placeholder="z.B. 300 Personen" />
+                </div>
+                <div class="form-group">
+                  <label>Fläche</label>
+                  <input v-model="roomForm.area" class="form-input" placeholder="z.B. 170 qm" />
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Beschreibung</label>
+                <textarea v-model="roomForm.description" class="form-input rooms-textarea" rows="6" />
+              </div>
+
+              <div class="form-group">
+                <label>Features</label>
+                <div class="feature-tags-editor">
+                  <span
+                    v-for="(f, fi) in roomForm.features"
+                    :key="fi"
+                    class="feature-tag-edit"
+                  >
+                    {{ f }}
+                    <button @click="removeRoomFeature(fi)" class="feature-tag-remove">×</button>
+                  </span>
+                </div>
+                <div class="feature-add-row">
+                  <input
+                    v-model="roomFeatureInput"
+                    class="form-input"
+                    placeholder="Feature hinzufügen…"
+                    @keydown.enter.prevent="addRoomFeature"
+                  />
+                  <button @click="addRoomFeature" class="btn-secondary">+</button>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label>Zusatztext (optional)</label>
+                <input v-model="roomForm.extraText" class="form-input" placeholder="z.B. Kombination mit Bar 5 möglich" />
+              </div>
+
+              <!-- Image Management -->
+              <div class="form-group">
+                <div class="room-images-header">
+                  <label>Bilder</label>
+                  <button
+                    type="button"
+                    class="btn-secondary btn-sm"
+                    :disabled="roomImagesUploading"
+                    @click="roomImageInput.click()"
+                  >
+                    {{ roomImagesUploading ? 'Lädt hoch…' : '+ Bilder hinzufügen' }}
+                  </button>
+                  <input
+                    ref="roomImageInput"
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    class="hidden-file-input"
+                    @change="uploadRoomImages"
+                  />
+                </div>
+
+                <div v-if="roomForm.images?.length" class="room-images-grid">
+                  <div
+                    v-for="(img, imgIdx) in roomForm.images"
+                    :key="img"
+                    class="room-img-item"
+                    draggable="true"
+                    :class="{ 'is-drag-over': dragOverIdx === imgIdx }"
+                    @dragstart="dragImageIdx = imgIdx"
+                    @dragover.prevent="dragOverIdx = imgIdx"
+                    @dragleave="dragOverIdx = null"
+                    @drop.prevent="onImageDrop(imgIdx)"
+                  >
+                    <img
+                      :src="`${API_BASE}/uploads/rooms/${roomForm.imageFolder}/${img}`"
+                      class="room-img-thumb"
+                      :alt="img"
+                    />
+                    <button
+                      type="button"
+                      class="img-delete-btn"
+                      title="Löschen"
+                      @click="deleteRoomImage(img)"
+                    >×</button>
+                    <div class="img-drag-handle" title="Zum Sortieren ziehen">⠿</div>
+                  </div>
+                </div>
+                <p v-else class="room-images-empty">Noch keine Bilder hochgeladen. Bilder werden automatisch zu WebP konvertiert.</p>
+              </div>
+
+              <div class="rooms-form-actions">
+                <button @click="saveRoom" class="btn-primary" :disabled="roomsSaving">
+                  {{ roomsSaving ? 'Speichern…' : 'Speichern' }}
+                </button>
+                <span v-if="roomsSaveSuccess" class="save-success">✓ Gespeichert</span>
+              </div>
+            </div>
+            <div v-else class="rooms-empty-hint">
+              <p>Wähle links einen Raum zum Bearbeiten aus.</p>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
 
     <!-- Event Modal -->
     <Teleport to="body">
       <div v-if="showEventModal" class="modal-overlay" @click.self="closeModal">
-        <div class="modal">
+        <div class="modal modal-with-preview">
           <div class="modal-header">
             <h2>{{ editingEvent ? 'Event bearbeiten' : 'Neues Event' }}</h2>
-            <button @click="closeModal" class="close-btn">×</button>
+            <div class="modal-header-actions">
+              <button type="button" class="preview-toggle-btn" @click="showPreview = !showPreview">
+                {{ showPreview ? 'Formular' : 'Vorschau' }}
+              </button>
+              <button @click="closeModal" class="close-btn">×</button>
+            </div>
           </div>
 
-          <form @submit.prevent="handleSubmit" class="modal-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label>Titel *</label>
-                <input v-model="form.title" type="text" required placeholder="Event-Titel" />
-              </div>
+          <div class="modal-body">
+            <!-- Form Column -->
+            <form @submit.prevent="handleSubmit" class="modal-form" :class="{ 'hidden-mobile': showPreview }">
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Titel *</label>
+                  <input v-model="form.title" type="text" required placeholder="Event-Titel" />
+                </div>
 
-              <div class="form-group">
-                <label>Kategorie *</label>
-                <div class="input-with-button">
-                  <select v-model="form.category" required>
-                    <option value="" disabled>Kategorie wählen</option>
-                    <option v-for="cat in categories" :key="cat._id" :value="cat._id">
-                      {{ cat.name }}
-                    </option>
-                  </select>
-                  <button type="button" @click="openCategoryModal" class="add-btn" title="Neue Kategorie">+</button>
+                <div class="form-group">
+                  <label>Kategorie *</label>
+                  <div class="input-with-button">
+                    <select v-model="form.category" required>
+                      <option value="" disabled>Kategorie wählen</option>
+                      <option v-for="cat in categories" :key="cat._id" :value="cat._id">
+                        {{ cat.name }}
+                      </option>
+                    </select>
+                    <button type="button" @click="openCategoryModal" class="add-btn" title="Neue Kategorie">+</button>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            <div class="form-group">
-              <label>Beschreibung</label>
-              <textarea v-model="form.description" rows="3" placeholder="Event-Beschreibung"></textarea>
-            </div>
-
-            <div class="form-row">
               <div class="form-group">
-                <label>Start *</label>
-                <input v-model="form.startTime" type="datetime-local" required />
+                <label>Beschreibung</label>
+                <textarea v-model="form.description" rows="3" placeholder="Event-Beschreibung"></textarea>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Start *</label>
+                  <input v-model="form.startTime" type="datetime-local" required />
+                </div>
+
+                <div class="form-group">
+                  <label>Ende</label>
+                  <input v-model="form.endTime" type="datetime-local" />
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Raum (Komma-getrennt)</label>
+                  <input v-model="form.room" type="text" placeholder="Hauptsaal, VIP Lounge" />
+                </div>
+
+                <div class="form-group">
+                  <label>Preis (€)</label>
+                  <input v-model.number="form.price" type="number" min="0" step="0.01" placeholder="0.00" />
+                </div>
               </div>
 
               <div class="form-group">
-                <label>Ende</label>
-                <input v-model="form.endTime" type="datetime-local" />
+                <label>Event-Bild</label>
+                <div class="image-upload-section">
+                  <div v-if="eventImagePreview || selectedCategoryImage" class="image-preview-wrapper">
+                    <img 
+                      :src="eventImagePreview || selectedCategoryImage" 
+                      alt="Event Vorschau" 
+                      class="image-preview"
+                    />
+                    <span v-if="!eventImagePreview && selectedCategoryImage" class="fallback-badge">
+                      Default
+                    </span>
+                    <span v-else-if="eventImagePreview" class="custom-badge">
+                      Eigenes Bild
+                    </span>
+                  </div>
+                  <div v-else class="image-placeholder">
+                    <span>Kein Bild (Kategorie wählen für Standard)</span>
+                  </div>
+                  <div class="image-upload-actions">
+                    <input 
+                      type="file" 
+                      ref="eventImageInput" 
+                      accept="image/*" 
+                      @change="handleEventImageChange" 
+                      style="display: none"
+                    />
+                    <button 
+                      type="button" 
+                      @click="$refs.eventImageInput.click()" 
+                      class="btn btn-secondary"
+                    >
+                      {{ eventImagePreview ? 'Bild ändern' : 'Bild hochladen' }}
+                    </button>
+                    <button 
+                      v-if="eventImagePreview" 
+                      type="button" 
+                      @click="eventImagePreview = null; eventImageFile = null" 
+                      class="btn btn-danger"
+                    >
+                      Eigenes Bild entfernen
+                    </button>
+                  </div>
+                  <small class="form-help">
+                    Optional: Lade ein eigenes Bild hoch oder nutze das Kategorie-Standardbild
+                  </small>
+                </div>
               </div>
-            </div>
 
-            <div class="form-row">
               <div class="form-group">
-                <label>Raum (Komma-getrennt)</label>
-                <input v-model="form.room" type="text" placeholder="Hauptsaal, VIP Lounge" />
+                <label>Extra Label</label>
+                <input v-model="form.extra_label" type="text" placeholder="z.B. 'Special Guest'" />
               </div>
 
-              <div class="form-group">
-                <label>Preis (€)</label>
-                <input v-model.number="form.price" type="number" min="0" step="0.01" placeholder="0.00" />
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Button Text</label>
+                  <input v-model="form.link_text" type="text" maxlength="15" placeholder="z.B. Tickets" />
+                </div>
+                <div class="form-group">
+                  <label>Button Link (URL)</label>
+                  <input v-model="form.link_url" type="url" placeholder="https://..." />
+                </div>
               </div>
-            </div>
 
-            <div class="form-group">
-              <label>Event-Bild</label>
-              <div class="image-upload-section">
-                <div v-if="eventImagePreview || selectedCategoryImage" class="image-preview-wrapper">
-                  <img 
-                    :src="eventImagePreview || selectedCategoryImage" 
-                    alt="Event Vorschau" 
-                    class="image-preview"
+              <div v-if="formError" class="error-message">{{ formError }}</div>
+
+              <div class="modal-actions">
+                <button type="button" @click="closeModal" class="btn-secondary">Abbrechen</button>
+                <button type="submit" class="btn-primary" :disabled="formLoading">
+                  {{ formLoading ? 'Speichern...' : (editingEvent ? 'Aktualisieren' : 'Erstellen') }}
+                </button>
+              </div>
+            </form>
+
+            <!-- Preview Column -->
+            <div class="modal-preview-col" :class="{ 'visible-mobile': showPreview }">
+              <p class="preview-label">Vorschau</p>
+              <article class="preview-event-card">
+                <div class="preview-image-container">
+                  <img
+                    :src="previewData.image"
+                    alt="Vorschau"
+                    class="preview-image"
+                    @error="$event.target.src = '/images/placeholders/event_default_bw.webp'"
                   />
-                  <span v-if="!eventImagePreview && selectedCategoryImage" class="fallback-badge">
-                    Default
-                  </span>
-                  <span v-else-if="eventImagePreview" class="custom-badge">
-                    Eigenes Bild
-                  </span>
-                </div>
-                <div v-else class="image-placeholder">
-                  <span>Kein Bild (Kategorie wählen für Standard)</span>
-                </div>
-                <div class="image-upload-actions">
-                  <input 
-                    type="file" 
-                    ref="eventImageInput" 
-                    accept="image/*" 
-                    @change="handleEventImageChange" 
-                    style="display: none"
-                  />
-                  <button 
-                    type="button" 
-                    @click="$refs.eventImageInput.click()" 
-                    class="btn btn-secondary"
+                  <div
+                    v-if="previewData.category"
+                    class="preview-category-badge"
+                    :style="{ backgroundColor: previewData.category.color }"
                   >
-                    {{ eventImagePreview ? 'Bild ändern' : 'Bild hochladen' }}
-                  </button>
-                  <button 
-                    v-if="eventImagePreview" 
-                    type="button" 
-                    @click="eventImagePreview = null; eventImageFile = null" 
-                    class="btn btn-danger"
-                  >
-                    Eigenes Bild entfernen
-                  </button>
+                    {{ previewData.category.name }}
+                  </div>
+                  <div v-if="previewData.extra_label" class="preview-extra-label">
+                    {{ previewData.extra_label }}
+                  </div>
                 </div>
-                <small class="form-help">
-                  Optional: Lade ein eigenes Bild hoch oder nutze das Kategorie-Standardbild
-                </small>
-              </div>
-            </div>
 
-            <div class="form-group">
-              <label>Extra Label</label>
-              <input v-model="form.extra_label" type="text" placeholder="z.B. 'Special Guest'" />
-            </div>
+                <div class="preview-details">
+                  <h3 class="preview-title">{{ previewData.title }}</h3>
 
-            <div v-if="formError" class="error-message">{{ formError }}</div>
+                  <div class="preview-meta">
+                    <div v-if="previewData.startTime" class="preview-meta-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                      <span>{{ previewFormatDate(previewData.startTime) }}</span>
+                    </div>
+                    <div v-if="previewData.startTime" class="preview-meta-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                      <span>{{ previewFormatTimeRange(previewData.startTime, previewData.endTime) }}</span>
+                    </div>
+                    <div v-if="previewData.room.length > 0" class="preview-meta-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                      <span>{{ previewData.room.join(' & ') }}</span>
+                    </div>
+                  </div>
 
-            <div class="modal-actions">
-              <button type="button" @click="closeModal" class="btn-secondary">Abbrechen</button>
-              <button type="submit" class="btn-primary" :disabled="formLoading">
-                {{ formLoading ? 'Speichern...' : (editingEvent ? 'Aktualisieren' : 'Erstellen') }}
-              </button>
+                  <p v-if="previewData.description" class="preview-description">{{ previewData.description }}</p>
+
+                  <div class="preview-footer">
+                    <span class="preview-price" :class="{ free: previewData.price === 0 }">
+                      {{ previewFormatPrice(previewData.price) }}
+                    </span>
+                    <a
+                      v-if="previewData.link_url && previewData.link_text"
+                      href="#"
+                      @click.prevent
+                      class="preview-link-btn"
+                    >{{ previewData.link_text }}</a>
+                  </div>
+                </div>
+              </article>
             </div>
-          </form>
+          </div>
         </div>
       </div>
     </Teleport>
@@ -780,7 +1209,8 @@ async function handleCategorySubmit() {
 <style scoped>
 .admin-dashboard {
   display: flex;
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: #0f0f1a;
   color: #fff;
 }
@@ -788,10 +1218,13 @@ async function handleCategorySubmit() {
 /* Sidebar */
 .sidebar {
   width: 260px;
+  height: 100%;
+  flex-shrink: 0;
   background: rgba(255, 255, 255, 0.03);
   border-right: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .sidebar-header {
@@ -906,9 +1339,11 @@ async function handleCategorySubmit() {
 /* Main Content */
 .main-content {
   flex: 1;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .content-header {
@@ -1023,6 +1458,47 @@ async function handleCategorySubmit() {
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 12px;
   overflow: visible;
+}
+
+.event-count {
+  font-weight: 400;
+  opacity: 0.5;
+  font-size: 0.9em;
+}
+
+.history-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 2.5rem;
+  padding: 1rem 0 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  cursor: pointer;
+  user-select: none;
+}
+
+.history-header:hover h2 {
+  opacity: 0.9;
+}
+
+.history-header h2 {
+  font-size: 1.1rem;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.history-toggle {
+  font-size: 1rem;
+  opacity: 0.4;
+}
+
+.history-table {
+  margin-top: 0.75rem;
+  opacity: 0.6;
+}
+
+.past-row td {
+  color: rgba(255, 255, 255, 0.5);
 }
 
 .events-table table {
@@ -1269,6 +1745,190 @@ async function handleCategorySubmit() {
   max-width: 600px;
   max-height: 90vh;
   overflow-y: auto;
+}
+
+.modal-with-preview {
+  max-width: 1060px;
+  overflow-y: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-body {
+  display: flex;
+  overflow: hidden;
+  min-height: 0;
+  flex: 1;
+}
+
+.modal-with-preview .modal-form {
+  flex: 1;
+  min-width: 0;
+  overflow-y: auto;
+  border-right: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.modal-preview-col {
+  width: 280px;
+  flex-shrink: 0;
+  padding: 1.25rem 1.25rem 1.5rem;
+  overflow-y: auto;
+  background: #13131f;
+}
+
+.preview-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.35);
+  margin-bottom: 0.75rem;
+}
+
+/* Preview card — mirrors EventsPage .event-card */
+.preview-event-card {
+  background: #111;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  border-left: 3px solid #FF9d66;
+}
+
+.preview-image-container {
+  position: relative;
+  width: 100%;
+  padding-top: 100%;
+  overflow: hidden;
+}
+
+.preview-image {
+  position: absolute;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: grayscale(20%) contrast(1.1);
+  background: #1a1a1a;
+}
+
+.preview-category-badge {
+  position: absolute;
+  bottom: 0.75rem;
+  left: 0.75rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #000;
+}
+
+.preview-extra-label {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  padding: 0.3rem 0.6rem;
+  background: #FF9d66;
+  color: #000;
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.preview-details {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.preview-title {
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  line-height: 1.3;
+  color: #fff;
+}
+
+.preview-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.preview-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.5);
+}
+
+.preview-meta-item svg {
+  color: #FF9d66;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.preview-description {
+  font-size: 0.8rem;
+  line-height: 1.5;
+  color: rgba(255,255,255,0.6);
+  white-space: pre-wrap;
+}
+
+.preview-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 0.6rem;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.preview-price {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+}
+
+.preview-price.free {
+  color: #FF9d66;
+}
+
+.preview-link-btn {
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgba(255,157,102,0.5);
+  color: #FF9d66;
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  text-transform: uppercase;
+  border-radius: 2px;
+  cursor: default;
+}
+
+/* Mobile: preview toggle */
+.preview-toggle-btn {
+  display: none;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+  font-size: 0.8rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .modal-small {
@@ -1562,9 +2222,6 @@ async function handleCategorySubmit() {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .admin-dashboard {
-    flex-direction: column;
-  }
 
   .sidebar {
     width: 100%;
@@ -1629,6 +2286,287 @@ async function handleCategorySubmit() {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
+  }
+}
+
+/* ───────────────────────────────────────────
+   Rooms Editor
+─────────────────────────────────────────── */
+.rooms-editor {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.rooms-spot-list {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.rooms-sketch-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.rooms-sketch-label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+  margin: 0 0 0.25rem;
+}
+
+.rooms-spot-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.75);
+  border-radius: 6px;
+  padding: 0.55rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+}
+
+.rooms-spot-btn:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: #fff;
+}
+
+.rooms-spot-btn.active {
+  background: rgba(100, 108, 255, 0.15);
+  border-color: rgba(100, 108, 255, 0.5);
+  color: #fff;
+}
+
+.rooms-form {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.rooms-form-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rooms-textarea {
+  resize: vertical;
+  line-height: 1.6;
+  min-height: 120px;
+}
+
+.feature-tags-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  min-height: 2rem;
+}
+
+.feature-tag-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(100, 108, 255, 0.12);
+  border: 1px solid rgba(100, 108, 255, 0.3);
+  color: rgba(255, 255, 255, 0.85);
+  border-radius: 20px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.85rem;
+}
+
+.feature-tag-remove {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.5);
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  padding: 0;
+  transition: color 0.15s;
+}
+
+.feature-tag-remove:hover {
+  color: #ff6b6b;
+}
+
+.feature-add-row {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.feature-add-row .form-input {
+  flex: 1;
+}
+
+.rooms-form-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rooms-empty-hint {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.95rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+/* Room Image Management */
+.room-images-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.875rem;
+}
+
+.room-images-header label {
+  margin: 0;
+}
+
+.hidden-file-input {
+  display: none;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.room-images-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.75rem;
+}
+
+.room-img-item {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.04);
+  cursor: grab;
+  aspect-ratio: 1;
+  transition: border-color 0.15s;
+  user-select: none;
+}
+
+.room-img-item:active {
+  cursor: grabbing;
+}
+
+.room-img-item.is-drag-over {
+  border-color: #646cff;
+  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.2);
+}
+
+.room-img-thumb {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  pointer-events: none;
+}
+
+.img-delete-btn {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 22px;
+  height: 22px;
+  background: rgba(0, 0, 0, 0.75);
+  border: none;
+  color: #fff;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 1rem;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.15s, background 0.15s;
+}
+
+.room-img-item:hover .img-delete-btn {
+  opacity: 1;
+}
+
+.img-delete-btn:hover {
+  background: rgba(220, 50, 50, 0.85);
+}
+
+.img-drag-handle {
+  position: absolute;
+  bottom: 4px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 0.75rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.room-img-item:hover .img-drag-handle {
+  opacity: 1;
+}
+
+.room-images-empty {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.85rem;
+  margin: 0;
+  padding: 1rem;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  text-align: center;
+}
+
+@media (max-width: 900px) {
+  .rooms-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .rooms-spot-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .rooms-sketch-group {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .rooms-sketch-label {
+    width: 100%;
   }
 }
 

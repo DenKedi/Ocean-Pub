@@ -2,6 +2,7 @@
 import { onMounted, ref } from 'vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import HeroSection from '../components/sections/HeroSection.vue'
+import AboutSection from '../components/sections/AboutSection.vue'
 import EventsPreviewSection from '../components/sections/EventsPreviewSection.vue'
 import InstagramSection from '../components/sections/InstagramSection.vue'
 import ContactSection from '../components/sections/ContactSection.vue'
@@ -64,6 +65,7 @@ onMounted(() => {
 <template>
   <MainLayout :bg-image="currentBackgroundImage">
     <HeroSection />
+    <AboutSection />
     <EventsPreviewSection />
     <InstagramSection />
     <ContactSection />

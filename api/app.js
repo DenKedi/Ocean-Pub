@@ -7,6 +7,7 @@ const userRoutes = require('./routes/userRoutes');
 const eventRoutes = require('./routes/eventRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
+const roomRoutes = require('./routes/roomRoutes');
 const ErrorHandler = require('./middleware/ErrorHandler');
 require('dotenv').config();
 require('./serverRoutines');
@@ -15,7 +16,7 @@ const logger = require('./middleware/logger');
 const app = express();
 
 // CORS Configuration
-const allowedDomains = ["http://localhost:5172", "https://pallas.bleck.it"];
+const allowedDomains = ["http://localhost:5172", "http://localhost:5173", "https://pallas.bleck.it"];
 if (process.env.FRONTEND_URL) {
   allowedDomains.push(process.env.FRONTEND_URL);
 }
@@ -62,6 +63,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/rooms', roomRoutes);
 
 // Debug endpoint (moved to specific path instead of catch-all)
 app.get('/api/debug/headers', (req, res) => {

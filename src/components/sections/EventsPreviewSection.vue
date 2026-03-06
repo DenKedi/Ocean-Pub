@@ -91,6 +91,13 @@
                 </div>
                 <div class="event-actions">
                   <span class="event-price theme-text-primary">{{ formatPrice(event.price) }}</span>
+                  <a
+                    v-if="event.link_url && event.link_text"
+                    :href="event.link_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="event-link-btn theme-item-bg"
+                  >{{ truncateText(event.link_text) }}</a>
                   <button @click="goToEventDetails(event._id)" class="event-button theme-item-bg theme-text-primary">
                     Mehr Infos
                   </button>
@@ -179,6 +186,12 @@ const formatTime = (dateString) => {
 const formatPrice = (price) => {
   if (!price || price === 0) return 'Eintritt frei'
   return `${price}€`
+}
+
+// Truncate text to max characters
+const truncateText = (text, maxChars = 15) => {
+  if (!text) return ''
+  return text.length > maxChars ? text.substring(0, maxChars) + '…' : text
 }
 
 const goToEvents = () => {
@@ -473,6 +486,24 @@ onMounted(() => {
 }
 
 .event-button:hover {
+  transform: translateY(-2px);
+}
+
+.event-link-btn {
+  align-self: flex-start;
+  padding: 0.6rem 1.25rem;
+  border: 1px solid rgba(255, 157, 102, 0.5);
+  color: #FF9d66;
+  font-size: 0.85rem;
+  font-weight: 500;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  transition: all 0.3s ease;
+}
+
+.event-link-btn:hover {
+  background: rgba(255, 157, 102, 0.12);
+  border-color: #FF9d66;
   transform: translateY(-2px);
 }
 

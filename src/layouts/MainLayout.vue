@@ -51,9 +51,9 @@ const scrollToSection = (sectionId) => {
 // Navigation items for both desktop and mobile
 const navItems = [
   { path: '/', label: 'Home' },
+  { path: '/drinks', label: 'Drinks' },
   { path: '/events', label: 'Events' },
   { path: '/stories', label: 'Stories' },
-  { path: '/friends', label: 'Friends' },
   { path: '/art', label: 'Art' },
   { path: '/request', label: 'Request' }
 ];

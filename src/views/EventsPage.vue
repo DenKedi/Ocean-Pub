@@ -86,6 +86,12 @@ const formatPrice = (price) => {
   return `${price}€`
 }
 
+// Truncate text to max characters
+const truncateText = (text, maxChars = 15) => {
+  if (!text) return ''
+  return text.length > maxChars ? text.substring(0, maxChars) + '…' : text
+}
+
 // Get image URL with fallback
 const getEventImageUrl = (event) => {
   const imagePath = event.eventImageUrl || event.category?.defaultImageUrl
@@ -339,6 +345,13 @@ onUnmounted(() => {
                   <span class="event-price" :class="{ free: !event.price || event.price === 0 }">
                     {{ formatPrice(event.price) }}
                   </span>
+                  <a
+                    v-if="event.link_url && event.link_text"
+                    :href="event.link_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="event-link-btn"
+                  >{{ truncateText(event.link_text) }}</a>
                 </div>
               </div>
             </article>
@@ -396,6 +409,13 @@ onUnmounted(() => {
                     {{ formatPrice(event.price) }}
                   </span>
                   <span v-if="event.extra_label" class="list-extra">{{ event.extra_label }}</span>
+                  <a
+                    v-if="event.link_url && event.link_text"
+                    :href="event.link_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="event-link-btn"
+                  >{{ truncateText(event.link_text) }}</a>
                 </div>
               </article>
             </div>
@@ -822,7 +842,24 @@ onUnmounted(() => {
   color: #FF9d66 !important;
 }
 
-/* List View */
+.event-link-btn {
+  display: inline-block;
+  padding: 0.45rem 1.1rem;
+  border: 1px solid rgba(255, 157, 102, 0.5);
+  color: #FF9d66;
+  font-size: 0.8rem;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition: all 0.25s ease;
+  border-radius: 2px;
+}
+
+.event-link-btn:hover {
+  background: rgba(255, 157, 102, 0.12);
+  border-color: #FF9d66;
+}
 .events-list {
   display: flex;
   flex-direction: column;

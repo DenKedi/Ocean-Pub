@@ -40,6 +40,14 @@ const EventSchema = new mongoose.Schema({
         type: String,
         required: false
     },
+    link_url: {
+        type: String,
+        required: false
+    },
+    link_text: {
+        type: String,
+        required: false
+    },
     date_created: {
         type: Date,
         default: Date.now

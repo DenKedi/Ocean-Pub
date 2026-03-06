@@ -1,0 +1,71 @@
+{
+  "sketch1": [
+    {
+      "id": 1,
+      "x": 40,
+      "y": 87,
+      "label": "Bar",
+      "imageFolder": "bar",
+      "description": "Der zentrale Treffpunkt des Hauses und der größte unserer vier Räume: Die Pallas Bar ist der lebendige Mittelpunkt des Geschehens. Die mittig platzierte Bar schafft Nähe und Begegnung aus jeder Perspektive. Auf der Empore gibt es gemütliche Sitzplätze mit Blick auf die Straße - perfekt für Gespräche mit etwas Abstand zur Tanzfläche und trotzdem mitten im Geschehen. Darunter liegt der Dancefloor, wo sorgfältig ausgewählte Sounds die Stimmung bestimmen.\n\nVon April bis Oktober erweitert die bunte, lichtdurchflutete Terrasse direkt am Eingang den Raum um zusätzliche Sitzmöglichkeiten. Die gesamte Fläche ist flexibel nutzbar - für lange Nächte, besondere Events oder private Feiern. Ein durchdachtes Lichtkonzept passt sich jeder Atmosphäre an: von warm und intim bis klar und energiegeladen.",
+      "features": ["Musik", "Bar", "Kultur", "Lichttechnik", "Essen", "Live DJ", "Live Musik", "Sitzplätze (ca. 100)"],
+      "capacity": "300 Personen / Terrasse: 50 Personen",
+      "area": "170 qm",
+      "extraText": null,
+      "images": []
+    },
+    {
+      "id": 2,
+      "x": 82,
+      "y": 78,
+      "label": "DJ Booth",
+      "imageFolder": "dj",
+      "description": "DJ Bereich",
+      "features": ["DJ", "Musik", "Sound", "Licht"],
+      "capacity": null,
+      "area": "9 qm",
+      "extraText": null,
+      "images": []
+    }
+  ],
+  "sketch2": [
+    {
+      "id": 3,
+      "x": 57,
+      "y": 35,
+      "label": "Tresor",
+      "imageFolder": "tresor",
+      "description": "Der Tresor ist der intimste Raum im Pallas - geschaffen für kleinere Gruppen und besondere Anlässe. Der historische Steintresor wurde in Zusammenarbeit mit Flor de Caña und mit viel Gespür von Niklas Schöwe designt. Neben unseren edleren Tropfen verbirgt sich hier auch das ein oder andere Geheimnis. Ob Drink-Workshops, private Feiern oder geschlossene Runden im kleinen Kreis - der Tresor bietet einen geschützten Rahmen mit Charakter.\n\nEin besonderes Highlight: Der von Hand gefertigte Tresen, das zentrale Element des Tresors, lässt sich über die gesamte Raumbreite flexibel verschieben und passt sich so exakt den Anforderungen deines Events an.",
+      "features": ["Drinks", "Food", "Musik", "Barkeeper (Drinks Show)", "Tastings"],
+      "capacity": "8-20 Personen",
+      "area": "20 qm",
+      "extraText": null,
+      "images": []
+    },
+    {
+      "id": 4,
+      "x": 21.5,
+      "y": 57.5,
+      "label": "Bar 5",
+      "imageFolder": "bar5",
+      "description": "Bar5 ist der Raum für alle, die es etwas intimer mögen - kleiner als die Hauptbar, aber mit genauso viel Charakter. Hier entsteht schnell eine eigene Dynamik, die sich perfekt für private Feiern oder entspannte Get-togethers eignet. Licht und Musik lassen sich flexibel anpassen und die eigene, voll ausgestattete Bar sorgt für ein spürbares Gefühl von Exklusivität und Unabhängigkeit.\n\nBesonders spannend: Bar5 verbindet die Hauptbar inklusive Tanzfläche mit der Orangerie und dem Tresor. Dadurch entstehen fließende Übergänge zwischen den Bereichen - und extra viele Möglichkeiten für individuelle Setups, Raumkonzepte und Eventformate.\n\nBar5 ist kein Nebenraum - sondern eine Bühne für eigene Geschichten.",
+      "features": ["Barkeeper", "Cocktails", "Musik", "Exklusiv mietbar"],
+      "capacity": "20-30 Personen",
+      "area": "30 qm",
+      "extraText": null,
+      "images": []
+    },
+    {
+      "id": 5,
+      "x": 60,
+      "y": 90,
+      "label": "Orangerie",
+      "imageFolder": "orangerie",
+      "description": "Die Orangerie ist ein weiteres Highlight im Pallas - ruhig, warm und vielseitig. Ein Ort, der sich bewusst vom Trubel löst und Raum für besondere Formate schafft. Wechselnde Künstler:innen prägen und gestalten den Raum immer wieder neu, sodass es bei jedem Besuch andere Details, Perspektiven und Impulse zu entdecken gibt. Hier entstehen intime Listening-Sessions mit Vinyl, Lesungen, Weintastings oder Workshops. Dank unserer vollausgestatteten Küche lassen sich stilvolle 5-Gang-Menüs ebenso umsetzen.\n\nDie Orangerie bietet den passenden Rahmen für Events mit Nähe, Charakter und eigener Handschrift - kulturell, kulinarisch oder kreativ.",
+      "features": ["Listening", "Food", "Bar", "Bühne", "Kunst", "Kultur", "Meetingraum"],
+      "capacity": "10-40 Personen",
+      "area": "46 qm",
+      "extraText": "Kombination mit Bar 5 und Tresor möglich",
+      "images": []
+    }
+  ]
+}

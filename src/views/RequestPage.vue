@@ -1,95 +1,61 @@
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import VueEasyLightbox from 'vue-easy-lightbox'
 import sketch1 from '@/assets/raumplan/sketch1.png'
 import sketch2 from '@/assets/raumplan/sketch2.png'
+import roomsFallback from '@/assets/default/rooms.json'
 
-// Import images from each room folder using import.meta.glob
-const barImages = import.meta.glob('@/assets/pictures/raum/bar/*', { eager: true, import: 'default' })
-const djImages = import.meta.glob('@/assets/pictures/raum/dj/*', { eager: true, import: 'default' })
-const tresorImages = import.meta.glob('@/assets/pictures/raum/tresor/*', { eager: true, import: 'default' })
-const bar5Images = import.meta.glob('@/assets/pictures/raum/bar5/*', { eager: true, import: 'default' })
-const orangerieImages = import.meta.glob('@/assets/pictures/raum/orangerie/*', { eager: true, import: 'default' })
+// Import images from each room folder using import.meta.glob (static fallback)
+const allImages = {
+  bar: import.meta.glob('@/assets/pictures/raum/bar/*', { eager: true, import: 'default' }),
+  dj: import.meta.glob('@/assets/pictures/raum/dj/*', { eager: true, import: 'default' }),
+  tresor: import.meta.glob('@/assets/pictures/raum/tresor/*', { eager: true, import: 'default' }),
+  bar5: import.meta.glob('@/assets/pictures/raum/bar5/*', { eager: true, import: 'default' }),
+  orangerie: import.meta.glob('@/assets/pictures/raum/orangerie/*', { eager: true, import: 'default' }),
+}
 
-// Convert glob objects to arrays of image URLs
-const getImagesArray = (globObj) => Object.values(globObj).filter(img => img)
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+
+const getImagesForFolder = (folder) =>
+  Object.values(allImages[folder] || {}).filter(Boolean)
+
+const mapSpots = (spots) =>
+  spots.map(spot => ({
+    ...spot,
+    images: spot.images?.length
+      ? spot.images.map(f => `${API_BASE}/uploads/rooms/${spot.imageFolder}/${f}`)
+      : getImagesForFolder(spot.imageFolder)
+  }))
 
 // Modal state
 const isModalOpen = ref(false)
 const selectedSpot = ref(null)
+const showFullDescription = ref(false)
 
-// Hotspots for sketch1 (landscape - left side of bar)
-// Positions are in percentages (x%, y%) relative to the image
-const hotspotsSketch1 = ref([
-  { 
-    id: 1, 
-    x: 40, 
-    y: 87, 
-    label: 'Bar', 
-    images: getImagesArray(barImages), 
-    description: 'Die Hauptbar von Pallas',
-    features: ['Musik', 'Bar', 'Kultur', 'Essen', 'Live DJ', 'Live Musik', 'Sitzplätze (ca. 100)'],
-    capacity: '300 Personen',
-    area: '170 qm',
-    extraText: null
-  },
-  { 
-    id: 2, 
-    x: 82, 
-    y: 78, 
-    label: 'DJ Booth', 
-    images: getImagesArray(djImages), 
-    description: 'DJ Bereich',
-    features: ['DJ', 'Musik', 'Sound', 'Licht'],
-    capacity: null,
-    area: '9 qm',
-    extraText: null
-  },
-])
+const hotspotsSketch1 = ref([])
+const hotspotsSketch2 = ref([])
+const roomsLoading = ref(true)
 
-// Hotspots for sketch2 (portrait - right side of bar)
-const hotspotsSketch2 = ref([
-  { 
-    id: 2, 
-    x: 57, 
-    y: 35, 
-    label: 'Tresor', 
-    images: getImagesArray(tresorImages), 
-    description: 'Exklusiver Raum für besondere Events',
-    features: ['Drinks', 'Food', 'Musik', 'Barkeeper (Drinks Show)', 'Tastings'],
-    capacity: '8-20 Personen',
-    area: '20 qm',
-    extraText: null
-  },
-  { 
-    id: 3, 
-    x: 21.5, 
-    y: 57.5, 
-    label: 'Bar 5', 
-    images: getImagesArray(bar5Images), 
-    description: 'Privater Barbereich',
-    features: ['Barkeeper', 'Cocktails', 'Musik', 'Exklusiv mietbar'],
-    capacity: '10-30 Personen',
-    area: '30 qm',
-    extraText: null
-  },
-  { 
-    id: 4, 
-    x: 60, 
-    y: 90, 
-    label: 'Orangerie', 
-    images: getImagesArray(orangerieImages), 
-    description: 'Vielseitiger Veranstaltungsraum',
-    features: ['Listening', 'Food', 'Bar', 'Bühne', 'Kunst', 'Kultur', 'Meetingraum'],
-    capacity: '40 Sitzplätze',
-    area: '46 qm',
-    extraText: 'Kombination mit Bar 5 und Tresor möglich'
-  },
-])
+onMounted(async () => {
+  try {
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/rooms`)
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json()
+    hotspotsSketch1.value = mapSpots(data.sketch1 || [])
+    hotspotsSketch2.value = mapSpots(data.sketch2 || [])
+  } catch (e) {
+    console.warn('API nicht erreichbar, nutze Fallback-Daten:', e)
+    hotspotsSketch1.value = mapSpots(roomsFallback.sketch1 || [])
+    hotspotsSketch2.value = mapSpots(roomsFallback.sketch2 || [])
+  } finally {
+    roomsLoading.value = false
+  }
+})
 
 const openSpotModal = (spot) => {
   selectedSpot.value = spot
+  showFullDescription.value = false
   isModalOpen.value = true
 }
 
@@ -113,6 +79,77 @@ const openLightbox = (images, index) => {
 const closeLightbox = () => {
   lightboxVisible.value = false
 }
+
+// ── Request Form ──
+const availableRooms = computed(() => {
+  const allRooms = [...hotspotsSketch1.value, ...hotspotsSketch2.value]
+  // Filter out DJ Booth — not bookable as a standalone room
+  return allRooms.filter(r => r.label !== 'DJ Booth')
+})
+
+const form = ref({
+  // Ansprechpartner
+  name: '',
+  email: '',
+  telefon: '',
+  firma: '',
+  // Veranstaltung
+  thema: '',
+  gaeste: '',
+  datum: '',
+  musikrichtung: '',
+  djQuelle: '',        // 'uns' oder 'pallas'
+  raeume: [],          // multiple choice room ids
+  budget: '',
+  nachricht: '',
+  // Alternativdatum
+  altDatum: false,
+  altDatumWert: '',
+  // Consent
+  datenschutz: false,
+})
+
+const formSubmitted = ref(false)
+const formErrors = ref({})
+
+const validate = () => {
+  const errors = {}
+  if (!form.value.name.trim()) errors.name = 'Bitte Name angeben'
+  if (!form.value.email.trim()) errors.email = 'Bitte E-Mail angeben'
+  else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.value.email)) errors.email = 'Ungültige E-Mail-Adresse'
+  if (!form.value.thema.trim()) errors.thema = 'Bitte Thema angeben'
+  if (!form.value.gaeste) errors.gaeste = 'Bitte Gästeanzahl angeben'
+  if (!form.value.datum) errors.datum = 'Bitte Datum auswählen'
+  if (form.value.altDatum && !form.value.altDatumWert) errors.altDatumWert = 'Bitte Alternativdatum auswählen'
+  if (!form.value.datenschutz) errors.datenschutz = 'Bitte Einverständnis geben'
+  formErrors.value = errors
+  return Object.keys(errors).length === 0
+}
+
+const toggleRoom = (id) => {
+  const idx = form.value.raeume.indexOf(id)
+  if (idx === -1) form.value.raeume.push(id)
+  else form.value.raeume.splice(idx, 1)
+}
+
+const submitForm = () => {
+  if (!validate()) return
+  // No e-mail functionality yet — just show success
+  formSubmitted.value = true
+  console.log('Request form data:', JSON.parse(JSON.stringify(form.value)))
+}
+
+const resetForm = () => {
+  formSubmitted.value = false
+  form.value = {
+    name: '', email: '', telefon: '', firma: '',
+    thema: '', gaeste: '', datum: '',
+    musikrichtung: '', djQuelle: '', raeume: [], budget: '', nachricht: '',
+    altDatum: false, altDatumWert: '',
+    datenschutz: false,
+  }
+  formErrors.value = {}
+}
 </script>
 
 <template>
@@ -132,7 +169,8 @@ const closeLightbox = () => {
           <h2 class="section-title">Raumplan</h2>
           <p class="section-subtitle theme-text-secondary">Klicke auf die Punkte, um mehr über die Bereiche zu erfahren</p>
           
-          <div class="floorplan-container">
+          <div v-if="roomsLoading" class="rooms-loading">Lade Raumdaten...</div>
+          <div v-else class="floorplan-container">
             <!-- Sketch 1 - Landscape (Left Side) -->
             <div class="sketch-wrapper sketch-landscape">
               <img :src="sketch1" alt="Bar Sketch - Linke Seite" class="sketch-image" />
@@ -144,7 +182,6 @@ const closeLightbox = () => {
                 @click="openSpotModal(spot)"
               >
                 <span class="hotspot-dot"></span>
-                <span class="hotspot-label">{{ spot.label }}</span>
               </div>
             </div>
 
@@ -159,23 +196,179 @@ const closeLightbox = () => {
                 @click="openSpotModal(spot)"
               >
                 <span class="hotspot-dot"></span>
-                <span class="hotspot-label">{{ spot.label }}</span>
               </div>
             </div>
           </div>
         </div>
       </section>
 
-      <!-- Contact Section -->
-      <section class="contact-section">
-        <div class="container">
+      <!-- Request Form Section -->
+      <section class="form-section">
+        <div class="container form-container">
           <h2 class="section-title">Anfrage senden</h2>
           <p class="section-subtitle theme-text-secondary">
-            Interesse an einem Event bei uns? Schreib uns!
+            Interesse an einem Event bei uns? Füll das Formular aus und wir melden uns bei dir.
           </p>
-          <a href="mailto:info@pallas.world" class="contact-button">
-            info@pallas.world
-          </a>
+
+          <!-- Success state -->
+          <div v-if="formSubmitted" class="form-success">
+            <div class="success-icon">✓</div>
+            <h3>Vielen Dank für deine Anfrage!</h3>
+            <p class="theme-text-secondary">Wir haben deine Nachricht erhalten und melden uns so schnell wie möglich bei dir.</p>
+            <button class="form-btn form-btn-secondary" @click="resetForm">Neue Anfrage</button>
+          </div>
+
+          <!-- Form -->
+          <form v-else class="request-form" @submit.prevent="submitForm" novalidate>
+
+            <!-- ── Ansprechpartner ── -->
+            <fieldset class="form-fieldset">
+              <legend class="form-legend">Ansprechpartner</legend>
+
+              <div class="form-grid">
+                <div class="form-group">
+                  <label class="form-label" for="req-name">Name *</label>
+                  <input id="req-name" v-model="form.name" type="text" class="form-input" :class="{ 'has-error': formErrors.name }" />
+                  <span v-if="formErrors.name" class="form-error">{{ formErrors.name }}</span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="req-email">E-Mail *</label>
+                  <input id="req-email" v-model="form.email" type="email" class="form-input" :class="{ 'has-error': formErrors.email }" />
+                  <span v-if="formErrors.email" class="form-error">{{ formErrors.email }}</span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="req-telefon">Telefon</label>
+                  <input id="req-telefon" v-model="form.telefon" type="tel" class="form-input" />
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="req-firma">Firma</label>
+                  <input id="req-firma" v-model="form.firma" type="text" class="form-input" />
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- ── Veranstaltung ── -->
+            <fieldset class="form-fieldset">
+              <legend class="form-legend">Veranstaltung</legend>
+
+              <div class="form-grid">
+                <div class="form-group full-width">
+                  <label class="form-label" for="req-thema">Thema / Anlass *</label>
+                  <input id="req-thema" v-model="form.thema" type="text" class="form-input" :class="{ 'has-error': formErrors.thema }" />
+                  <span v-if="formErrors.thema" class="form-error">{{ formErrors.thema }}</span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="req-gaeste">Gästeanzahl *</label>
+                  <input id="req-gaeste" v-model="form.gaeste" type="number" min="1" class="form-input" :class="{ 'has-error': formErrors.gaeste }" />
+                  <span v-if="formErrors.gaeste" class="form-error">{{ formErrors.gaeste }}</span>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" for="req-budget">Budget (optional)</label>
+                  <input id="req-budget" v-model="form.budget" type="text" class="form-input" />
+                </div>
+
+                <!-- Datum -->
+                <div class="form-group">
+                  <label class="form-label" for="req-datum">Datum *</label>
+                  <input id="req-datum" v-model="form.datum" type="date" class="form-input" :class="{ 'has-error': formErrors.datum }" />
+                  <span v-if="formErrors.datum" class="form-error">{{ formErrors.datum }}</span>
+                </div>
+
+                <!-- Alternativdatum -->
+                <div class="form-group form-group-flex full-width">
+                  <label class="form-toggle">
+                    <input type="checkbox" v-model="form.altDatum" />
+                    <span class="toggle-label">Alternativdatum angeben?</span>
+                  </label>
+                  <div v-if="form.altDatum" class="alt-date-row">
+                    <div class="alt-date-field">
+                      <input v-model="form.altDatumWert" type="date" class="form-input form-input-sm" :class="{ 'has-error': formErrors.altDatumWert }" />
+                      <span v-if="formErrors.altDatumWert" class="form-error">{{ formErrors.altDatumWert }}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Musikrichtung -->
+                <div class="form-group">
+                  <label class="form-label" for="req-musik">Musikrichtung</label>
+                  <input id="req-musik" v-model="form.musikrichtung" type="text" class="form-input" />
+                </div>
+
+                <!-- DJ Quelle -->
+                <div class="form-group dj-quelle-group full-width">
+                  <label class="form-label">Soll Pallas sich um den DJ kümmern?</label>
+                  <div class="dj-quelle-buttons">
+                    <button
+                      type="button"
+                      class="dj-quelle-btn"
+                      :class="{ active: form.djQuelle === 'ja' }"
+                      @click="form.djQuelle = 'ja'"
+                    >
+                      Ja
+                    </button>
+                    <button
+                      type="button"
+                      class="dj-quelle-btn"
+                      :class="{ active: form.djQuelle === 'nein' }"
+                      @click="form.djQuelle = 'nein'"
+                    >
+                      Nein
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Räume (multiple choice) -->
+              <div class="form-group rooms-group">
+                <label class="form-label">Welche Räume interessieren dich?</label>
+                <div class="rooms-choices">
+                  <button
+                    v-for="room in availableRooms"
+                    :key="room.id"
+                    type="button"
+                    class="room-chip"
+                    :class="{ active: form.raeume.includes(room.id) }"
+                    @click="toggleRoom(room.id)"
+                  >
+                    {{ room.label }}
+                    <span v-if="room.capacity" class="room-chip-cap">{{ room.capacity }}</span>
+                  </button>
+                </div>
+              </div>
+            </fieldset>
+
+            <!-- ── Nachricht ── -->
+            <fieldset class="form-fieldset">
+              <legend class="form-legend">Nachricht</legend>
+              <div class="form-group full-width">
+                <label class="form-label" for="req-nachricht">Deine Nachricht (optional)</label>
+                <textarea id="req-nachricht" v-model="form.nachricht" class="form-input form-textarea" rows="5"></textarea>
+              </div>
+            </fieldset>
+
+            <!-- ── Datenschutz ── -->
+            <div class="form-group consent-group">
+              <label class="form-checkbox" :class="{ 'has-error': formErrors.datenschutz }">
+                <input type="checkbox" v-model="form.datenschutz" />
+                <span class="checkbox-box"></span>
+                <span class="checkbox-text">
+                  Ich bin einverstanden mit der Verarbeitung meiner Daten gemäß der
+                  <router-link to="/datenschutz" target="_blank">Datenschutzerklärung</router-link>. *
+                </span>
+              </label>
+              <span v-if="formErrors.datenschutz" class="form-error">{{ formErrors.datenschutz }}</span>
+            </div>
+
+            <!-- ── Submit ── -->
+            <div class="form-actions">
+              <button type="submit" class="form-btn form-btn-primary">Anfrage absenden</button>
+            </div>
+          </form>
         </div>
       </section>
 
@@ -185,7 +378,6 @@ const closeLightbox = () => {
           <div class="modal-content">
             <button class="modal-close" @click="closeModal">×</button>
             <h3 class="modal-title">{{ selectedSpot?.label }}</h3>
-            <p class="modal-description">{{ selectedSpot?.description }}</p>
             
             <!-- Room Details -->
             <div class="room-details">
@@ -211,13 +403,30 @@ const closeLightbox = () => {
                   </span>
                 </div>
               </div>
-              
+            </div>
+
+            <!-- Description (Moved down) -->
+            <div class="description-container">
+              <p 
+                class="modal-description" 
+                :class="{ 'collapsed': !showFullDescription }"
+              >
+                {{ selectedSpot?.description }}
+              </p>
+              <button 
+                v-if="selectedSpot?.description && selectedSpot.description.length > 150"
+                class="read-more-btn"
+                @click="showFullDescription = !showFullDescription"
+              >
+                {{ showFullDescription ? 'Weniger anzeigen' : 'Mehr anzeigen' }}
+              </button>
             </div>
             
             <div v-if="selectedSpot?.extraText" class="extra-text">
               {{ selectedSpot.extraText }}
             </div>
-            
+
+            <!-- Images (Moved to bottom) -->
             <div v-if="selectedSpot?.images?.length > 0" class="modal-gallery">
               <img 
                 v-for="(img, index) in selectedSpot.images" 
@@ -307,6 +516,14 @@ const closeLightbox = () => {
   padding: 4rem 0;
 }
 
+.rooms-loading {
+  text-align: center;
+  padding: 4rem;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+}
+
 .floorplan-container {
   display: flex;
   gap: 0.5rem;
@@ -357,73 +574,392 @@ const closeLightbox = () => {
 
 .hotspot-dot {
   display: block;
-  width: 20px;
-  height: 20px;
+  width: 14px;
+  height: 14px;
   background: #FF9d66;
-  border: 3px solid #fff;
+  border: 2px solid #fff;
   border-radius: 50%;
-  box-shadow: 0 0 15px rgba(255, 157, 102, 0.6);
+  box-shadow: 0 0 8px rgba(255, 157, 102, 0.7);
   transition: all 0.3s ease;
-  animation: pulse 2s ease-in-out infinite;
+  position: relative;
+  animation: dot-pulse 2s ease-in-out infinite;
+}
+
+/* Expanding ring */
+.hotspot-dot::before,
+.hotspot-dot::after {
+  content: '';
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  background: rgba(255, 157, 102, 0.4);
+  animation: ripple 2s ease-out infinite;
+  pointer-events: none;
+}
+
+.hotspot-dot::after {
+  animation-delay: 0.7s;
 }
 
 .hotspot:hover .hotspot-dot {
-  transform: scale(1.3);
-  box-shadow: 0 0 25px rgba(255, 157, 102, 0.9);
+  transform: scale(1.4);
+  box-shadow: 0 0 20px rgba(255, 157, 102, 1);
 }
 
-.hotspot-label {
-  position: absolute;
-  left: 50%;
-  top: calc(100% + 8px);
-  transform: translateX(-50%);
-  background: rgba(0, 0, 0, 0.9);
-  color: #fff;
-  padding: 0.4rem 0.8rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-  white-space: nowrap;
-  border-radius: 3px;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 0.3s ease;
+.hotspot:hover .hotspot-dot::before,
+.hotspot:hover .hotspot-dot::after {
+  animation-play-state: paused;
 }
 
-.hotspot:hover .hotspot-label {
-  opacity: 1;
+@keyframes dot-pulse {
+  0%, 100% { transform: scale(1); }
+  50%       { transform: scale(1.15); }
 }
 
-@keyframes pulse {
-  0%, 100% {
-    box-shadow: 0 0 15px rgba(255, 157, 102, 0.6);
-  }
-  50% {
-    box-shadow: 0 0 25px rgba(255, 157, 102, 0.9), 0 0 40px rgba(255, 157, 102, 0.3);
-  }
+@keyframes ripple {
+  0%   { transform: translate(-50%, -50%) scale(1);   opacity: 0.6; }
+  100% { transform: translate(-50%, -50%) scale(3.5); opacity: 0; }
 }
 
-/* Contact Section */
-.contact-section {
+/* Form Section */
+.form-section {
   padding: 6rem 0;
-  text-align: center;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.contact-button {
-  display: inline-block;
-  padding: 1rem 2.5rem;
-  background: transparent;
-  border: 1px solid rgba(255, 157, 102, 0.5);
-  color: #FF9d66 !important;
-  font-size: 1rem;
+.form-container {
+  max-width: 860px;
+}
+
+/* Success State */
+.form-success {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 157, 102, 0.25);
+  border-radius: 4px;
+}
+
+.success-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  border: 2px solid #FF9d66;
+  color: #FF9d66;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form-success h3 {
+  font-size: 1.4rem;
+  font-weight: 300;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.75rem;
+}
+
+/* Form */
+.request-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.form-fieldset {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  padding: 2rem 1.5rem 1.5rem;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.form-legend {
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #FF9d66;
+  padding: 0 0.75rem;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.form-group.full-width {
+  grid-column: 1 / -1;
+}
+
+.form-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.form-input {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 4px;
+  color: #fff;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  transition: border-color 0.25s ease, background 0.25s ease;
+  outline: none;
+  width: 100%;
+}
+
+.form-input::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.form-input:focus {
+  border-color: rgba(255, 157, 102, 0.5);
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.form-input.has-error {
+  border-color: #e74c3c;
+}
+
+.form-input-sm {
+  padding: 0.55rem 0.75rem;
+  font-size: 0.9rem;
+}
+
+.form-textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+.form-error {
+  font-size: 0.7rem;
+  color: #e74c3c;
+  letter-spacing: 0.02em;
+}
+
+/* Toggle / checkbox inline */
+.form-group-flex {
+  flex-direction: column;
+  gap: 0.6rem;
+  justify-content: flex-start;
+}
+
+.form-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.form-toggle input[type="checkbox"] {
+  accent-color: #FF9d66;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.toggle-label {
+  letter-spacing: 0.02em;
+}
+
+.inline-time {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  max-width: 180px;
+}
+
+.alt-date-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.alt-date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+/* Room chips */
+.rooms-group {
+  margin-top: 1.25rem;
+}
+
+.rooms-choices {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin-top: 0.25rem;
+}
+
+.room-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 0.6rem 1.1rem;
+  font-size: 0.85rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.room-chip:hover {
+  border-color: rgba(255, 157, 102, 0.4);
+  background: rgba(255, 157, 102, 0.08);
+}
+
+.room-chip.active {
+  border-color: #FF9d66;
+  background: rgba(255, 157, 102, 0.18);
+  color: #fff;
+}
+
+.room-chip-cap {
+  font-size: 0.65rem;
+  color: rgba(255, 255, 255, 0.45);
+  letter-spacing: 0.02em;
+}
+
+/* DJ Quelle Buttons */
+.dj-quelle-group {
+  margin-top: 1.25rem;
+}
+
+.dj-quelle-buttons {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.dj-quelle-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.85);
+  padding: 0.75rem 1.5rem;
+  font-size: 0.9rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+.dj-quelle-btn:hover {
+  border-color: rgba(255, 157, 102, 0.4);
+  background: rgba(255, 157, 102, 0.08);
+}
+
+.dj-quelle-btn.active {
+  border-color: #FF9d66;
+  background: rgba(255, 157, 102, 0.18);
+  color: #fff;
+}
+
+/* Consent */
+.consent-group {
+  gap: 0.5rem;
+}
+
+.form-checkbox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  user-select: none;
+}
+
+.form-checkbox input[type="checkbox"] {
+  accent-color: #FF9d66;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.checkbox-text {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.5;
+}
+
+.checkbox-text a {
+  color: #FF9d66;
+  text-decoration: underline;
+}
+
+/* Buttons */
+.form-actions {
+  display: flex;
+  justify-content: center;
+}
+
+.form-btn {
+  font-family: inherit;
+  font-size: 0.9rem;
   letter-spacing: 0.1em;
-  text-decoration: none;
+  text-transform: uppercase;
+  padding: 1rem 2.5rem;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.contact-button:hover {
-  background: rgba(255, 157, 102, 0.1);
+.form-btn-primary {
+  background: rgba(255, 157, 102, 0.15);
+  border-color: rgba(255, 157, 102, 0.5);
+  color: #FF9d66;
+}
+
+.form-btn-primary:hover {
+  background: rgba(255, 157, 102, 0.25);
   border-color: #FF9d66;
+}
+
+.form-btn-secondary {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.8);
+  margin-top: 1.5rem;
+}
+
+.form-btn-secondary:hover {
+  border-color: rgba(255, 255, 255, 0.5);
+  color: #fff;
+}
+
+/* Date/time input colour fixes (dark theme) */
+.form-input[type="date"],
+.form-input[type="time"] {
+  color-scheme: dark;
 }
 
 /* Modal */
@@ -445,11 +981,11 @@ const closeLightbox = () => {
   background: #111;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 4px;
-  max-width: 600px;
-  width: 100%;
-  max-height: 80vh;
+  max-width: 900px;
+  width: 90%;
+  max-height: 90vh;
   overflow-y: auto;
-  padding: 2rem;
+  padding: 3rem;
   position: relative;
 }
 
@@ -465,6 +1001,43 @@ const closeLightbox = () => {
   opacity: 0.7;
   transition: opacity 0.3s ease;
   line-height: 1;
+}
+
+.modal-close:hover {
+  opacity: 1;
+}
+
+.description-container {
+  margin-bottom: 2rem;
+}
+
+.modal-description {
+  color: rgba(255, 255, 255, 0.7);
+  line-height: 1.6;
+  white-space: pre-line;
+}
+
+.modal-description.collapsed {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.read-more-btn {
+  background: none;
+  border: none;
+  color: #FF9d66;
+  margin-top: 0.5rem;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  text-decoration: underline;
+  opacity: 0.9;
+}
+
+.read-more-btn:hover {
+  opacity: 1;
 }
 
 .modal-close:hover {
@@ -596,8 +1169,30 @@ const closeLightbox = () => {
     height: 16px;
   }
   
-  .hotspot-label {
-    font-size: 0.65rem;
+  /* Form mobile */
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .form-fieldset {
+    padding: 1.5rem 1rem 1rem;
+  }
+
+  .alt-date-row {
+    flex-direction: column;
+  }
+
+  .room-chip {
+    flex: 1 1 calc(50% - 0.6rem);
+    min-width: 120px;
+  }
+
+  .dj-quelle-buttons {
+    flex-direction: column;
+  }
+
+  .dj-quelle-btn {
+    width: 100%;
   }
 }
 </style>
