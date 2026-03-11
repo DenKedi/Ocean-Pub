@@ -307,7 +307,7 @@ const resetForm = () => {
                       type="button"
                       class="dj-quelle-btn"
                       :class="{ active: form.djQuelle === 'ja' }"
-                      @click="form.djQuelle = 'ja'"
+                      @click="form.djQuelle = form.djQuelle === 'ja' ? '' : 'ja'"
                     >
                       Ja
                     </button>
@@ -315,7 +315,7 @@ const resetForm = () => {
                       type="button"
                       class="dj-quelle-btn"
                       :class="{ active: form.djQuelle === 'nein' }"
-                      @click="form.djQuelle = 'nein'"
+                      @click="form.djQuelle = form.djQuelle === 'nein' ? '' : 'nein'"
                     >
                       Nein
                     </button>

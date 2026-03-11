@@ -44,7 +44,6 @@ async function handleSubmit() {
     <div class="login-container">
       <div class="login-header">
         <h1>Admin Login</h1>
-        <p>Melde dich an, um Events zu verwalten</p>
       </div>
 
       <form @submit.prevent="handleSubmit" class="login-form">

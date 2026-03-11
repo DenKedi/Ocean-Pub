@@ -86,6 +86,20 @@ const roomImagesUploading = ref(false)
 const dragImageIdx = ref(null)
 const dragOverIdx = ref(null)
 
+// Users State
+const users = ref([])
+const usersLoading = ref(false)
+const showUserModal = ref(false)
+const userForm = ref({ name: '', email: '', password: '', passwordConfirm: '' })
+const userFormError = ref('')
+const userFormLoading = ref(false)
+const userDeleteConfirm = ref(null) // id of user to delete
+const showEditUserModal = ref(false)
+const editingUser = ref(null)
+const editUserForm = ref({ name: '', email: '', password: '', passwordConfirm: '' })
+const editUserFormError = ref('')
+const editUserFormLoading = ref(false)
+
 // Computed
 const stats = computed(() => ({
   total: events.value.length,
@@ -194,7 +208,7 @@ const selectedCategoryImage = computed(() => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([fetchEvents(), fetchCategories(), fetchRooms()])
+  await Promise.all([fetchEvents(), fetchCategories(), fetchRooms(), fetchUsers()])
   loading.value = false
   
   // Close context menu on click outside
@@ -206,6 +220,95 @@ onBeforeUnmount(() => {
 })
 
 // Methods
+async function fetchUsers() {
+  usersLoading.value = true
+  try {
+    const { data } = await api.get('/users')
+    users.value = data
+  } catch (err) {
+    console.error('Fehler beim Laden der Admins:', err)
+  } finally {
+    usersLoading.value = false
+  }
+}
+
+async function createUser() {
+  userFormError.value = ''
+  if (!userForm.value.name.trim()) { userFormError.value = 'Name erforderlich'; return }
+  if (!userForm.value.email.trim()) { userFormError.value = 'E-Mail erforderlich'; return }
+  if (!userForm.value.password) { userFormError.value = 'Passwort erforderlich'; return }
+  if (userForm.value.password !== userForm.value.passwordConfirm) { userFormError.value = 'Passwörter stimmen nicht überein'; return }
+  if (userForm.value.password.length < 6) { userFormError.value = 'Passwort muss mindestens 6 Zeichen lang sein'; return }
+  userFormLoading.value = true
+  try {
+    await api.post('/users/register', {
+      name: userForm.value.name,
+      email: userForm.value.email,
+      password: userForm.value.password
+    })
+    userForm.value = { name: '', email: '', password: '', passwordConfirm: '' }
+    showUserModal.value = false
+    await fetchUsers()
+  } catch (err) {
+    userFormError.value = err.response?.data?.msg || 'Fehler beim Erstellen des Admins'
+  } finally {
+    userFormLoading.value = false
+  }
+}
+
+async function deleteUser(id) {
+  try {
+    await api.delete(`/users/${id}`)
+    userDeleteConfirm.value = null
+    await fetchUsers()
+  } catch (err) {
+    console.error('Fehler beim Löschen:', err)
+  }
+}
+
+function openEditUserModal(user) {
+  editingUser.value = user
+  editUserForm.value = { name: user.name || '', email: user.email, password: '', passwordConfirm: '' }
+  editUserFormError.value = ''
+  showEditUserModal.value = true
+}
+
+function closeEditUserModal() {
+  showEditUserModal.value = false
+  editingUser.value = null
+  editUserForm.value = { name: '', email: '', password: '', passwordConfirm: '' }
+  editUserFormError.value = ''
+}
+
+async function updateUser() {
+  editUserFormError.value = ''
+  if (!editUserForm.value.email.trim()) { editUserFormError.value = 'E-Mail erforderlich'; return }
+  if (editUserForm.value.password && editUserForm.value.password.length < 6) {
+    editUserFormError.value = 'Passwort muss mindestens 6 Zeichen lang sein'; return
+  }
+  if (editUserForm.value.password && editUserForm.value.password !== editUserForm.value.passwordConfirm) {
+    editUserFormError.value = 'Passwörter stimmen nicht überein'; return
+  }
+  editUserFormLoading.value = true
+  try {
+    await api.put(`/users/update/${editingUser.value._id}`, {
+      name: editUserForm.value.name,
+      email: editUserForm.value.email
+    })
+    if (editUserForm.value.password) {
+      await api.put(`/users/${editingUser.value._id}/reset-password`, {
+        password: editUserForm.value.password
+      })
+    }
+    closeEditUserModal()
+    await fetchUsers()
+  } catch (err) {
+    editUserFormError.value = err.response?.data?.msg || 'Fehler beim Aktualisieren'
+  } finally {
+    editUserFormLoading.value = false
+  }
+}
+
 async function fetchRooms() {
   roomsLoading.value = true
   try {
@@ -627,6 +730,9 @@ async function handleCategorySubmit() {
           <a href="#" class="nav-item" :class="{ active: activeSection === 'rooms' }" @click.prevent="activeSection = 'rooms'">
             Räume
           </a>
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'users' }" @click.prevent="activeSection = 'users'">
+            Benutzer
+          </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -642,7 +748,7 @@ async function handleCategorySubmit() {
     <main class="main-content">
       <header class="content-header">
         <h1>Dashboard</h1>
-        <button @click="openNewEventModal" class="btn-primary">
+        <button v-if="activeSection === 'events'" @click="openNewEventModal" class="btn-primary">
           + Neues Event
         </button>
       </header>
@@ -765,6 +871,42 @@ async function handleCategorySubmit() {
                 </tr>
               </tbody>
             </table>
+          </div>
+        </section>
+
+        <!-- Users Section -->
+        <section v-if="activeSection === 'users'" class="section">
+          <div class="section-header">
+            <h2>Admins</h2>
+            <button @click="showUserModal = true" class="btn-primary">+ Admin erstellen</button>
+          </div>
+
+          <div v-if="usersLoading" class="loading-state"><div class="spinner"></div></div>
+          <div v-else class="users-list">
+            <div v-for="u in users" :key="u._id" class="user-row">
+              <div class="user-info-block">
+                <div class="user-row-name-line">
+                  <span class="user-row-name">{{ u.name || '–' }}</span>
+                  <span v-if="u.isLegacy" class="user-badge-legacy">Legacy Admin</span>
+                </div>
+                <span class="user-row-email">{{ u.email }}</span>
+              </div>
+              <div class="user-row-meta">
+                <span class="user-row-date">Erstellt: {{ new Date(u.date).toLocaleDateString('de-DE') }}</span>
+                <span v-if="u._id === authState.user?._id || u._id === authState.user?.id" class="user-row-self">(Du)</span>
+              </div>
+              <div class="user-row-actions">
+                <template v-if="!u.isLegacy">
+                  <button class="btn-edit-sm" @click="openEditUserModal(u)">Bearbeiten</button>
+                  <button
+                    v-if="u._id !== authState.user?._id && u._id !== authState.user?.id"
+                    class="btn-danger-sm"
+                    @click="userDeleteConfirm = u._id"
+                  >Löschen</button>
+                </template>
+              </div>
+            </div>
+            <div v-if="users.length === 0" class="empty-state"><p>Keine Admins gefunden</p></div>
           </div>
         </section>
 
@@ -915,6 +1057,100 @@ async function handleCategorySubmit() {
         </section>
       </div>
     </main>
+
+    <!-- Create Admin Modal -->
+    <Teleport to="body">
+      <div v-if="showUserModal" class="modal-overlay" @click.self="showUserModal = false; userFormError = ''">
+        <div class="modal modal-sm">
+          <div class="modal-header">
+            <h2>Neuen Admin erstellen</h2>
+            <button @click="showUserModal = false; userFormError = ''" class="close-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Name</label>
+              <input v-model="userForm.name" type="text" placeholder="Name" />
+            </div>
+            <div class="form-group">
+              <label>E-Mail *</label>
+              <input v-model="userForm.email" type="email" placeholder="admin@example.com" />
+            </div>
+            <div class="form-group">
+              <label>Passwort *</label>
+              <input v-model="userForm.password" type="password" placeholder="Mindestens 6 Zeichen" />
+            </div>
+            <div class="form-group">
+              <label>Passwort bestätigen *</label>
+              <input v-model="userForm.passwordConfirm" type="password" placeholder="Passwort wiederholen" />
+            </div>
+            <div v-if="userFormError" class="error-message">{{ userFormError }}</div>
+          </div>
+          <div class="modal-footer">
+            <button @click="showUserModal = false; userFormError = ''" class="btn-secondary">Abbrechen</button>
+            <button @click="createUser" class="btn-primary" :disabled="userFormLoading">
+              {{ userFormLoading ? 'Erstelle...' : 'Admin erstellen' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Delete Admin Confirm Modal -->
+    <Teleport to="body">
+      <div v-if="userDeleteConfirm" class="modal-overlay" @click.self="userDeleteConfirm = null">
+        <div class="modal modal-sm">
+          <div class="modal-header">
+            <h2>Admin löschen</h2>
+            <button @click="userDeleteConfirm = null" class="close-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <p>Möchtest du diesen Admin wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.</p>
+          </div>
+          <div class="modal-footer">
+            <button @click="userDeleteConfirm = null" class="btn-secondary">Abbrechen</button>
+            <button @click="deleteUser(userDeleteConfirm)" class="btn-danger">Löschen</button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
+
+    <!-- Edit Admin Modal -->
+    <Teleport to="body">
+      <div v-if="showEditUserModal" class="modal-overlay" @click.self="closeEditUserModal">
+        <div class="modal modal-sm">
+          <div class="modal-header">
+            <h2>Admin bearbeiten</h2>
+            <button @click="closeEditUserModal" class="close-btn">×</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label>Name</label>
+              <input v-model="editUserForm.name" type="text" placeholder="Name" />
+            </div>
+            <div class="form-group">
+              <label>E-Mail *</label>
+              <input v-model="editUserForm.email" type="email" placeholder="admin@example.com" />
+            </div>
+            <div class="edit-user-section-divider">Passwort zurücksetzen (optional)</div>
+            <div class="form-group">
+              <label>Neues Passwort</label>
+              <input v-model="editUserForm.password" type="password" placeholder="Leer lassen = nicht ändern" />
+            </div>
+            <div class="form-group">
+              <label>Passwort bestätigen</label>
+              <input v-model="editUserForm.passwordConfirm" type="password" placeholder="Passwort wiederholen" />
+            </div>
+            <div v-if="editUserFormError" class="error-message">{{ editUserFormError }}</div>
+          </div>
+          <div class="modal-footer">
+            <button @click="closeEditUserModal" class="btn-secondary">Abbrechen</button>
+            <button @click="updateUser" class="btn-primary" :disabled="editUserFormLoading">
+              {{ editUserFormLoading ? 'Speichert...' : 'Speichern' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Event Modal -->
     <Teleport to="body">
@@ -2581,5 +2817,168 @@ async function handleCategorySubmit() {
 .cropper {
   height: 100%;
   max-height: 60vh;
+}
+
+/* Users Section */
+.users-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.user-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.2rem;
+  background: #1a1a2e;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 6px;
+}
+
+.user-info-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.user-row-name {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.user-row-email {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.user-row-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.2rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.user-row-self {
+  font-size: 0.7rem;
+  color: #646cff;
+  font-style: italic;
+}
+
+/* Small modal variant */
+.modal-sm {
+  max-width: 480px !important;
+  width: 95% !important;
+  overflow-y: auto;
+}
+
+.modal-sm .modal-body {
+  display: block;
+  padding: 1.5rem 1.5rem 0.5rem;
+  overflow-y: visible;
+}
+
+.modal-sm .modal-body p {
+  color: rgba(255, 255, 255, 0.75);
+  line-height: 1.6;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.btn-danger {
+  padding: 0.55rem 1.25rem;
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid rgba(231, 76, 60, 0.5);
+  color: #e74c3c;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: rgba(231, 76, 60, 0.3);
+  border-color: #e74c3c;
+}
+
+.btn-danger-sm {
+  padding: 0.35rem 0.85rem;
+  background: rgba(231, 76, 60, 0.1);
+  border: 1px solid rgba(231, 76, 60, 0.4);
+  color: #e74c3c;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.btn-danger-sm:hover {
+  background: rgba(231, 76, 60, 0.25);
+}
+
+.user-row-name-line {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.user-badge-legacy {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #f0a500;
+  background: rgba(240, 165, 0, 0.1);
+  border: 1px solid rgba(240, 165, 0, 0.35);
+  border-radius: 3px;
+  padding: 0.1rem 0.45rem;
+}
+
+.user-row-actions {
+  min-width: 80px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+}
+
+.btn-edit-sm {
+  padding: 0.35rem 0.85rem;
+  background: rgba(100, 108, 255, 0.1);
+  border: 1px solid rgba(100, 108, 255, 0.4);
+  color: #848bff;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  transition: all 0.2s ease;
+}
+
+.btn-edit-sm:hover {
+  background: rgba(100, 108, 255, 0.25);
+  border-color: #646cff;
+}
+
+.edit-user-section-divider {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.35);
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  padding-top: 1rem;
+  margin-top: 0.5rem;
+  margin-bottom: 0.25rem;
 }
 </style>
