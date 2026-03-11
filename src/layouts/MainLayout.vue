@@ -8,6 +8,10 @@ const props = defineProps({
   bgImage: {
     type: String,
     default: null
+  },
+  theme: {
+    type: String,
+    default: 'dark', // 'dark' (default, white text) or 'light' (black text for bright pages)
   }
 });
 
@@ -55,13 +59,13 @@ const navItems = [
   { path: '/drinks', label: 'Drinks' },
   { path: '/events', label: 'Events' },
   { path: '/stories', label: 'Stories' },
-  { path: '/art', label: 'Art' },
-  { path: '/request', label: 'Request' }
+  { path: '/request', label: 'Request' },
+  { path: '/jobs', label: 'Jobs' }
 ];
 </script>
 
 <template>
-  <div class="main-layout">
+  <div class="main-layout" :class="{ 'layout-light': props.theme === 'light' }">
     <!-- Background Image -->
     <div
       v-if="props.bgImage"
@@ -70,7 +74,7 @@ const navItems = [
     ></div>
 
     <!-- Desktop Navigation Bar -->
-    <nav class="desktop-nav" :class="{ 'nav-hidden': isNavHidden }">
+    <nav class="desktop-nav" :class="{ 'nav-hidden': isNavHidden, 'nav-dark': props.theme === 'dark', 'nav-light': props.theme === 'light' }">
       <div class="desktop-nav-content">
         <router-link 
           v-for="item in navItems" 
@@ -85,7 +89,7 @@ const navItems = [
 
     <!-- Burger Menu (Mobile only) -->
     <div class="mobile-menu-wrapper">
-      <BurgerMenu :is-open="isMenuOpen" @toggle="toggleMenu" />
+      <BurgerMenu :is-open="isMenuOpen" :theme="props.theme" @toggle="toggleMenu" />
     </div>
 
     <!-- Navigation Overlay (Mobile) -->
@@ -128,7 +132,7 @@ const navItems = [
     </main>
 
     <!-- Footer -->
-    <FooterSection />
+    <FooterSection :theme="theme" />
   </div>
 </template>
 
@@ -137,7 +141,12 @@ const navItems = [
   position: relative;
   width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
+  overflow: hidden; /* Clips elements that extend past the footer */
+}
+
+.layout-light {
+  background-color: #fff;
+  color: #000;
 }
 
 .background-image {
@@ -222,6 +231,27 @@ const navItems = [
 .desktop-nav-link.router-link-exact-active::after {
   width: 100%;
   background: rgba(255, 255, 255, 0.8);
+}
+
+/* Light Theme overrides for desktop nav */
+.desktop-nav.nav-light .desktop-nav-link {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+.desktop-nav.nav-light .desktop-nav-link::after {
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.desktop-nav.nav-light .desktop-nav-link:hover {
+  color: rgba(0, 0, 0, 1) !important;
+}
+
+.desktop-nav.nav-light .desktop-nav-link.router-link-exact-active {
+  color: rgba(0, 0, 0, 1) !important;
+}
+
+.desktop-nav.nav-light .desktop-nav-link.router-link-exact-active::after {
+  background: rgba(0, 0, 0, 0.8);
 }
 
 /* ===== Mobile Menu Wrapper ===== */

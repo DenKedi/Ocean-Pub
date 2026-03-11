@@ -1,10 +1,18 @@
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import VueEasyLightbox from 'vue-easy-lightbox'
 import sketch1 from '@/assets/raumplan/sketch1.png'
 import sketch2 from '@/assets/raumplan/sketch2.png'
 import roomsFallback from '@/assets/default/rooms.json'
+
+const baseRingColors = [
+  '#ff6201', '#f80000', '#d70009', '#ff6201',
+  '#2b2c77', '#0055a5', '#ff6201', '#f80000',
+  '#2b2c77', '#0055a5', '#d70009', '#ff6201',
+]
+
+const ringColors = Array.from({ length: 150 }, (_, i) => baseRingColors[i % baseRingColors.length])
 
 // Import images from each room folder using import.meta.glob (static fallback)
 const allImages = {
@@ -39,7 +47,7 @@ const roomsLoading = ref(true)
 
 onMounted(async () => {
   try {
-    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/rooms`)
+    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/rooms`)
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = await res.json()
     hotspotsSketch1.value = mapSpots(data.sketch1 || [])
@@ -57,13 +65,22 @@ const openSpotModal = (spot) => {
   selectedSpot.value = spot
   showFullDescription.value = false
   isModalOpen.value = true
+  document.body.style.overflow = 'hidden'
+  document.documentElement.style.overflow = 'hidden'
 }
 
 const closeModal = () => {
   isModalOpen.value = false
   selectedSpot.value = null
   closeLightbox()
+  document.body.style.overflow = ''
+  document.documentElement.style.overflow = ''
 }
+
+onUnmounted(() => {
+  document.body.style.overflow = ''
+  document.documentElement.style.overflow = ''
+})
 
 // Lightbox state (vue-easy-lightbox)
 const lightboxVisible = ref(false)
@@ -153,21 +170,56 @@ const resetForm = () => {
 </script>
 
 <template>
-  <MainLayout>
+  <MainLayout theme="light">
     <div class="request-page">
+      <!-- Top Rings -->
+      <div class="rings-bg top-rings" aria-hidden="true">
+        <span
+          v-for="(color, idx) in ringColors"
+          :key="'top-' + idx"
+          class="ring"
+          :style="{ '--i': idx + 1, '--color': color }"
+        />
+      </div>
+      <!-- Bottom Rings -->
+      <div class="rings-bg bottom-rings" aria-hidden="true">
+        <span
+          v-for="(color, idx) in ringColors"
+          :key="'bottom-' + idx"
+          class="ring"
+          :style="{ '--i': idx + 1, '--color': color }"
+        />
+      </div>
+
       <!-- Hero Section -->
       <section class="hero-section">
-        <div class="container">
+        <div class="container hero-content">
           <h1 class="page-title theme-text-primary">Pallas.Request</h1>
-          <p class="page-subtitle theme-text-secondary">Erkunde unsere Location</p>
+          <p class="page-subtitle theme-text-secondary">Dein Event in unserer Location</p>
+          
+          <div class="intro-text theme-text-secondary">
+            
+       Mitten in Hamburg
+
+
+<p>
+Das Pallas in der Schanze ist genau das, was du daraus machen möchtest. 
+
+
+
+Wir haben ca. Fünf Bereiche, die du einzeln nutzen oder komplett miteinander verbinden kannst.
+
+Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <router-link to="/stories" class="text-link">Stories</router-link> an, was bei uns schon alles abging. Klingt gut? Dann schreib uns eine Anfrage.
+
+
+            </p>
+          </div>
         </div>
       </section>
 
       <!-- Interactive Floor Plan Section -->
       <section class="floorplan-section">
         <div class="container">
-          <h2 class="section-title">Raumplan</h2>
-          <p class="section-subtitle theme-text-secondary">Klicke auf die Punkte, um mehr über die Bereiche zu erfahren</p>
           
           <div v-if="roomsLoading" class="rooms-loading">Lade Raumdaten...</div>
           <div v-else class="floorplan-container">
@@ -381,18 +433,19 @@ const resetForm = () => {
             
             <!-- Room Details -->
             <div class="room-details">
-              <div v-if="selectedSpot?.capacity" class="detail-item">
-                <span class="detail-label">Kapazität:</span>
-                <span class="detail-value">{{ selectedSpot.capacity }}</span>
-              </div>
-              
-              <div v-if="selectedSpot?.area" class="detail-item">
-                <span class="detail-label">Fläche:</span>
-                <span class="detail-value">{{ selectedSpot.area }}</span>
+              <div class="detail-row" v-if="selectedSpot?.capacity || selectedSpot?.area">
+                <div v-if="selectedSpot?.capacity" class="detail-item">
+                  <span class="detail-label">Kapazität</span>
+                  <span class="detail-value">{{ selectedSpot.capacity }}</span>
+                </div>
+                
+                <div v-if="selectedSpot?.area" class="detail-item">
+                  <span class="detail-label">Fläche</span>
+                  <span class="detail-value">{{ selectedSpot.area }}</span>
+                </div>
               </div>
               
               <div v-if="selectedSpot?.features?.length > 0" class="detail-item features">
-                <span class="detail-label">Features:</span>
                 <div class="feature-tags">
                   <span 
                     v-for="(feature, index) in selectedSpot.features" 
@@ -463,13 +516,78 @@ const resetForm = () => {
 <style scoped>
 .request-page {
   min-height: 100vh;
-  background: #000;
+  background: transparent; /* Changed to transparent so MainLayout background shines through */
+  color: #000;
+  position: relative;
+  z-index: 1;
+}
+
+.rings-bg {
+  position: absolute;
+  left: 50%;
+  width: 0;
+  height: 0;
+  pointer-events: none;
+  z-index: -1;
+  overflow: visible;
+}
+
+.top-rings {
+  top: 0;
+}
+
+.bottom-rings {
+  bottom: 0;
+}
+
+.ring {
+  position: absolute;
+  border-radius: 50%;
+  width: calc(var(--i) * 200px);
+  height: calc(var(--i) * 200px);
+  top: calc(var(--i) * -100px);
+  left: calc(var(--i) * -100px);
+
+  background: transparent;
+  border: 3px solid var(--color);
+  opacity: max(0.1, calc(0.35 - (var(--i) - 1) * 0.002));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color) 50%, transparent), 0 0 16px color-mix(in srgb, var(--color) 20%, transparent);
 }
 
 /* Hero Section */
 .hero-section {
-  padding: 8rem 2rem 4rem;
+  padding: 3rem 2rem 4rem;
   text-align: center;
+}
+
+.hero-content {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+/* Force text colors to overcome global !important values */
+.request-page ::selection,
+.modal-overlay ::selection {
+  background: rgba(43, 44, 119, 0.4); /* Blue tone matching ring color #2b2c77 */
+  color: #000;
+}
+
+.request-page p,
+.request-page span,
+.request-page div,
+.request-page h1,
+.request-page h2,
+.request-page h3,
+.request-page strong,
+.request-page label,
+.request-page legend {
+  color: #000 !important;
+}
+
+.request-page .theme-text-secondary,
+.request-page .theme-text-secondary p,
+.request-page .theme-text-muted {
+  color: rgba(0, 0, 0, 0.65) !important;
 }
 
 .page-title {
@@ -486,6 +604,35 @@ const resetForm = () => {
   font-family: var(--font-secondary);
   font-size: 1.25rem;
   opacity: 0.8;
+  margin-bottom: 2rem;
+}
+
+.intro-text {
+  font-size: 1.05rem;
+  line-height: 1.6;
+  text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  opacity: 0.85;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.intro-text p {
+  margin: 0;
+}
+
+.text-link {
+  color: #FF9d66 !important;
+  text-decoration: none;
+  border-bottom: 1px dotted rgba(255, 157, 102, 0.5);
+  transition: all 0.3s ease;
+}
+
+.text-link:hover {
+  border-bottom-color: #FF9d66;
+  color: #fff !important;
 }
 
 /* Container */
@@ -503,6 +650,7 @@ const resetForm = () => {
   font-weight: 300;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: #000 !important;
 }
 
 .section-subtitle {
@@ -519,7 +667,7 @@ const resetForm = () => {
 .rooms-loading {
   text-align: center;
   padding: 4rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(0, 0, 0, 0.4) !important;
   font-size: 0.9rem;
   letter-spacing: 0.1em;
 }
@@ -534,8 +682,8 @@ const resetForm = () => {
 
 .sketch-wrapper {
   position: relative;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
   overflow: hidden;
 }
@@ -629,7 +777,7 @@ const resetForm = () => {
 /* Form Section */
 .form-section {
   padding: 6rem 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
 }
 
 .form-container {
@@ -640,7 +788,7 @@ const resetForm = () => {
 .form-success {
   text-align: center;
   padding: 4rem 2rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.02);
   border: 1px solid rgba(255, 157, 102, 0.25);
   border-radius: 4px;
 }
@@ -673,10 +821,13 @@ const resetForm = () => {
 }
 
 .form-fieldset {
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
   padding: 2rem 1.5rem 1.5rem;
-  background: rgba(255, 255, 255, 0.02);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
 }
 
 .form-legend {
@@ -708,29 +859,32 @@ const resetForm = () => {
   font-size: 0.75rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.65);
+  color: rgba(0, 0, 0, 0.65) !important;
 }
 
 .form-input {
-  background: rgba(255, 255, 255, 0.06);
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
-  color: #fff;
+  color: #000 !important;
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   font-family: inherit;
-  transition: border-color 0.25s ease, background 0.25s ease;
+  transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
   outline: none;
   width: 100%;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .form-input::placeholder {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(0, 0, 0, 0.4) !important;
 }
 
 .form-input:focus {
   border-color: rgba(255, 157, 102, 0.5);
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.8);
+  box-shadow: 0 0 0 2px rgba(255, 157, 102, 0.2);
 }
 
 .form-input.has-error {
@@ -743,13 +897,13 @@ const resetForm = () => {
 }
 
 .form-textarea {
-  resize: vertical;
+  resize: none;
   min-height: 120px;
 }
 
 .form-error {
   font-size: 0.7rem;
-  color: #e74c3c;
+  color: #e74c3c !important;
   letter-spacing: 0.02em;
 }
 
@@ -767,7 +921,7 @@ const resetForm = () => {
   cursor: pointer;
   user-select: none;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(0, 0, 0, 0.85) !important;
 }
 
 .form-toggle input[type="checkbox"] {
@@ -815,10 +969,10 @@ const resetForm = () => {
 }
 
 .room-chip {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(0, 0, 0, 0.85) !important;
   padding: 0.6rem 1.1rem;
   font-size: 0.85rem;
   font-family: inherit;
@@ -828,22 +982,25 @@ const resetForm = () => {
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .room-chip:hover {
   border-color: rgba(255, 157, 102, 0.4);
-  background: rgba(255, 157, 102, 0.08);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .room-chip.active {
   border-color: #FF9d66;
-  background: rgba(255, 157, 102, 0.18);
-  color: #fff;
+  background: rgba(255, 157, 102, 0.15);
+  color: #000 !important;
+  box-shadow: inset 0 0 0 1px #FF9d66;
 }
 
 .room-chip-cap {
   font-size: 0.65rem;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(0, 0, 0, 0.5) !important;
   letter-spacing: 0.02em;
 }
 
@@ -860,26 +1017,29 @@ const resetForm = () => {
 }
 
 .dj-quelle-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
-  color: rgba(255, 255, 255, 0.85);
+  color: rgba(0, 0, 0, 0.85) !important;
   padding: 0.75rem 1.5rem;
   font-size: 0.9rem;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.25s ease;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .dj-quelle-btn:hover {
   border-color: rgba(255, 157, 102, 0.4);
-  background: rgba(255, 157, 102, 0.08);
+  background: rgba(255, 255, 255, 0.9);
 }
 
 .dj-quelle-btn.active {
   border-color: #FF9d66;
-  background: rgba(255, 157, 102, 0.18);
-  color: #fff;
+  background: rgba(255, 157, 102, 0.15);
+  color: #000 !important;
+  box-shadow: inset 0 0 0 1px #FF9d66;
 }
 
 /* Consent */
@@ -906,12 +1066,12 @@ const resetForm = () => {
 
 .checkbox-text {
   font-size: 0.85rem;
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(0, 0, 0, 0.75) !important;
   line-height: 1.5;
 }
 
 .checkbox-text a {
-  color: #FF9d66;
+  color: #FF9d66 !important;
   text-decoration: underline;
 }
 
@@ -936,30 +1096,33 @@ const resetForm = () => {
 .form-btn-primary {
   background: rgba(255, 157, 102, 0.15);
   border-color: rgba(255, 157, 102, 0.5);
-  color: #FF9d66;
+  color: #FF9d66 !important;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .form-btn-primary:hover {
   background: rgba(255, 157, 102, 0.25);
-  border-color: #FF9d66;
+  border-color: #FF9d66 !important;
+  box-shadow: 0 4px 12px rgba(255, 157, 102, 0.2);
 }
 
 .form-btn-secondary {
   background: transparent;
-  border-color: rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.2);
+  color: rgba(0, 0, 0, 0.8) !important;
   margin-top: 1.5rem;
 }
 
 .form-btn-secondary:hover {
-  border-color: rgba(255, 255, 255, 0.5);
-  color: #fff;
+  border-color: rgba(0, 0, 0, 0.5);
+  color: #000 !important;
 }
 
 /* Date/time input colour fixes (dark theme) */
 .form-input[type="date"],
 .form-input[type="time"] {
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 /* Modal */
@@ -969,7 +1132,8 @@ const resetForm = () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.9);
+  background: rgba(0, 0, 0, 0.4); /* Weicheres Overlay für den weißen Hintergrund */
+  backdrop-filter: blur(4px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -978,8 +1142,9 @@ const resetForm = () => {
 }
 
 .modal-content {
-  background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
   border-radius: 4px;
   max-width: 900px;
   width: 90%;
@@ -987,6 +1152,7 @@ const resetForm = () => {
   overflow-y: auto;
   padding: 3rem;
   position: relative;
+  color: #000 !important;
 }
 
 .modal-close {
@@ -995,10 +1161,10 @@ const resetForm = () => {
   right: 1rem;
   background: none;
   border: none;
-  color: #fff;
+  color: #000 !important;
   font-size: 2rem;
   cursor: pointer;
-  opacity: 0.7;
+  opacity: 0.5;
   transition: opacity 0.3s ease;
   line-height: 1;
 }
@@ -1012,7 +1178,7 @@ const resetForm = () => {
 }
 
 .modal-description {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(0, 0, 0, 0.7) !important;
   line-height: 1.6;
   white-space: pre-line;
 }
@@ -1027,7 +1193,7 @@ const resetForm = () => {
 .read-more-btn {
   background: none;
   border: none;
-  color: #FF9d66;
+  color: #FF9d66 !important;
   margin-top: 0.5rem;
   cursor: pointer;
   font-size: 0.9rem;
@@ -1040,21 +1206,13 @@ const resetForm = () => {
   opacity: 1;
 }
 
-.modal-close:hover {
-  opacity: 1;
-}
-
 .modal-title {
   font-size: 1.5rem;
   font-weight: 400;
   letter-spacing: 0.08em;
   margin-bottom: 1rem;
   text-transform: uppercase;
-}
-
-.modal-description {
-  color: rgba(255, 255, 255, 0.7);
-  margin-bottom: 2rem;
+  color: #000 !important;
 }
 
 /* Room Details */
@@ -1064,9 +1222,15 @@ const resetForm = () => {
   gap: 1.25rem;
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(0, 0, 0, 0.02);
   border-radius: 4px;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.detail-row {
+  display: flex;
+  gap: 3rem;
+  flex-wrap: wrap;
 }
 
 .detail-item {
@@ -1083,13 +1247,13 @@ const resetForm = () => {
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #FF9d66;
+  color: #FF9d66 !important;
   font-weight: 600;
 }
 
 .detail-value {
   font-size: 1rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(0, 0, 0, 0.9) !important;
 }
 
 .feature-tags {
@@ -1100,9 +1264,9 @@ const resetForm = () => {
 
 .feature-tag {
   padding: 0.4rem 0.9rem;
-  background: rgba(255, 157, 102, 0.15);
-  border: 1px solid rgba(255, 157, 102, 0.3);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 157, 102, 0.1);
+  border: 1px solid rgba(255, 157, 102, 0.4);
+  color: #000 !important;
   font-size: 0.8rem;
   border-radius: 3px;
   letter-spacing: 0.02em;
@@ -1111,9 +1275,9 @@ const resetForm = () => {
 .extra-text {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.5);
+  color: rgba(0, 0, 0, 0.5) !important;
   font-style: italic;
   text-align: center;
 }
@@ -1146,9 +1310,10 @@ const resetForm = () => {
 .modal-placeholder {
   padding: 3rem;
   text-align: center;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  background: rgba(0, 0, 0, 0.02);
+  border: 1px dashed rgba(0, 0, 0, 0.1);
   border-radius: 4px;
+  color: rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Mobile */

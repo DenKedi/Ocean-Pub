@@ -6,6 +6,10 @@ defineProps({
   isOpen: {
     type: Boolean,
     default: false
+  },
+  theme: {
+    type: String,
+    default: 'dark' // supports 'dark' (white lines) and 'light' (black lines)
   }
 })
 
@@ -27,7 +31,7 @@ const selectTheme = (themeName) => {
   <div class="burger-menu">
     <button 
       class="burger-button" 
-      :class="{ 'is-open': isOpen }"
+      :class="{ 'is-open': isOpen, 'is-light-theme': theme === 'light' }"
       @click="$emit('toggle')"
       aria-label="Toggle menu"
     >
@@ -40,7 +44,7 @@ const selectTheme = (themeName) => {
     <button 
       class="theme-button"
       @click="toggleThemeSelector"
-      :class="{ 'active': showThemeSelector }"
+      :class="{ 'active': showThemeSelector, 'is-light-theme': theme === 'light' && !isOpen }"
       aria-label="Change theme"
       title="Design Varianten"
     >
@@ -111,6 +115,11 @@ const selectTheme = (themeName) => {
   transform-origin: center;
 }
 
+/* Light Theme support for the Burger Lines */
+.burger-button.is-light-theme:not(.is-open) .burger-line {
+  background: black;
+}
+
 /* Hamburger to X animation */
 .burger-button.is-open .burger-line:nth-child(1) {
   transform: rotate(45deg) translate(5px, 5px);
@@ -144,6 +153,10 @@ const selectTheme = (themeName) => {
 .theme-button:hover,
 .theme-button.active {
   transform: scale(1.05);
+}
+
+.theme-button.is-light-theme {
+  filter: invert(1);
 }
 
 /* Theme Selector */

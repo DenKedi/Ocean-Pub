@@ -956,7 +956,6 @@ async function handleCategorySubmit() {
               <div class="user-info-block">
                 <div class="user-row-name-line">
                   <span class="user-row-name">{{ u.name || '–' }}</span>
-                  <span v-if="u.isLegacy" class="user-badge-legacy">Legacy Admin</span>
                 </div>
                 <span class="user-row-email">{{ u.email }}</span>
               </div>

@@ -1,4 +1,13 @@
 <script setup>
+import { defineProps } from 'vue'
+
+const props = defineProps({
+  theme: {
+    type: String,
+    default: 'dark'
+  }
+})
+
 const scrollToSection = (sectionId) => {
   const element = document.getElementById(sectionId)
   if (element) {
@@ -8,7 +17,7 @@ const scrollToSection = (sectionId) => {
 </script>
 
 <template>
-  <footer class="footer theme-section-bg">
+  <footer class="footer theme-section-bg" :class="{ 'footer-light': theme === 'light' }">
     <div class="container">
       <div class="footer-content">
         <!-- PALLAS Info Section -->
@@ -16,17 +25,11 @@ const scrollToSection = (sectionId) => {
           <h4 class="theme-text-primary">PALLAS.WORLD</h4>
           <p class="theme-text-secondary">Everybody Welcome</p>
           <div class="footer-address theme-text-secondary">
-            <p>Neuer Pferdemarkt 13, 20359 Hamburg, Germany</p>
-          </div>
-        </div>
-        
-        <!-- Navigation Links -->
-        <div class="footer-section links-section">
-          <h4 class="theme-text-primary">Navigation</h4>
-          <div class="footer-links">
-            <a @click="scrollToSection('kontakt')" class="footer-link theme-text-secondary">Kontakt</a>
-            <a @click="scrollToSection('speisekarte')" class="footer-link theme-text-secondary">Drinks-Menü</a>
-            <a @click="scrollToSection('events')" class="footer-link theme-text-secondary">Events</a>
+            <p>
+              <a href="https://maps.app.goo.gl/LvaqP8szwttLZEneA" target="_blank" rel="noopener noreferrer" class="footer-link theme-text-secondary">
+                Neuer Pferdemarkt 13, 20359 Hamburg, Germany
+              </a>
+            </p>
           </div>
         </div>
         
@@ -63,6 +66,7 @@ const scrollToSection = (sectionId) => {
   border-top: 1px solid var(--theme-border);
   padding: 2rem 0 2rem;
   position: relative;
+  z-index: 10;
 }
 
 .footer::before {
@@ -88,7 +92,7 @@ const scrollToSection = (sectionId) => {
 
 .footer-content {
   display: grid;
-  grid-template-columns: 2fr 1fr 1fr 1fr;
+  grid-template-columns: 2fr 1fr 1fr;
   gap: 2rem;
   margin-bottom: 3rem;
   padding: 3rem 0;
@@ -167,6 +171,43 @@ const scrollToSection = (sectionId) => {
   padding-top: 2.5rem;
   border-top: 1px solid var(--theme-border);
   position: relative;
+}
+
+/* Light Theme (Glassmorphism Override) */
+.footer-light.theme-section-bg {
+  background: rgba(255, 255, 255, 0.2) !important;
+  backdrop-filter: blur(8px) !important;
+  -webkit-backdrop-filter: blur(8px) !important;
+  border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
+  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.05);
+}
+
+.footer-light .theme-text-primary,
+.footer-light h4 {
+  color: #000 !important;
+}
+
+.footer-light .theme-text-secondary,
+.footer-light p,
+.footer-light .contact-item,
+.footer-light .theme-text-muted {
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.footer-light .footer-link {
+  color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.footer-light .footer-link:hover {
+  color: #2b2c77 !important;
+}
+
+.footer-light .footer-bottom {
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.footer-light .footer-address p {
+  color: rgba(0, 0, 0, 0.75) !important;
 }
 
 .footer-bottom::before {
