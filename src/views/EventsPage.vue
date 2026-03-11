@@ -598,13 +598,13 @@ onUnmounted(() => {
 }
 
 .filter-btn:hover {
-  border-color: #FF9d66;
-  color: #FF9d66;
+  border-color: var(--cat-color, #FF9d66);
+  color: var(--cat-color, #FF9d66);
 }
 
 .filter-btn.active {
-  background: #FF9d66;
-  border-color: #FF9d66;
+  background: var(--cat-color, #FF9d66);
+  border-color: var(--cat-color, #FF9d66);
   color: #000 !important;
 }
 
@@ -758,7 +758,6 @@ onUnmounted(() => {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   border-radius: 0;
-  background: #FF9d66 !important;
   color: #000 !important;
 }
 
@@ -957,7 +956,6 @@ onUnmounted(() => {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #FF9d66 !important;
 }
 
 .list-meta {

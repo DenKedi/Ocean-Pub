@@ -23,9 +23,9 @@
 }
 
 .container {
-  max-width: 780px;
+  max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 3rem;
   text-align: center;
 }
 

@@ -64,8 +64,8 @@ onMounted(() => {
 <template>
   <MainLayout :bg-image="currentBackgroundImage">
     <HeroSection />
-    <AboutSection />
     <EventsPreviewSection />
+    <AboutSection />
     <InstagramSection />
     <ContactSection />
   </MainLayout>

@@ -8,6 +8,7 @@ const eventRoutes = require('./routes/eventRoutes');
 const categoryRoutes = require('./routes/categoryRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const roomRoutes = require('./routes/roomRoutes');
+const settingsRoutes = require('./routes/settingsRoutes');
 const ErrorHandler = require('./middleware/ErrorHandler');
 require('dotenv').config();
 require('./serverRoutines');
@@ -64,6 +65,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/rooms', roomRoutes);
+app.use('/api/settings', settingsRoutes);
 
 // Debug endpoint (moved to specific path instead of catch-all)
 app.get('/api/debug/headers', (req, res) => {

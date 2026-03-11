@@ -100,6 +100,25 @@ const editUserForm = ref({ name: '', email: '', password: '', passwordConfirm: '
 const editUserFormError = ref('')
 const editUserFormLoading = ref(false)
 
+// Instagram Settings State
+const instagramUrlLeft = ref('')
+const instagramUrlRight = ref('')
+const instagramSaving = ref(false)
+const instagramSaveSuccess = ref(false)
+const instagramSaveError = ref('')
+
+function extractInstagramId(input) {
+  if (!input) return ''
+  const match = input.match(/instagram\.com\/(?:p|reel)\/([A-Za-z0-9_-]+)/)
+  if (match) return match[1]
+  // If user already typed just an ID
+  if (/^[A-Za-z0-9_-]+$/.test(input.trim())) return input.trim()
+  return ''
+}
+
+const instagramIdLeft = computed(() => extractInstagramId(instagramUrlLeft.value))
+const instagramIdRight = computed(() => extractInstagramId(instagramUrlRight.value))
+
 // Computed
 const stats = computed(() => ({
   total: events.value.length,
@@ -208,7 +227,7 @@ const selectedCategoryImage = computed(() => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([fetchEvents(), fetchCategories(), fetchRooms(), fetchUsers()])
+  await Promise.all([fetchEvents(), fetchCategories(), fetchRooms(), fetchUsers(), fetchInstagramSettings()])
   loading.value = false
   
   // Close context menu on click outside
@@ -318,6 +337,41 @@ async function fetchRooms() {
     console.error('Fehler beim Laden der Räume:', err)
   } finally {
     roomsLoading.value = false
+  }
+}
+
+async function fetchInstagramSettings() {
+  try {
+    const { data } = await api.get('/settings')
+    // Populate URL fields with the stored ID so the user sees what's active
+    instagramUrlLeft.value = data?.instagram?.postLeft
+      ? `https://www.instagram.com/p/${data.instagram.postLeft}/`
+      : ''
+    instagramUrlRight.value = data?.instagram?.postRight
+      ? `https://www.instagram.com/p/${data.instagram.postRight}/`
+      : ''
+  } catch (err) {
+    console.error('Fehler beim Laden der Instagram-Einstellungen:', err)
+  }
+}
+
+async function saveInstagramSettings() {
+  instagramSaveError.value = ''
+  const left = instagramIdLeft.value
+  const right = instagramIdRight.value
+  if (!left || !right) {
+    instagramSaveError.value = 'Bitte gültige Instagram-Links eingeben'
+    return
+  }
+  instagramSaving.value = true
+  try {
+    await api.put('/settings/instagram', { postLeft: left, postRight: right })
+    instagramSaveSuccess.value = true
+    setTimeout(() => { instagramSaveSuccess.value = false }, 3000)
+  } catch (err) {
+    instagramSaveError.value = err.response?.data?.msg || 'Fehler beim Speichern'
+  } finally {
+    instagramSaving.value = false
   }
 }
 
@@ -733,6 +787,9 @@ async function handleCategorySubmit() {
           <a href="#" class="nav-item" :class="{ active: activeSection === 'users' }" @click.prevent="activeSection = 'users'">
             Benutzer
           </a>
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'instagram' }" @click.prevent="activeSection = 'instagram'">
+            Instagram
+          </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -1052,6 +1109,45 @@ async function handleCategorySubmit() {
             </div>
             <div v-else class="rooms-empty-hint">
               <p>Wähle links einen Raum zum Bearbeiten aus.</p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Instagram Settings Section -->
+        <section v-if="activeSection === 'instagram'" class="section">
+          <div class="section-header">
+            <h2>Instagram Posts</h2>
+          </div>
+          <div class="instagram-settings">
+            <p class="instagram-settings-hint">Instagram-Link des Posts einfügen, z.B. <code>https://www.instagram.com/p/DVTYNbNDATB/</code></p>
+            <div class="form-group">
+              <label>Linker Post (unten links)</label>
+              <input v-model="instagramUrlLeft" class="form-input" placeholder="https://www.instagram.com/p/…" />
+              <div class="post-id-preview" :class="{ valid: instagramIdLeft, invalid: instagramUrlLeft && !instagramIdLeft }">
+                <template v-if="instagramIdLeft">
+                  ID: <code>{{ instagramIdLeft }}</code>
+                  <a :href="`https://www.instagram.com/p/${instagramIdLeft}/`" target="_blank" rel="noopener noreferrer" class="post-preview-link">↗ öffnen</a>
+                </template>
+                <template v-else-if="instagramUrlLeft">Ungültiger Link</template>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Rechter Post (oben rechts)</label>
+              <input v-model="instagramUrlRight" class="form-input" placeholder="https://www.instagram.com/p/…" />
+              <div class="post-id-preview" :class="{ valid: instagramIdRight, invalid: instagramUrlRight && !instagramIdRight }">
+                <template v-if="instagramIdRight">
+                  ID: <code>{{ instagramIdRight }}</code>
+                  <a :href="`https://www.instagram.com/p/${instagramIdRight}/`" target="_blank" rel="noopener noreferrer" class="post-preview-link">↗ öffnen</a>
+                </template>
+                <template v-else-if="instagramUrlRight">Ungültiger Link</template>
+              </div>
+            </div>
+            <div class="instagram-settings-actions">
+              <button @click="saveInstagramSettings" class="btn-primary" :disabled="instagramSaving || !instagramIdLeft || !instagramIdRight">
+                {{ instagramSaving ? 'Speichern…' : 'Speichern' }}
+              </button>
+              <span v-if="instagramSaveSuccess" class="save-success">✓ Gespeichert</span>
+              <span v-if="instagramSaveError" class="save-error">{{ instagramSaveError }}</span>
             </div>
           </div>
         </section>
@@ -2980,5 +3076,82 @@ async function handleCategorySubmit() {
   padding-top: 1rem;
   margin-top: 0.5rem;
   margin-bottom: 0.25rem;
+}
+
+/* Instagram Settings */
+.instagram-settings {
+  max-width: 520px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.instagram-settings-hint {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.instagram-settings-hint code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.85em;
+}
+
+.post-preview-link {
+  display: inline-block;
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  text-decoration: none;
+}
+
+.post-preview-link:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.post-id-preview {
+  margin-top: 0.4rem;
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.45);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 1.2em;
+}
+
+.post-id-preview.valid {
+  color: #4caf50;
+}
+
+.post-id-preview.invalid {
+  color: #f44336;
+}
+
+.post-id-preview code {
+  background: rgba(255, 255, 255, 0.08);
+  padding: 0.1em 0.4em;
+  border-radius: 4px;
+  font-size: 0.85em;
+  color: inherit;
+}
+
+.instagram-settings-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.save-success {
+  color: #4caf50;
+  font-size: 0.9rem;
+}
+
+.save-error {
+  color: #f44336;
+  font-size: 0.9rem;
 }
 </style>
