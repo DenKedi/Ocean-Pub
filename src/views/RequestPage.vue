@@ -24,7 +24,7 @@ const mapSpots = (spots) =>
   spots.map(spot => ({
     ...spot,
     images: spot.images?.length
-      ? spot.images.map(f => `${API_BASE}/uploads/rooms/${spot.imageFolder}/${f}`)
+      ? spot.images.map(f => f.startsWith('http') ? f : `${API_BASE}/uploads/rooms/${spot.imageFolder}/${f}`)
       : getImagesForFolder(spot.imageFolder)
   }))
 

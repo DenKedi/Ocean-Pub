@@ -85,6 +85,9 @@ const roomImageInput = ref(null)
 const roomImagesUploading = ref(false)
 const dragImageIdx = ref(null)
 const dragOverIdx = ref(null)
+const roomDropActive = ref(false)
+const eventDropActive = ref(false)
+const categoryDropActive = ref(false)
 
 // Users State
 const users = ref([])
@@ -222,7 +225,7 @@ const getFullImageUrl = (url) => {
 const selectedCategoryImage = computed(() => {
   if (!form.value.category) return null
   const cat = categories.value.find(c => c._id === form.value.category)
-  return cat?.defaultImageUrl || null
+  return cat?.defaultImageUrl ? getFullImageUrl(cat.defaultImageUrl) : null
 })
 
 // Lifecycle
@@ -415,8 +418,7 @@ async function saveRoom() {
   }
 }
 
-async function uploadRoomImages(event) {
-  const files = event.target.files
+async function uploadRoomImagesFromFiles(files) {
   if (!files?.length) return
   roomImagesUploading.value = true
   try {
@@ -433,8 +435,18 @@ async function uploadRoomImages(event) {
     alert('Fehler beim Hochladen der Bilder.')
   } finally {
     roomImagesUploading.value = false
-    event.target.value = ''
   }
+}
+
+async function uploadRoomImages(event) {
+  const files = event.target.files
+  await uploadRoomImagesFromFiles(files)
+  event.target.value = ''
+}
+
+async function onRoomFileDrop(event) {
+  roomDropActive.value = false
+  await uploadRoomImagesFromFiles(event.dataTransfer.files)
 }
 
 async function deleteRoomImage(filename) {
@@ -510,7 +522,7 @@ function openEditEventModal(event) {
   }
   // Vorschau für bestehendes Event-Bild
   if (event.eventImageUrl) {
-    eventImagePreview.value = event.eventImageUrl
+    eventImagePreview.value = getFullImageUrl(event.eventImageUrl)
   }
   showEventModal.value = true
 }
@@ -652,34 +664,34 @@ function resetCategoryForm() {
   originalFileName.value = ''
 }
 
-function handleCategoryImageChange(event) {
-  const file = event.target.files[0]
-  if (file) {
-    originalFileName.value = file.name
-    croppingMode.value = 'category'
-    // Bild für Cropper laden
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      cropperImage.value = e.target.result
-      showCropperModal.value = true
-    }
-    reader.readAsDataURL(file)
+function openImageCropper(file, mode) {
+  if (!file) return
+  originalFileName.value = file.name
+  croppingMode.value = mode
+  const reader = new FileReader()
+  reader.onload = (e) => {
+    cropperImage.value = e.target.result
+    showCropperModal.value = true
   }
+  reader.readAsDataURL(file)
+}
+
+function handleCategoryImageChange(event) {
+  openImageCropper(event.target.files[0], 'category')
 }
 
 function handleEventImageChange(event) {
-  const file = event.target.files[0]
-  if (file) {
-    originalFileName.value = file.name
-    croppingMode.value = 'event'
-    // Bild für Cropper laden
-    const reader = new FileReader()
-    reader.onload = (e) => {
-      cropperImage.value = e.target.result
-      showCropperModal.value = true
-    }
-    reader.readAsDataURL(file)
-  }
+  openImageCropper(event.target.files[0], 'event')
+}
+
+function onEventImageDrop(event) {
+  eventDropActive.value = false
+  openImageCropper(event.dataTransfer.files[0], 'event')
+}
+
+function onCategoryImageDrop(event) {
+  categoryDropActive.value = false
+  openImageCropper(event.dataTransfer.files[0], 'category')
 }
 
 function closeCropperModal() {
@@ -1053,14 +1065,6 @@ async function handleCategorySubmit() {
               <div class="form-group">
                 <div class="room-images-header">
                   <label>Bilder</label>
-                  <button
-                    type="button"
-                    class="btn-secondary btn-sm"
-                    :disabled="roomImagesUploading"
-                    @click="roomImageInput.click()"
-                  >
-                    {{ roomImagesUploading ? 'Lädt hoch…' : '+ Bilder hinzufügen' }}
-                  </button>
                   <input
                     ref="roomImageInput"
                     type="file"
@@ -1071,33 +1075,46 @@ async function handleCategorySubmit() {
                   />
                 </div>
 
-                <div v-if="roomForm.images?.length" class="room-images-grid">
-                  <div
-                    v-for="(img, imgIdx) in roomForm.images"
-                    :key="img"
-                    class="room-img-item"
-                    draggable="true"
-                    :class="{ 'is-drag-over': dragOverIdx === imgIdx }"
-                    @dragstart="dragImageIdx = imgIdx"
-                    @dragover.prevent="dragOverIdx = imgIdx"
-                    @dragleave="dragOverIdx = null"
-                    @drop.prevent="onImageDrop(imgIdx)"
-                  >
-                    <img
-                      :src="`${API_BASE}/uploads/rooms/${roomForm.imageFolder}/${img}`"
-                      class="room-img-thumb"
-                      :alt="img"
-                    />
-                    <button
-                      type="button"
-                      class="img-delete-btn"
-                      title="Löschen"
-                      @click="deleteRoomImage(img)"
-                    >×</button>
-                    <div class="img-drag-handle" title="Zum Sortieren ziehen">⠿</div>
+                <div
+                  class="room-drop-area"
+                  :class="{ 'room-drop-area--active': roomDropActive, 'room-drop-area--uploading': roomImagesUploading }"
+                  @dragover.prevent="roomDropActive = true"
+                  @dragleave.self="roomDropActive = false"
+                  @drop.prevent="onRoomFileDrop"
+                >
+                  <div v-if="roomForm.images?.length" class="room-images-grid">
+                    <div
+                      v-for="(img, imgIdx) in roomForm.images"
+                      :key="img"
+                      class="room-img-item"
+                      draggable="true"
+                      :class="{ 'is-drag-over': dragOverIdx === imgIdx }"
+                      @dragstart="dragImageIdx = imgIdx"
+                      @dragover.prevent.stop="dragOverIdx = imgIdx"
+                      @dragleave="dragOverIdx = null"
+                      @drop.prevent.stop="onImageDrop(imgIdx)"
+                    >
+                      <img
+                        :src="img.startsWith('http') ? img : `${API_BASE}/uploads/rooms/${roomForm.imageFolder}/${img}`"
+                        class="room-img-thumb"
+                        :alt="img"
+                      />
+                      <button
+                        type="button"
+                        class="img-delete-btn"
+                        title="Löschen"
+                        @click="deleteRoomImage(img)"
+                      >×</button>
+                      <div class="img-drag-handle" title="Zum Sortieren ziehen">⠿</div>
+                    </div>
+                  </div>
+
+                  <div class="room-drop-hint" @click="roomImageInput.click()">
+                    <span v-if="roomImagesUploading">Lädt hoch…</span>
+                    <span v-else-if="roomDropActive">Loslassen zum Hochladen</span>
+                    <span v-else>{{ roomForm.images?.length ? '+ Weitere Bilder' : '+ Bilder ablegen oder klicken' }}</span>
                   </div>
                 </div>
-                <p v-else class="room-images-empty">Noch keine Bilder hochgeladen. Bilder werden automatisch zu WebP konvertiert.</p>
               </div>
 
               <div class="rooms-form-actions">
@@ -1317,49 +1334,50 @@ async function handleCategorySubmit() {
               <div class="form-group">
                 <label>Event-Bild</label>
                 <div class="image-upload-section">
-                  <div v-if="eventImagePreview || selectedCategoryImage" class="image-preview-wrapper">
-                    <img 
-                      :src="eventImagePreview || selectedCategoryImage" 
-                      alt="Event Vorschau" 
-                      class="image-preview"
-                    />
-                    <span v-if="!eventImagePreview && selectedCategoryImage" class="fallback-badge">
-                      Default
-                    </span>
-                    <span v-else-if="eventImagePreview" class="custom-badge">
-                      Eigenes Bild
-                    </span>
+                  <input
+                    type="file"
+                    ref="eventImageInput"
+                    accept="image/*"
+                    @change="handleEventImageChange"
+                    style="display: none"
+                  />
+                  <div
+                    class="image-drop-zone"
+                    :class="{ 'image-drop-zone--active': eventDropActive, 'image-drop-zone--has-image': eventImagePreview || selectedCategoryImage }"
+                    @dragover.prevent="eventDropActive = true"
+                    @dragleave.self="eventDropActive = false"
+                    @drop.prevent="onEventImageDrop"
+                    @click="$refs.eventImageInput.click()"
+                  >
+                    <template v-if="eventImagePreview || selectedCategoryImage">
+                      <img
+                        :src="eventImagePreview || selectedCategoryImage"
+                        alt="Event Vorschau"
+                        class="drop-zone-preview-img"
+                      />
+                      <div class="drop-zone-overlay">
+                        <span>{{ eventDropActive ? 'Loslassen' : 'Klicken oder ablegen' }}</span>
+                      </div>
+                      <span v-if="!eventImagePreview && selectedCategoryImage" class="fallback-badge">Default</span>
+                      <span v-else-if="eventImagePreview" class="custom-badge">Eigenes Bild</span>
+                    </template>
+                    <template v-else>
+                      <div class="drop-zone-empty">
+                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                        <span>{{ eventDropActive ? 'Loslassen zum Hochladen' : 'Bild ablegen oder klicken' }}</span>
+                        <small>Kategorie-Bild wird als Standard verwendet</small>
+                      </div>
+                    </template>
                   </div>
-                  <div v-else class="image-placeholder">
-                    <span>Kein Bild (Kategorie wählen für Standard)</span>
-                  </div>
-                  <div class="image-upload-actions">
-                    <input 
-                      type="file" 
-                      ref="eventImageInput" 
-                      accept="image/*" 
-                      @change="handleEventImageChange" 
-                      style="display: none"
-                    />
-                    <button 
-                      type="button" 
-                      @click="$refs.eventImageInput.click()" 
-                      class="btn btn-secondary"
-                    >
-                      {{ eventImagePreview ? 'Bild ändern' : 'Bild hochladen' }}
-                    </button>
-                    <button 
-                      v-if="eventImagePreview" 
-                      type="button" 
-                      @click="eventImagePreview = null; eventImageFile = null" 
+                  <div v-if="eventImagePreview" class="image-upload-actions">
+                    <button
+                      type="button"
+                      @click="eventImagePreview = null; eventImageFile = null"
                       class="btn btn-danger"
                     >
                       Eigenes Bild entfernen
                     </button>
                   </div>
-                  <small class="form-help">
-                    Optional: Lade ein eigenes Bild hoch oder nutze das Kategorie-Standardbild
-                  </small>
                 </div>
               </div>
 
@@ -1468,17 +1486,33 @@ async function handleCategorySubmit() {
 
             <div class="form-group">
               <label>Kategorie-Bild *</label>
-              <p class="field-hint">Wähle ein Bild aus</p>
-              <input 
-                type="file" 
-                @change="handleCategoryImageChange" 
-                accept="image/*" 
-                required 
-                class="file-input"
+              <input
+                type="file"
+                ref="categoryImageInput"
+                @change="handleCategoryImageChange"
+                accept="image/*"
+                style="display: none"
               />
-              <div v-if="categoryImagePreview" class="image-preview">
-                <img :src="categoryImagePreview" alt="Vorschau" />
-                <span class="preview-hint">Vorschau</span>
+              <div
+                class="image-drop-zone"
+                :class="{ 'image-drop-zone--active': categoryDropActive, 'image-drop-zone--has-image': categoryImagePreview }"
+                @dragover.prevent="categoryDropActive = true"
+                @dragleave.self="categoryDropActive = false"
+                @drop.prevent="onCategoryImageDrop"
+                @click="$refs.categoryImageInput.click()"
+              >
+                <template v-if="categoryImagePreview">
+                  <img :src="categoryImagePreview" alt="Vorschau" class="drop-zone-preview-img" />
+                  <div class="drop-zone-overlay">
+                    <span>{{ categoryDropActive ? 'Loslassen' : 'Klicken oder ablegen' }}</span>
+                  </div>
+                </template>
+                <template v-else>
+                  <div class="drop-zone-empty">
+                    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    <span>{{ categoryDropActive ? 'Loslassen zum Hochladen' : 'Bild ablegen oder klicken' }}</span>
+                  </div>
+                </template>
               </div>
             </div>
 
@@ -2868,15 +2902,122 @@ async function handleCategorySubmit() {
   opacity: 1;
 }
 
-.room-images-empty {
-  color: rgba(255, 255, 255, 0.35);
-  font-size: 0.85rem;
-  margin: 0;
-  padding: 1rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
+/* Room drop area */
+.room-drop-area {
+  border: 2px dashed rgba(255, 255, 255, 0.12);
+  border-radius: 10px;
+  padding: 0.5rem;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.room-drop-area--active {
+  border-color: #646cff;
+  background: rgba(100, 108, 255, 0.07);
+}
+
+.room-drop-area--uploading {
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.room-drop-hint {
+  margin-top: 0.5rem;
+  padding: 0.6rem 1rem;
   text-align: center;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 0.82rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.2s, background 0.2s;
+}
+
+.room-drop-hint:hover {
+  color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.room-drop-area--active .room-drop-hint {
+  color: #a0a8ff;
+}
+
+/* Generic image drop zone (events + categories) */
+.image-drop-zone {
+  position: relative;
+  border: 2px dashed rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  max-width: 400px;
+}
+
+.image-drop-zone:hover {
+  border-color: rgba(255, 255, 255, 0.35);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.image-drop-zone--active {
+  border-color: #646cff !important;
+  background: rgba(100, 108, 255, 0.08) !important;
+}
+
+.image-drop-zone--has-image {
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.drop-zone-preview-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+}
+
+.drop-zone-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+  color: #fff;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.image-drop-zone:hover .drop-zone-overlay,
+.image-drop-zone--active .drop-zone-overlay {
+  opacity: 1;
+}
+
+.drop-zone-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 2.5rem 1.5rem;
+  color: rgba(255, 255, 255, 0.4);
+  text-align: center;
+}
+
+.drop-zone-empty svg {
+  opacity: 0.6;
+}
+
+.drop-zone-empty span {
+  font-size: 0.9rem;
+}
+
+.drop-zone-empty small {
+  font-size: 0.78rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.image-drop-zone--active .drop-zone-empty {
+  color: #a0a8ff;
 }
 
 @media (max-width: 900px) {
