@@ -61,7 +61,7 @@ const scrollToSection = (sectionId) => {
 <style scoped>
 .footer {
   border-top: 1px solid var(--theme-border);
-  padding: 4rem 0 2rem;
+  padding: 2rem 0 2rem;
   position: relative;
 }
 

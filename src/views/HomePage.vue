@@ -6,7 +6,6 @@ import AboutSection from '../components/sections/AboutSection.vue'
 import EventsPreviewSection from '../components/sections/EventsPreviewSection.vue'
 import InstagramSection from '../components/sections/InstagramSection.vue'
 import ContactSection from '../components/sections/ContactSection.vue'
-import FooterSection from '../components/sections/FooterSection.vue'
 import sitzeckeImg from '../assets/pictures/sitzecke.webp'
 import spinnexImg from '../assets/pictures/spinnex.webp'
 
@@ -69,7 +68,6 @@ onMounted(() => {
     <EventsPreviewSection />
     <InstagramSection />
     <ContactSection />
-    <FooterSection />
   </MainLayout>
 </template>
 

@@ -2,6 +2,7 @@
 import { ref, onMounted, onUnmounted } from "vue";
 import BurgerMenu from "../components/BurgerMenu.vue";
 import iconImage from "../assets/icons/Pallas_Logo_III-cropped.svg";
+import FooterSection from "../components/sections/FooterSection.vue";
 
 const props = defineProps({
   bgImage: {
@@ -125,6 +126,9 @@ const navItems = [
     <main class="main-content">
       <slot />
     </main>
+
+    <!-- Footer -->
+    <FooterSection />
   </div>
 </template>
 
