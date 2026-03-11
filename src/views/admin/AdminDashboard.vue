@@ -525,7 +525,7 @@ async function handleSubmit() {
         }
       })
 
-      eventImageUrl = `${API_URL}${uploadResponse.data.imageUrl}`
+      eventImageUrl = uploadResponse.data.imageUrl
     }
 
     const payload = {
@@ -686,7 +686,7 @@ async function handleCategorySubmit() {
     })
 
     // Dann die Kategorie mit der Bild-URL erstellen
-    const imageUrl = `${API_URL}${uploadResponse.data.imageUrl}`
+    const imageUrl = uploadResponse.data.imageUrl
     const categoryData = {
       ...categoryForm.value,
       defaultImageUrl: imageUrl
