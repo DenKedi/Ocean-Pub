@@ -1,4 +1,9 @@
+<script setup>
+import MainLayout from '@/layouts/MainLayout.vue'
+</script>
+
 <template>
+  <MainLayout>
   <section class="legal-section">
     <div class="container">
       <h1 class="legal-title">Impressum</h1>
@@ -34,6 +39,7 @@
       </div>
     </div>
   </section>
+  </MainLayout>
 </template>
 
 <style scoped>

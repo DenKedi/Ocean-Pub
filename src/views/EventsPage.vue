@@ -605,7 +605,7 @@ onUnmounted(() => {
 .filter-btn.active {
   background: var(--cat-color, #FF9d66);
   border-color: var(--cat-color, #FF9d66);
-  color: #000 !important;
+  color: #1d1d1d !important;
 }
 
 .view-toggle {
@@ -634,7 +634,7 @@ onUnmounted(() => {
 .toggle-btn.active {
   background: #FF9d66;
   border-color: #FF9d66;
-  color: #000 !important;
+  color: #1d1d1d !important;
 }
 
 /* Events Content */
@@ -758,7 +758,7 @@ onUnmounted(() => {
   letter-spacing: 0.15em;
   text-transform: uppercase;
   border-radius: 0;
-  color: #000 !important;
+  color: #1d1d1d !important;
 }
 
 .event-extra-label {
@@ -767,7 +767,7 @@ onUnmounted(() => {
   right: 1rem;
   padding: 0.4rem 0.8rem;
   background: #FF9d66;
-  color: #000 !important;
+  color: #1d1d1d !important;
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.1em;
@@ -999,7 +999,7 @@ onUnmounted(() => {
   font-size: 0.65rem;
   padding: 0.3rem 0.6rem;
   background: #FF9d66;
-  color: #000 !important;
+  color: #1d1d1d !important;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;

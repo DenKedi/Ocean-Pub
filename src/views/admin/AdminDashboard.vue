@@ -81,6 +81,14 @@ const roomsSaveSuccess = ref(false)
 const editingRoom = ref(null)       // { sketch, index }
 const roomForm = ref({})
 const roomFeatureInput = ref('')
+
+const linkTooltipVisible = ref(false)
+const linkTooltipX = ref(0)
+const linkTooltipY = ref(0)
+const linkTooltipUrl = ref('')
+const linkTooltipSelectionStart = ref(0)
+const linkTooltipSelectionEnd = ref(0)
+
 const roomImageInput = ref(null)
 const roomImagesUploading = ref(false)
 const dragImageIdx = ref(null)
@@ -88,6 +96,25 @@ const dragOverIdx = ref(null)
 const roomDropActive = ref(false)
 const eventDropActive = ref(false)
 const categoryDropActive = ref(false)
+
+// Jobs State
+const jobs = ref([])
+const jobsLoading = ref(false)
+const showJobModal = ref(false)
+const editingJob = ref(null)
+const jobForm = ref({
+  title: '',
+  description: '',
+  type: '',
+  startTime: '',
+  endTime: '',
+  extra_label: '',
+  link_url: '',
+  link_text: '',
+  isActive: true
+})
+const jobFormError = ref('')
+const jobFormLoading = ref(false)
 
 // Users State
 const users = ref([])
@@ -230,7 +257,7 @@ const selectedCategoryImage = computed(() => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([fetchEvents(), fetchCategories(), fetchRooms(), fetchUsers(), fetchInstagramSettings()])
+  await Promise.all([fetchEvents(), fetchCategories(), fetchRooms(), fetchUsers(), fetchInstagramSettings(), fetchJobs()])
   loading.value = false
   
   // Close context menu on click outside
@@ -376,6 +403,57 @@ async function saveInstagramSettings() {
   } finally {
     instagramSaving.value = false
   }
+}
+
+function handleDescriptionSelect(event) {
+  const textarea = event.target;
+  const start = textarea.selectionStart;
+  const end = textarea.selectionEnd;
+  
+  if (start !== end && textarea.value) {
+    const selectedText = textarea.value.substring(start, end).trim();
+    if (selectedText.length > 0) {
+      linkTooltipSelectionStart.value = start;
+      linkTooltipSelectionEnd.value = end;
+      
+      const rect = textarea.getBoundingClientRect();
+      
+      let x = event.clientX;
+      let y = event.clientY;
+      
+      // If triggered by keyboard, event.clientX is undefined
+      if (x === undefined || y === undefined) {
+        x = rect.left + (rect.width / 2);
+        y = rect.top + 30; // Just slightly below the top of the textarea
+      }
+      
+      linkTooltipX.value = x;
+      linkTooltipY.value = y - 10; // Pop up slightly above the cursor/position
+      
+      linkTooltipUrl.value = 'https://';
+      linkTooltipVisible.value = true;
+      return;
+    }
+  }
+  linkTooltipVisible.value = false;
+}
+
+function insertLink() {
+  const url = linkTooltipUrl.value.trim();
+  if (!url || url === 'https://') {
+    linkTooltipVisible.value = false;
+    return;
+  }
+  
+  const start = linkTooltipSelectionStart.value;
+  const end = linkTooltipSelectionEnd.value;
+  const text = roomForm.value.description;
+  const selectedText = text.substring(start, end);
+  
+  const insertString = `[${selectedText}](${url})`;
+  roomForm.value.description = text.substring(0, start) + insertString + text.substring(end);
+  
+  linkTooltipVisible.value = false;
 }
 
 function openRoomEditor(sketch, index) {
@@ -555,6 +633,22 @@ function resetForm() {
 function formatDateTimeLocal(dateStr) {
   const d = new Date(dateStr)
   return d.toISOString().slice(0, 16)
+}
+
+function formatDateLocal(dateStr) {
+  const d = new Date(dateStr)
+  return d.toISOString().slice(0, 10)
+}
+
+function contrastColor(hex) {
+  if (!hex) return '#ffffff'
+  const c = hex.replace('#', '')
+  const r = parseInt(c.substring(0, 2), 16)
+  const g = parseInt(c.substring(2, 4), 16)
+  const b = parseInt(c.substring(4, 6), 16)
+  // Perceived luminance
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+  return luminance > 0.5 ? '#000000' : '#ffffff'
 }
 
 function formatDate(dateStr) {
@@ -771,6 +865,98 @@ async function handleCategorySubmit() {
     categoryFormLoading.value = false
   }
 }
+// --- JOBS METHODS ---
+async function fetchJobs() {
+  jobsLoading.value = true
+  try {
+    const { data } = await api.get('/jobs')
+    jobs.value = data
+  } catch (err) {
+    console.error('Fehler beim Laden der Jobs:', err)
+  } finally {
+    jobsLoading.value = false
+  }
+}
+
+function openNewJobModal() {
+  editingJob.value = null
+  resetJobForm()
+  showJobModal.value = true
+}
+
+function openEditJobModal(job) {
+  editingJob.value = job
+  jobForm.value = {
+    title: job.title || '',
+    description: job.description || '',
+    type: job.type || '',
+    startTime: job.startTime ? formatDateLocal(job.startTime) : '',
+    endTime: job.endTime ? formatDateLocal(job.endTime) : '',
+    extra_label: job.extra_label || '',
+    link_url: job.link_url || '',
+    link_text: job.link_text || '',
+    isActive: job.isActive !== false
+  }
+  jobFormError.value = ''
+  showJobModal.value = true
+}
+
+function closeJobModal() {
+  showJobModal.value = false
+  editingJob.value = null
+  resetJobForm()
+}
+
+function resetJobForm() {
+  jobForm.value = {
+    title: '',
+    description: '',
+    type: '',
+    startTime: '',
+    endTime: '',
+    extra_label: '',
+    link_url: '',
+    link_text: '',
+    isActive: true
+  }
+  jobFormError.value = ''
+}
+
+async function handleJobSubmit() {
+  jobFormError.value = ''
+  if (!jobForm.value.title.trim()) {
+    jobFormError.value = 'Bitte füllen Sie den Titel aus'
+    return
+  }
+  jobFormLoading.value = true
+  try {
+    const payload = { ...jobForm.value }
+    if (!payload.startTime) payload.startTime = null
+    if (!payload.endTime) payload.endTime = null
+    
+    if (editingJob.value) {
+      await api.put(`/jobs/${editingJob.value._id}`, payload)
+    } else {
+      await api.post('/jobs', payload)
+    }
+    await fetchJobs()
+    closeJobModal()
+  } catch (err) {
+    jobFormError.value = err.response?.data?.msg || err.response?.data?.error || 'Ein Fehler ist aufgetreten'
+  } finally {
+    jobFormLoading.value = false
+  }
+}
+
+async function deleteJob(job) {
+  if (!confirm(`Möchten Sie den Job "${job.title}" wirklich löschen?`)) return
+  try {
+    await api.delete(`/jobs/${job._id}`)
+    await fetchJobs()
+  } catch (err) {
+    alert('Fehler beim Löschen: ' + (err.response?.data?.msg || err.message))
+  }
+}
 </script>
 
 <template>
@@ -801,6 +987,9 @@ async function handleCategorySubmit() {
           </a>
           <a href="#" class="nav-item" :class="{ active: activeSection === 'instagram' }" @click.prevent="activeSection = 'instagram'">
             Instagram
+          </a>
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'jobs' }" @click.prevent="activeSection = 'jobs'; toggleMobileMenu()">
+            Jobs
           </a>
         </nav>
 
@@ -878,20 +1067,21 @@ async function handleCategorySubmit() {
                 <tr v-for="event in futureEvents" :key="event._id">
                   <td>{{ event.title }}</td>
                   <td>
-                    <span class="category-badge" :style="{ backgroundColor: event.category?.color || '#333' }">
+                    <span class="category-badge" :style="{ backgroundColor: event.category?.color || '#333', '--badge-color': contrastColor(event.category?.color) }">
                       {{ event.category?.name || 'Keine' }}
                     </span>
                   </td>
                   <td>{{ formatDate(event.startTime) }}</td>
                   <td>{{ Array.isArray(event.room) ? event.room.join(', ') : event.room }}</td>
                   <td>{{ event.price ? `${event.price} €` : 'Kostenlos' }}</td>
-                  <td class="actions">
-                    <div class="context-menu-wrapper">
-                      <button @click.stop="toggleContextMenu(event._id)" class="btn-context-menu" title="Aktionen">⋮</button>
-                      <div v-if="activeContextMenu === event._id" class="context-menu" @click.stop>
-                        <button @click="openEditEventModal(event); closeContextMenu()" class="context-menu-item">Bearbeiten</button>
-                        <button @click="deleteEvent(event); closeContextMenu()" class="context-menu-item danger">Löschen</button>
-                      </div>
+                  <td>
+                    <div class="actions">
+                      <button class="btn-icon" @click="openEditEventModal(event)" title="Bearbeiten">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                      </button>
+                      <button class="btn-icon danger" @click="deleteEvent(event)" title="Löschen">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -921,20 +1111,21 @@ async function handleCategorySubmit() {
                 <tr v-for="event in pastEvents" :key="event._id" class="past-row">
                   <td>{{ event.title }}</td>
                   <td>
-                    <span class="category-badge" :style="{ backgroundColor: event.category?.color || '#333' }">
+                    <span class="category-badge" :style="{ backgroundColor: event.category?.color || '#333', '--badge-color': contrastColor(event.category?.color) }">
                       {{ event.category?.name || 'Keine' }}
                     </span>
                   </td>
                   <td>{{ formatDate(event.startTime) }}</td>
                   <td>{{ Array.isArray(event.room) ? event.room.join(', ') : event.room }}</td>
                   <td>{{ event.price ? `${event.price} €` : 'Kostenlos' }}</td>
-                  <td class="actions">
-                    <div class="context-menu-wrapper">
-                      <button @click.stop="toggleContextMenu(event._id)" class="btn-context-menu" title="Aktionen">⋮</button>
-                      <div v-if="activeContextMenu === event._id" class="context-menu" @click.stop>
-                        <button @click="openEditEventModal(event); closeContextMenu()" class="context-menu-item">Bearbeiten</button>
-                        <button @click="deleteEvent(event); closeContextMenu()" class="context-menu-item danger">Löschen</button>
-                      </div>
+                  <td>
+                    <div class="actions">
+                      <button class="btn-icon" @click="openEditEventModal(event)" title="Bearbeiten">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                      </button>
+                      <button class="btn-icon danger" @click="deleteEvent(event)" title="Löschen">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                      </button>
                     </div>
                   </td>
                 </tr>
@@ -1029,7 +1220,32 @@ async function handleCategorySubmit() {
 
               <div class="form-group">
                 <label>Beschreibung</label>
-                <textarea v-model="roomForm.description" class="form-input rooms-textarea" rows="6" />
+                <div class="textarea-wrapper" style="position: relative;">
+                  <textarea 
+                    v-model="roomForm.description" 
+                    class="form-input rooms-textarea" 
+                    rows="6"
+                    @mouseup="handleDescriptionSelect"
+                    @keyup="handleDescriptionSelect"
+                  ></textarea>
+                  <!-- Link Tooltip -->
+                  <div 
+                    v-if="linkTooltipVisible" 
+                    class="link-tooltip"
+                    :style="{ left: linkTooltipX + 'px', top: (linkTooltipY - 20) + 'px' }"
+                  >
+                    <input 
+                      v-model="linkTooltipUrl" 
+                      type="text" 
+                      placeholder="https://" 
+                      class="link-tooltip-input"
+                      @keydown.enter.prevent="insertLink"
+                    />
+                    <button @click.prevent="insertLink" class="btn-primary btn-sm link-tooltip-btn">Link einfügen</button>
+                    <button @click.prevent="linkTooltipVisible = false" class="btn-icon link-tooltip-close">×</button>
+                  </div>
+                </div>
+                <small class="form-help">Links mit folgendem Format einfügen: [Linktext](https://example.com) oder Text markieren.</small>
               </div>
 
               <div class="form-group">
@@ -1167,8 +1383,148 @@ async function handleCategorySubmit() {
             </div>
           </div>
         </section>
+
+        <!-- Jobs Section -->
+        <section v-if="activeSection === 'jobs'" class="section fade-in">
+          <div class="section-header">
+            <h2>Jobs verwalten</h2>
+            <div class="actions">
+              <button class="btn-primary" @click="openNewJobModal">
+                Neuer Job
+              </button>
+            </div>
+          </div>
+          
+          <div class="events-table glass-panel">
+            <div v-if="jobsLoading" class="loading-state">
+              <div class="spinner"></div>
+              <p>Jobs werden geladen...</p>
+            </div>
+            <div v-else class="table-responsive">
+              <table v-if="jobs.length > 0">
+                <thead>
+                  <tr>
+                    <th>Titel</th>
+                    <th>Status</th>
+                    <th>Art</th>
+                    <th>Start</th>
+                    <th>Aktionen</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="job in jobs" :key="job._id">
+                    <td>
+                      <div class="event-info">
+                        <strong>{{ job.title }}</strong>
+                      </div>
+                    </td>
+                    <td>
+                      <span class="category-badge" :style="{ backgroundColor: job.isActive !== false ? '#4caf50' : '#f44336' }">
+                        {{ job.isActive !== false ? 'Aktiv' : 'Inaktiv' }}
+                      </span>
+                    </td>
+                    <td>{{ job.type || '-' }}</td>
+                    <td>{{ job.startTime ? formatDate(job.startTime) : '-' }}</td>
+                    <td>
+                      <div class="actions">
+                        <button class="btn-icon" @click="openEditJobModal(job)" title="Bearbeiten">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                        </button>
+                        <button class="btn-icon danger" @click="deleteJob(job)" title="Löschen">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ff6b6b" stroke-width="2"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <div v-else class="empty-state">
+                <p>Keine Jobs gefunden</p>
+              </div>
+            </div>
+          </div>
+        </section>
       </div>
     </main>
+
+    <!-- Job Modal -->
+    <Teleport to="body">
+      <div v-if="showJobModal" class="modal-overlay" @click.self="closeJobModal">
+        <div class="modal modal-large">
+          <div class="modal-header">
+            <h2>{{ editingJob ? 'Job bearbeiten' : 'Neuer Job' }}</h2>
+            <button @click="closeJobModal" class="close-btn">×</button>
+          </div>
+          
+          <div class="modal-body">
+            <form @submit.prevent="handleJobSubmit" class="modal-form">
+              <div class="form-row">
+                <div class="form-group" style="flex: 2;">
+                  <label>Titel *</label>
+                  <input v-model="jobForm.title" type="text" required placeholder="z.B. Barkeeper (m/w/d)">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                  <label>Status</label>
+                  <select v-model="jobForm.isActive">
+                    <option :value="true">Aktiv</option>
+                    <option :value="false">Inaktiv</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label>Beschreibung</label>
+                <textarea v-model="jobForm.description" rows="4" placeholder="Job-Details..."></textarea>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Startzeitraum (Optional)</label>
+                  <input v-model="jobForm.startTime" type="date">
+                </div>
+                <div class="form-group">
+                  <label>Endzeitraum (Optional)</label>
+                  <input v-model="jobForm.endTime" type="date">
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Art</label>
+                  <input v-model="jobForm.type" type="text" placeholder="z.B. Vollzeit">
+                </div>
+                <div class="form-group">
+                  <label>Extra Label</label>
+                  <input v-model="jobForm.extra_label" type="text" placeholder="z.B. Ab sofort">
+                </div>
+              </div>
+              
+              <div class="form-row">
+                <div class="form-group">
+                  <label>Button Text</label>
+                  <input v-model="jobForm.link_text" type="text" placeholder="z.B. Jetzt bewerben">
+                </div>
+                <div class="form-group">
+                  <label>Button Link (URL)</label>
+                  <input v-model="jobForm.link_url" type="text" placeholder="mailto:... oder https://...">
+                </div>
+              </div>
+              
+              <div v-if="jobFormError" class="error-message">
+                {{ jobFormError }}
+              </div>
+              
+              <div class="modal-actions">
+                <button type="button" class="btn-secondary" @click="closeJobModal">Abbrechen</button>
+                <button type="submit" class="btn-primary" :disabled="jobFormLoading">
+                  {{ jobFormLoading ? 'Wird gespeichert...' : 'Speichern' }}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </Teleport>
 
     <!-- Create Admin Modal -->
     <Teleport to="body">
@@ -1593,11 +1949,13 @@ async function handleCategorySubmit() {
 }
 
 .sidebar-header {
+  height: 90px;
   padding: 1.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   display: flex;
   justify-content: center;
   align-items: center;
+  flex-shrink: 0;
 }
 
 .logo-link {
@@ -1712,11 +2070,13 @@ async function handleCategorySubmit() {
 }
 
 .content-header {
+  height: 90px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem 2rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  flex-shrink: 0;
 }
 
 .content-header h1 {
@@ -1914,7 +2274,7 @@ async function handleCategorySubmit() {
   padding: 0.25rem 0.75rem;
   border-radius: 20px;
   font-size: 0.8rem;
-  color: #fff;
+  color: var(--badge-color, #fff) !important;
 }
 
 .actions {
@@ -2595,6 +2955,7 @@ async function handleCategorySubmit() {
   }
 
   .sidebar-header {
+    height: auto;
     position: relative;
     justify-content: center;
   }
@@ -2648,6 +3009,7 @@ async function handleCategorySubmit() {
   }
 
   .content-header {
+    height: auto;
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
@@ -2734,6 +3096,71 @@ async function handleCategorySubmit() {
   resize: vertical;
   line-height: 1.6;
   min-height: 120px;
+  width: 100%;
+}
+
+.textarea-wrapper {
+  width: 100%;
+}
+
+.link-tooltip {
+  position: fixed;
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.5rem;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transform: translate(-50%, -100%);
+}
+
+.link-tooltip::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border-width: 6px;
+  border-style: solid;
+  border-color: #111 transparent transparent transparent;
+}
+
+.link-tooltip-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  min-width: 150px;
+}
+
+.link-tooltip-input:focus {
+  outline: none;
+  border-color: #646cff;
+}
+
+.link-tooltip-btn {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.link-tooltip-close {
+  background: none;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  font-size: 1.2rem;
+  cursor: pointer;
+  padding: 0 0.2rem;
+  line-height: 1;
+}
+
+.link-tooltip-close:hover {
+  color: #fff;
 }
 
 .feature-tags-editor {

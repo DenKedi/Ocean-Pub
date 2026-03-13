@@ -12,6 +12,14 @@
         und Leichtigkeit. Zwischen Beats und Begegnungen entsteht eine Dynamik, die trägt - mal subtil,
         mal mitreißend, aber immer authentisch.
       </p>
+
+      <div class="awareness-banner theme-text-primary">
+        <span>NO SEXISM</span>
+        <span class="dot">•</span>
+        <span>NO RACISM</span>
+        <span class="dot">•</span>
+        <span>NO BAD VIBES</span>
+      </div>
     </div>
   </section>
 </template>
@@ -19,7 +27,29 @@
 <style scoped>
 .content-section {
   padding: 8rem 0;
+  border-top: 1px solid var(--theme-border);
   border-bottom: 1px solid var(--theme-border);
+  position: relative;
+}
+
+.awareness-banner {
+  margin-top: 4rem;
+  padding-top: 3.5rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 500;
+  font-size: 1.1rem;
+  letter-spacing: 0.2em;
+}
+
+.dot {
+  color: #FF9d66;
+  font-size: 1.2rem;
 }
 
 .container {
@@ -53,6 +83,14 @@
 @media (max-width: 768px) {
   .content-section {
     padding: 4rem 0;
+  }
+  .awareness-banner {
+    flex-direction: column;
+    gap: 1rem;
+    font-size: 1rem;
+  }
+  .dot {
+    display: none;
   }
 }
 </style>

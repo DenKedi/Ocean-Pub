@@ -1,8 +1,11 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from "vue";
+import { ref, onMounted, onUnmounted, computed } from "vue";
+import { useAuth } from "../stores/authStore";
 import BurgerMenu from "../components/BurgerMenu.vue";
 import iconImage from "../assets/icons/Pallas_Logo_III-cropped.svg";
 import FooterSection from "../components/sections/FooterSection.vue";
+
+const { state: authState } = useAuth();
 
 const props = defineProps({
   bgImage: {
@@ -54,14 +57,23 @@ const scrollToSection = (sectionId) => {
 };
 
 // Navigation items for both desktop and mobile
-const navItems = [
+const baseNavItems = [
   { path: '/', label: 'Home' },
-  { path: '/drinks', label: 'Drinks' },
+  { path: '/drinks', label: 'Drinks', showArrow: true },
   { path: '/events', label: 'Events' },
   { path: '/stories', label: 'Stories' },
   { path: '/request', label: 'Request' },
   { path: '/jobs', label: 'Jobs' }
 ];
+
+// Add Admin link if authenticated
+const navItems = computed(() => {
+  const items = [...baseNavItems];
+  if (authState.isAuthenticated) {
+    items.unshift({ path: '/admin/dashboard', label: 'Admin' });
+  }
+  return items;
+});
 </script>
 
 <template>
@@ -83,6 +95,7 @@ const navItems = [
           class="desktop-nav-link"
         >
           {{ item.label }}
+          <svg v-if="item.showArrow" class="nav-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
         </router-link>
       </div>
     </nav>
@@ -107,6 +120,7 @@ const navItems = [
           class="nav-link"
         >
           <span class="prefix">Pallas</span><span class="dot">.</span>{{ item.label }}
+          <svg v-if="item.showArrow" class="nav-arrow-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
         </router-link>
       </div>
 
@@ -146,7 +160,7 @@ const navItems = [
 
 .layout-light {
   background-color: #fff;
-  color: #000;
+  color: #1d1d1d;
 }
 
 .background-image {
@@ -231,6 +245,20 @@ const navItems = [
 .desktop-nav-link.router-link-exact-active::after {
   width: 100%;
   background: rgba(255, 255, 255, 0.8);
+}
+
+.nav-arrow {
+  position: absolute;
+  top: 0.4rem;
+  right: -0.9rem;
+  width: 11px;
+  height: 11px;
+  opacity: 0.8;
+  transition: transform 0.3s ease;
+}
+
+.desktop-nav-link:hover .nav-arrow {
+  transform: translate(2px, -2px);
 }
 
 /* Light Theme overrides for desktop nav */
@@ -350,6 +378,15 @@ const navItems = [
 
 .nav-link:hover {
   color: #87ceeb;
+}
+
+.nav-arrow-mobile {
+  display: inline-block;
+  vertical-align: super;
+  margin-left: 0.2rem;
+  width: 12px;
+  height: 12px;
+  opacity: 0.8;
 }
 
 /* ===== Desktop: Show navbar, hide burger ===== */

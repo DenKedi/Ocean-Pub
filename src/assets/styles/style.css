@@ -2,10 +2,11 @@
 
 :root {
   /* PALLAS Typography - Custom Fonts */
-  --font-primary: 'Krona One', 'Montserrat', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-  --font-secondary: 'Krona One', 'Source Sans 3', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-primary: 'acumin-variable', 'Krona One', 'Montserrat', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-secondary: 'acumin-variable', 'Krona One', 'Source Sans 3', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-text: 'Montserrat', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; /* Prepared for new text font */
   
-  font-family: 'Krona One', system-ui, sans-serif;
+  font-family: var(--font-text);
   line-height: 1.5;
   font-weight: 400;
 

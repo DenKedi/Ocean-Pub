@@ -167,11 +167,23 @@ const resetForm = () => {
   }
   formErrors.value = {}
 }
+
+// Theme Toggle
+const isDarkMode = ref(false)
 </script>
 
 <template>
-  <MainLayout theme="light">
-    <div class="request-page">
+  <MainLayout :theme="isDarkMode ? 'dark' : 'light'">
+    <div class="request-page" :class="{ 'theme-dark': isDarkMode }">
+      <!-- Theme Toggle -->
+      <div class="theme-toggle-wrapper">
+        <span class="theme-label" :class="{ active: !isDarkMode }">☀️ Light</span>
+        <label class="theme-switch">
+          <input type="checkbox" v-model="isDarkMode" />
+          <span class="slider round"></span>
+        </label>
+        <span class="theme-label" :class="{ active: isDarkMode }">🌙 Dark</span>
+      </div>
       <!-- Top Rings -->
       <div class="rings-bg top-rings" aria-hidden="true">
         <span
@@ -426,7 +438,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
       <!-- Modal -->
       <Teleport to="body">
-        <div v-if="isModalOpen && !lightboxVisible" class="modal-overlay" @click.self="closeModal">
+        <div v-if="isModalOpen && !lightboxVisible" class="modal-overlay" :class="{ 'theme-dark': isDarkMode }" @click.self="closeModal">
           <div class="modal-content">
             <button class="modal-close" @click="closeModal">×</button>
             <h3 class="modal-title">{{ selectedSpot?.label }}</h3>
@@ -517,7 +529,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .request-page {
   min-height: 100vh;
   background: transparent; /* Changed to transparent so MainLayout background shines through */
-  color: #000;
+  color: #1d1d1d;
   position: relative;
   z-index: 1;
 }
@@ -549,27 +561,29 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   left: calc(var(--i) * -100px);
 
   background: transparent;
-  border: 3px solid var(--color);
-  opacity: max(0.1, calc(0.35 - (var(--i) - 1) * 0.002));
+  border: 4px solid var(--color);
+  opacity: max(0.02, calc(0.12 - (var(--i) - 1) * 0.001));
   box-shadow: 0 0 8px color-mix(in srgb, var(--color) 50%, transparent), 0 0 16px color-mix(in srgb, var(--color) 20%, transparent);
 }
 
 /* Hero Section */
 .hero-section {
-  padding: 3rem 2rem 4rem;
-  text-align: center;
+  padding: 5rem 2rem 4rem;
+  display: flex;
+  justify-content: flex-start;
 }
 
 .hero-content {
   max-width: 900px;
   margin: 0 auto;
+  text-align: left;
 }
 
 /* Force text colors to overcome global !important values */
 .request-page ::selection,
 .modal-overlay ::selection {
   background: rgba(43, 44, 119, 0.4); /* Blue tone matching ring color #2b2c77 */
-  color: #000;
+  color: #1d1d1d;
 }
 
 .request-page p,
@@ -581,7 +595,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .request-page strong,
 .request-page label,
 .request-page legend {
-  color: #000 !important;
+  color: #1d1d1d !important;
 }
 
 .request-page .theme-text-secondary,
@@ -610,9 +624,8 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .intro-text {
   font-size: 1.05rem;
   line-height: 1.6;
-  text-align: center;
+  text-align: left;
   max-width: 800px;
-  margin: 0 auto;
   opacity: 0.85;
   display: flex;
   flex-direction: column;
@@ -645,16 +658,16 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 /* Section Titles */
 .section-title {
   font-size: clamp(1.5rem, 3vw, 2.5rem);
-  text-align: center;
+  text-align: left;
   margin-bottom: 1rem;
   font-weight: 300;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #000 !important;
+  color: #1d1d1d !important;
 }
 
 .section-subtitle {
-  text-align: center;
+  text-align: left;
   margin-bottom: 3rem;
   opacity: 0.7;
 }
@@ -674,7 +687,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 .floorplan-container {
   display: flex;
-  gap: 0.5rem;
+  gap: 1.5rem;
   justify-content: center;
   align-items: flex-end;
   flex-wrap: wrap;
@@ -689,8 +702,8 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 }
 
 .sketch-landscape {
-  flex: 1.65;
-  max-width: 770px;
+  flex: 2.2;
+  max-width: 850px;
   min-width: 300px;
 }
 
@@ -817,26 +830,38 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .request-form {
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 3.5rem;
 }
 
 .form-fieldset {
   border: 1px solid rgba(255, 255, 255, 0.4);
   border-radius: 8px;
-  padding: 2rem 1.5rem 1.5rem;
+  padding: 3rem 2rem 2rem;
   background: rgba(255, 255, 255, 0.4);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  position: relative;
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
 }
 
 .form-legend {
-  font-size: 0.8rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
+  font-size: 1.1rem;
+  font-weight: 500;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #FF9d66;
-  padding: 0 0.75rem;
+  color: #1d1d1d !important;
+  padding: 0;
+  background: transparent;
+  border: none;
+  border-radius: 0;
+  transform: none;
+  margin-bottom: 2rem; 
+  position: static;
+  float: left;
+  width: 100%;
 }
 
 .form-grid {
@@ -866,7 +891,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   background: rgba(255, 255, 255, 0.5);
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 4px;
-  color: #000 !important;
+  color: #1d1d1d !important;
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   font-family: inherit;
@@ -994,7 +1019,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .room-chip.active {
   border-color: #FF9d66;
   background: rgba(255, 157, 102, 0.15);
-  color: #000 !important;
+  color: #1d1d1d !important;
   box-shadow: inset 0 0 0 1px #FF9d66;
 }
 
@@ -1038,7 +1063,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .dj-quelle-btn.active {
   border-color: #FF9d66;
   background: rgba(255, 157, 102, 0.15);
-  color: #000 !important;
+  color: #1d1d1d !important;
   box-shadow: inset 0 0 0 1px #FF9d66;
 }
 
@@ -1116,7 +1141,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 .form-btn-secondary:hover {
   border-color: rgba(0, 0, 0, 0.5);
-  color: #000 !important;
+  color: #1d1d1d !important;
 }
 
 /* Date/time input colour fixes (dark theme) */
@@ -1152,7 +1177,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   overflow-y: auto;
   padding: 3rem;
   position: relative;
-  color: #000 !important;
+  color: #1d1d1d !important;
 }
 
 .modal-close {
@@ -1161,7 +1186,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   right: 1rem;
   background: none;
   border: none;
-  color: #000 !important;
+  color: #1d1d1d !important;
   font-size: 2rem;
   cursor: pointer;
   opacity: 0.5;
@@ -1212,7 +1237,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   letter-spacing: 0.08em;
   margin-bottom: 1rem;
   text-transform: uppercase;
-  color: #000 !important;
+  color: #1d1d1d !important;
 }
 
 /* Room Details */
@@ -1266,7 +1291,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   padding: 0.4rem 0.9rem;
   background: rgba(255, 157, 102, 0.1);
   border: 1px solid rgba(255, 157, 102, 0.4);
-  color: #000 !important;
+  color: #1d1d1d !important;
   font-size: 0.8rem;
   border-radius: 3px;
   letter-spacing: 0.02em;
@@ -1360,4 +1385,252 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
     width: 100%;
   }
 }
+
+/* =========================================
+   DARK MODE OVERRIDES 
+   ========================================= */
+
+/* Theme Toggle Switch */
+.theme-toggle-wrapper {
+  position: absolute;
+  top: 2rem;
+  right: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 100;
+  background: rgba(255, 255, 255, 0.6);
+  padding: 0.5rem 1rem;
+  border-radius: 30px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.request-page.theme-dark .theme-toggle-wrapper {
+  background: rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+}
+
+.theme-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: rgba(0, 0, 0, 0.4) !important;
+  transition: color 0.3s ease;
+}
+.theme-label.active {
+  color: #1d1d1d !important;
+}
+
+.request-page.theme-dark .theme-label {
+  color: rgba(255, 255, 255, 0.3) !important;
+}
+.request-page.theme-dark .theme-label.active {
+  color: #fff !important;
+}
+
+.theme-switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 24px;
+  margin: 0;
+}
+.theme-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  transition: .4s;
+  border-radius: 24px;
+}
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 18px;
+  width: 18px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+input:checked + .slider {
+  background-color: #FF9d66;
+}
+input:checked + .slider:before {
+  transform: translateX(20px);
+}
+
+.request-page.theme-dark .slider {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+.request-page.theme-dark input:checked + .slider {
+  background-color: #FF9d66;
+}
+
+/* Page Text Colors */
+.request-page.theme-dark,
+.request-page.theme-dark p,
+.request-page.theme-dark span,
+.request-page.theme-dark div,
+.request-page.theme-dark h1,
+.request-page.theme-dark h2,
+.request-page.theme-dark h3,
+.request-page.theme-dark h4,
+.request-page.theme-dark strong,
+.request-page.theme-dark label,
+.request-page.theme-dark legend {
+  color: #ffffff !important;
+}
+
+.request-page.theme-dark ::selection,
+.modal-overlay.theme-dark ::selection {
+  background: rgba(255, 157, 102, 0.4); /* subtle orange for dark selection */
+  color: #fff;
+}
+
+.request-page.theme-dark .theme-text-secondary,
+.request-page.theme-dark .theme-text-secondary p,
+.request-page.theme-dark .theme-text-muted,
+.request-page.theme-dark .form-label,
+.request-page.theme-dark .checkbox-text {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.request-page.theme-dark .section-subtitle,
+.request-page.theme-dark .page-subtitle {
+  opacity: 0.8;
+}
+
+/* Form UI */
+.request-page.theme-dark .form-fieldset {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.request-page.theme-dark .form-input,
+.request-page.theme-dark .room-chip,
+.request-page.theme-dark .dj-quelle-btn {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff !important;
+}
+
+.request-page.theme-dark .form-input::placeholder {
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.request-page.theme-dark .form-input[type="date"],
+.request-page.theme-dark .form-input[type="time"] {
+  color-scheme: dark;
+}
+
+.request-page.theme-dark .form-input:focus,
+.request-page.theme-dark .room-chip:hover,
+.request-page.theme-dark .dj-quelle-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.request-page.theme-dark .room-chip.active,
+.request-page.theme-dark .dj-quelle-btn.active {
+  background: rgba(255, 157, 102, 0.15);
+  border-color: #FF9d66;
+  color: #FF9d66 !important;
+}
+
+.request-page.theme-dark .form-success {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 157, 102, 0.25);
+}
+
+.request-page.theme-dark .form-btn-secondary {
+  color: rgba(255, 255, 255, 0.8) !important;
+  border-color: rgba(255, 255, 255, 0.2);
+}
+.request-page.theme-dark .form-btn-secondary:hover {
+  color: #fff !important;
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Floorplan Sketch Details */
+.request-page.theme-dark .sketch-wrapper {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+.request-page.theme-dark .sketch-image {
+  filter: invert(1) brightness(1.2);
+}
+.request-page.theme-dark .sketch-wrapper:hover .sketch-image {
+  filter: invert(1) brightness(1.8);
+}
+
+/* Modal Dark Overrides */
+.modal-overlay.theme-dark .modal-content {
+  background: #151515;
+  border-color: rgba(255, 255, 255, 0.05);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
+  color: #fff !important;
+}
+
+.modal-overlay.theme-dark .modal-close {
+  background: #2a2a2a;
+  color: #fff !important;
+}
+
+.modal-overlay.theme-dark .modal-close:hover {
+  background: #444;
+}
+
+.modal-overlay.theme-dark .modal-title,
+.modal-overlay.theme-dark .detail-value,
+.modal-overlay.theme-dark .feature-tag {
+  color: #ffffff !important;
+}
+
+.modal-overlay.theme-dark .room-details {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.05);
+}
+
+.modal-overlay.theme-dark .feature-tag {
+  background: rgba(255, 157, 102, 0.15);
+}
+
+.modal-overlay.theme-dark .extra-text {
+  color: #aaa !important;
+  border-top-color: rgba(255, 255, 255, 0.05);
+}
+
+.modal-overlay.theme-dark .modal-description {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.modal-overlay.theme-dark .modal-placeholder {
+  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.5) !important;
+}
+
+.modal-overlay.theme-dark .detail-item.features {
+  border-top-color: rgba(255,255,255,0.06);
+}
+
 </style>

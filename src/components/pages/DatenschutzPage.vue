@@ -1,4 +1,9 @@
+<script setup>
+import MainLayout from '@/layouts/MainLayout.vue'
+</script>
+
 <template>
+  <MainLayout>
   <div class="legal-page">
     <div class="container">
       <h1 class="page-title pallas-heading">Datenschutzerklärung</h1>
@@ -86,13 +91,6 @@
             Eine Zusammenführung dieser Daten mit anderen Datenquellen wird nicht vorgenommen. 
             Die Erfassung dieser Daten erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO.
           </p>
-
-          <h3>Kontaktformular</h3>
-          <p>
-            Wenn Sie uns per Kontaktformular Anfragen zukommen lassen, werden Ihre Angaben aus dem Anfrageformular 
-            inklusive der von Ihnen dort angegebenen Kontaktdaten zwecks Bearbeitung der Anfrage und für den Fall 
-            von Anschlussfragen bei uns gespeichert. Diese Daten geben wir nicht ohne Ihre Einwilligung weiter.
-          </p>
         </section>
 
         <section class="legal-section">
@@ -113,11 +111,12 @@
         </section>
 
         <div class="legal-footer">
-          <p><small>Stand: Januar 2025</small></p>
+          <p><small>Stand: März 2026</small></p>
         </div>
       </div>
     </div>
   </div>
+  </MainLayout>
 </template>
 
 <style scoped>

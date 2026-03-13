@@ -1,5 +1,6 @@
 <script setup>
 import { defineProps } from 'vue'
+import pallasLogo from '@/assets/icons/Pallas_Logo_III.svg'
 
 const props = defineProps({
   theme: {
@@ -22,8 +23,8 @@ const scrollToSection = (sectionId) => {
       <div class="footer-content">
         <!-- PALLAS Info Section -->
         <div class="footer-section brand-section">
-          <h4 class="theme-text-primary">PALLAS.WORLD</h4>
-          <p class="theme-text-secondary">Everybody Welcome</p>
+          <img :src="pallasLogo" alt="Pallas.world Logo" class="footer-logo" />
+          <p class="theme-text-secondary footer-slogan">Everybody Welcome</p>
           <div class="footer-address theme-text-secondary">
             <p>
               <a href="https://maps.app.goo.gl/LvaqP8szwttLZEneA" target="_blank" rel="noopener noreferrer" class="footer-link theme-text-secondary">
@@ -47,9 +48,8 @@ const scrollToSection = (sectionId) => {
         <div class="footer-section legal-section">
           <h4 class="theme-text-primary">Rechtliches</h4>
           <div class="footer-links">
-            <a href="#impressum" class="footer-link theme-text-secondary">Impressum</a>
-            <a href="#datenschutz" class="footer-link theme-text-secondary">Datenschutz</a>
-            <a href="#agb" class="footer-link theme-text-secondary">AGB</a>
+            <RouterLink to="/impressum" class="footer-link theme-text-secondary">Impressum</RouterLink>
+            <RouterLink to="/datenschutz" class="footer-link theme-text-secondary">Datenschutz</RouterLink>
           </div>
         </div>
       </div>
@@ -98,8 +98,17 @@ const scrollToSection = (sectionId) => {
   padding: 3rem 0;
 }
 
-.footer-section {
-  position: relative;
+
+.footer-logo {
+  height: 48px;
+  width: auto;
+  margin-bottom: 2rem;
+  filter: invert(1) brightness(100);
+  transition: filter 0.3s ease;
+}
+
+.footer-slogan {
+  margin-top: -1rem !important;
 }
 
 .footer-section h4 {
@@ -184,7 +193,7 @@ const scrollToSection = (sectionId) => {
 
 .footer-light .theme-text-primary,
 .footer-light h4 {
-  color: #000 !important;
+  color: #1d1d1d !important;
 }
 
 .footer-light .theme-text-secondary,
@@ -192,6 +201,10 @@ const scrollToSection = (sectionId) => {
 .footer-light .contact-item,
 .footer-light .theme-text-muted {
   color: rgba(0, 0, 0, 0.75) !important;
+}
+
+.footer-light .footer-logo {
+  filter: none !important;
 }
 
 .footer-light .footer-link {
@@ -238,6 +251,11 @@ const scrollToSection = (sectionId) => {
   
   .container {
     padding: 0 1rem;
+  }
+
+  .footer-logo {
+    height: 32px;
+    margin-bottom: 1rem;
   }
   
   .footer-content {
