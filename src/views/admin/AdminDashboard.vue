@@ -130,6 +130,13 @@ const editUserForm = ref({ name: '', email: '', password: '', passwordConfirm: '
 const editUserFormError = ref('')
 const editUserFormLoading = ref(false)
 
+// Drinks PDF State
+const drinksPdfUrl = ref('')
+const drinksPdfUploading = ref(false)
+const drinksPdfSuccess = ref(false)
+const drinksPdfError = ref('')
+const drinksPdfInput = ref(null)
+
 // Instagram Settings State
 const instagramUrlLeft = ref('')
 const instagramUrlRight = ref('')
@@ -257,7 +264,7 @@ const selectedCategoryImage = computed(() => {
 
 // Lifecycle
 onMounted(async () => {
-  await Promise.all([fetchEvents(), fetchCategories(), fetchRooms(), fetchUsers(), fetchInstagramSettings(), fetchJobs()])
+  await Promise.all([fetchEvents(), fetchCategories(), fetchRooms(), fetchUsers(), fetchInstagramSettings(), fetchJobs(), fetchDrinksSettings()])
   loading.value = false
   
   // Close context menu on click outside
@@ -367,6 +374,38 @@ async function fetchRooms() {
     console.error('Fehler beim Laden der Räume:', err)
   } finally {
     roomsLoading.value = false
+  }
+}
+
+async function fetchDrinksSettings() {
+  try {
+    const { data } = await api.get('/settings')
+    drinksPdfUrl.value = data?.drinksPdfUrl || ''
+  } catch (err) {
+    console.error('Fehler beim Laden der Drinks-Einstellungen:', err)
+  }
+}
+
+async function uploadDrinksPdf(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  drinksPdfError.value = ''
+  drinksPdfSuccess.value = false
+  drinksPdfUploading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('pdf', file)
+    const { data } = await api.post('/upload/drinks-pdf', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    drinksPdfUrl.value = data.pdfUrl
+    drinksPdfSuccess.value = true
+    setTimeout(() => { drinksPdfSuccess.value = false }, 4000)
+  } catch (err) {
+    drinksPdfError.value = err.response?.data?.error || 'Fehler beim Hochladen'
+  } finally {
+    drinksPdfUploading.value = false
+    if (drinksPdfInput.value) drinksPdfInput.value.value = ''
   }
 }
 
@@ -991,6 +1030,9 @@ async function deleteJob(job) {
           <a href="#" class="nav-item" :class="{ active: activeSection === 'jobs' }" @click.prevent="activeSection = 'jobs'; toggleMobileMenu()">
             Jobs
           </a>
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'drinks' }" @click.prevent="activeSection = 'drinks'; toggleMobileMenu()">
+            Drinks
+          </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -1441,6 +1483,50 @@ async function deleteJob(job) {
               <div v-else class="empty-state">
                 <p>Keine Jobs gefunden</p>
               </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Drinks PDF Section -->
+        <section v-if="activeSection === 'drinks'" class="section">
+          <div class="section-header">
+            <h2>Drinks Karte</h2>
+          </div>
+          <div class="drinks-pdf-settings">
+            <p class="instagram-settings-hint">Lade hier die aktuelle Drinks-Karte als PDF hoch. Sie wird sofort auf der Website angezeigt.</p>
+
+            <div class="form-group">
+              <label>Aktuelle Karte</label>
+              <div v-if="drinksPdfUrl" class="drinks-pdf-current">
+                <a :href="drinksPdfUrl" target="_blank" rel="noopener" class="drinks-pdf-link">↗ Aktuelle PDF öffnen</a>
+              </div>
+              <p v-else class="drinks-pdf-none">Noch keine PDF hochgeladen – es wird die Standardkarte verwendet.</p>
+            </div>
+
+            <div class="form-group">
+              <label>Neue PDF hochladen</label>
+              <div
+                class="room-drop-area"
+                :class="{ 'room-drop-area--uploading': drinksPdfUploading }"
+                @click="drinksPdfInput.click()"
+              >
+                <input
+                  ref="drinksPdfInput"
+                  type="file"
+                  accept="application/pdf,.pdf"
+                  class="hidden-file-input"
+                  @change="uploadDrinksPdf"
+                />
+                <div class="room-drop-hint">
+                  <span v-if="drinksPdfUploading">Lädt hoch…</span>
+                  <span v-else>PDF hier ablegen oder klicken</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="instagram-settings-actions">
+              <span v-if="drinksPdfSuccess" class="save-success">✓ Erfolgreich hochgeladen</span>
+              <span v-if="drinksPdfError" class="save-error">{{ drinksPdfError }}</span>
             </div>
           </div>
         </section>

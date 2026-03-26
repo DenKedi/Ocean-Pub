@@ -7,6 +7,7 @@ import FriendsPage from '../views/FriendsPage.vue'
 import RequestPage from '../views/RequestPage.vue'
 import ImpressumPage from '../components/pages/ImpressumPage.vue'
 import DatenschutzPage from '../components/pages/DatenschutzPage.vue'
+import DrinksPage from '../views/DrinksPage.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
 import AdminDashboard from '../views/admin/AdminDashboard.vue'
 
@@ -34,9 +35,7 @@ const routes = [
   {
     path: '/drinks',
     name: 'Drinks',
-    beforeEnter() {
-      window.location.href = `${import.meta.env.BASE_URL}Karte_Pallas.pdf`
-    }
+    component: DrinksPage
   },
   {
     path: '/friends',

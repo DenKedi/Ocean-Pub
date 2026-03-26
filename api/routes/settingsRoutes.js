@@ -24,6 +24,22 @@ router.get('/', (req, res) => {
   }
 });
 
+// GET /api/settings/drinks-pdf — proxy PDF to avoid CORS
+router.get('/drinks-pdf', async (req, res) => {
+  try {
+    const settings = readSettings();
+    const url = settings.drinksPdfUrl;
+    if (!url) return res.status(404).json({ msg: 'Keine Drinks-PDF hinterlegt' });
+    const axios = require('axios');
+    const response = await axios.get(url, { responseType: 'stream', timeout: 15000 });
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    response.data.pipe(res);
+  } catch (err) {
+    res.status(502).json({ msg: 'PDF konnte nicht geladen werden' });
+  }
+});
+
 // PUT /api/settings/instagram — admin only
 router.put('/instagram', auth, (req, res) => {
   try {

@@ -59,7 +59,7 @@ const scrollToSection = (sectionId) => {
 // Navigation items for both desktop and mobile
 const baseNavItems = [
   { path: '/', label: 'Home' },
-  { path: '/drinks', label: 'Drinks', showArrow: true },
+  { path: '/drinks', label: 'Drinks' },
   { path: '/events', label: 'Events' },
   { path: '/stories', label: 'Stories' },
   { path: '/request', label: 'Request' },
