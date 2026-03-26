@@ -1363,15 +1363,54 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 /* Mobile */
 @media (max-width: 768px) {
+  .container {
+    padding: 0 1rem;
+  }
+
+  .hero-section {
+    padding: 5.5rem 0 2.5rem;
+  }
+
+  .hero-content {
+    max-width: 100%;
+  }
+
+  .page-title {
+    white-space: normal;
+    line-height: 0.98;
+    letter-spacing: 0.08em;
+  }
+
+  .page-subtitle {
+    font-size: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .intro-text {
+    font-size: 0.96rem;
+    line-height: 1.65;
+    gap: 1rem;
+  }
+
+  .floorplan-section {
+    padding: 2.5rem 0;
+  }
+
   .floorplan-container {
     flex-direction: column;
     align-items: center;
+    gap: 1rem;
   }
   
   .sketch-landscape,
   .sketch-portrait {
     max-width: 100%;
     width: 100%;
+    min-width: 0;
+  }
+
+  .rooms-loading {
+    padding: 2rem 1rem;
   }
   
   .hotspot-dot {
@@ -1380,33 +1419,154 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   }
   
   /* Form mobile */
+  .form-section {
+    padding: 3rem 0 4rem;
+  }
+
+  .section-title {
+    margin-bottom: 0.75rem;
+    letter-spacing: 0.08em;
+  }
+
+  .section-subtitle {
+    margin-bottom: 2rem;
+    font-size: 0.95rem;
+  }
+
+  .request-form {
+    gap: 2rem;
+  }
+
   .form-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .form-fieldset {
-    padding: 1.5rem 1rem 1rem;
+    padding: 1.25rem 0.9rem 1rem;
+    margin-top: 0;
+  }
+
+  .form-legend {
+    margin-bottom: 1.25rem;
+    font-size: 0.95rem;
+    letter-spacing: 0.12em;
   }
 
   .alt-date-row {
     flex-direction: column;
+    gap: 0.75rem;
   }
 
   .room-chip {
-    flex: 1 1 calc(50% - 0.6rem);
-    min-width: 120px;
+    flex: 1 1 100%;
+    min-width: 0;
+    min-height: 48px;
+    align-items: flex-start;
+    text-align: left;
+    padding: 0.85rem 1rem;
+  }
+
+  .room-chip-cap {
+    font-size: 0.72rem;
   }
 
   .dj-quelle-buttons {
     flex-direction: column;
+    gap: 0.6rem;
   }
 
   .dj-quelle-btn {
     width: 100%;
+    min-height: 48px;
+  }
+
+  .form-input,
+  .form-btn,
+  .dj-quelle-btn,
+  .room-chip {
+    font-size: 16px;
+  }
+
+  .form-checkbox {
+    gap: 0.6rem;
+  }
+
+  .form-checkbox input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-top: 0.15rem;
+  }
+
+  .checkbox-text {
+    font-size: 0.8rem;
+  }
+
+  .form-actions {
+    width: 100%;
+  }
+
+  .form-btn {
+    width: 100%;
+    padding: 1rem 1.25rem;
+  }
+
+  .modal-overlay {
+    padding: 1rem;
+  }
+
+  .modal-content {
+    width: 100%;
+    max-height: calc(100vh - 2rem);
+    padding: 1.25rem 1rem 1rem;
+  }
+
+  .modal-title {
+    padding-right: 2.5rem;
+    font-size: 1.2rem;
+  }
+
+  .room-details {
+    padding: 1rem;
+  }
+
+  .detail-row {
+    gap: 1rem;
+  }
+
+  .modal-gallery {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
   }
 
   .bg-facade-img {
-    object-position: center center;
+    opacity: 0.18;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding-top: 5rem;
+  }
+
+  .page-title {
+    font-size: clamp(1.9rem, 11vw, 2.6rem);
+  }
+
+  .page-subtitle {
+    font-size: 0.96rem;
+  }
+
+  .intro-text {
+    font-size: 0.92rem;
+  }
+
+  .modal-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-image {
+    height: 180px;
   }
 }
 
