@@ -5,14 +5,33 @@ import VueEasyLightbox from 'vue-easy-lightbox'
 import sketch1 from '@/assets/raumplan/sketch1.png'
 import sketch2 from '@/assets/raumplan/sketch2.png'
 import roomsFallback from '@/assets/default/rooms.json'
+import frontalansicht from '@/assets/pictures/Frontalansicht.webp'
 
-const baseRingColors = [
-  '#ff6201', '#f80000', '#d70009', '#ff6201',
-  '#2b2c77', '#0055a5', '#ff6201', '#f80000',
-  '#2b2c77', '#0055a5', '#d70009', '#ff6201',
-]
+// Parallax
+const requestPageRef = ref(null)
+const facadeImageRef = ref(null)
+const parallaxY = ref(0)
+const onScroll = () => {
+  if (!requestPageRef.value || !facadeImageRef.value) return
 
-const ringColors = Array.from({ length: 150 }, (_, i) => baseRingColors[i % baseRingColors.length])
+  const rect = requestPageRef.value.getBoundingClientRect()
+  const pageScrollDistance = Math.max(rect.height - window.innerHeight, 1)
+  const progress = Math.min(Math.max(-rect.top / pageScrollDistance, 0), 1)
+  const imageTravel = Math.max(requestPageRef.value.offsetHeight - facadeImageRef.value.offsetHeight, 0)
+
+  // progress 0 -> top of image at top of page
+  // progress 1 -> bottom of image aligned with the footer edge
+  parallaxY.value = progress * imageTravel
+}
+onMounted(() => {
+  onScroll()
+  window.addEventListener('scroll', onScroll, { passive: true })
+  window.addEventListener('resize', onScroll)
+})
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+  window.removeEventListener('resize', onScroll)
+})
 
 // Import images from each room folder using import.meta.glob (static fallback)
 const allImages = {
@@ -168,48 +187,23 @@ const resetForm = () => {
   formErrors.value = {}
 }
 
-// Theme Toggle
-const isDarkMode = ref(false)
 </script>
 
 <template>
-  <MainLayout :theme="isDarkMode ? 'dark' : 'light'">
-    <div class="request-page" :class="{ 'theme-dark': isDarkMode }">
-      <!-- Theme Toggle -->
-      <div class="theme-toggle-wrapper">
-        <span class="theme-label" :class="{ active: !isDarkMode }">☀️ Light</span>
-        <label class="theme-switch">
-          <input type="checkbox" v-model="isDarkMode" />
-          <span class="slider round"></span>
-        </label>
-        <span class="theme-label" :class="{ active: isDarkMode }">🌙 Dark</span>
-      </div>
-      <!-- Top Rings -->
-      <div class="rings-bg top-rings" aria-hidden="true">
-        <span
-          v-for="(color, idx) in ringColors"
-          :key="'top-' + idx"
-          class="ring"
-          :style="{ '--i': idx + 1, '--color': color }"
-        />
-      </div>
-      <!-- Bottom Rings -->
-      <div class="rings-bg bottom-rings" aria-hidden="true">
-        <span
-          v-for="(color, idx) in ringColors"
-          :key="'bottom-' + idx"
-          class="ring"
-          :style="{ '--i': idx + 1, '--color': color }"
-        />
+  <MainLayout>
+    <div ref="requestPageRef" class="request-page">
+      <!-- Background Image -->
+      <div class="bg-facade" aria-hidden="true">
+        <img ref="facadeImageRef" :src="frontalansicht" alt="" class="bg-facade-img" :style="{ transform: `translate3d(0, ${parallaxY}px, 0)` }" @load="onScroll" />
       </div>
 
       <!-- Hero Section -->
       <section class="hero-section">
         <div class="container hero-content">
-          <h1 class="page-title theme-text-primary">Pallas.Request</h1>
-          <p class="page-subtitle theme-text-secondary">Dein Event in unserer Location</p>
-          
-          <div class="intro-text theme-text-secondary">
+          <h1 class="page-title">Pallas.Request</h1>
+          <p class="page-subtitle">Dein Event in unserer Location</p>
+
+          <div class="intro-text">
             
        Mitten in Hamburg
 
@@ -270,7 +264,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
       <section class="form-section">
         <div class="container form-container">
           <h2 class="section-title">Anfrage senden</h2>
-          <p class="section-subtitle theme-text-secondary">
+          <p class="section-subtitle">
             Interesse an einem Event bei uns? Füll das Formular aus und wir melden uns bei dir.
           </p>
 
@@ -278,7 +272,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
           <div v-if="formSubmitted" class="form-success">
             <div class="success-icon">✓</div>
             <h3>Vielen Dank für deine Anfrage!</h3>
-            <p class="theme-text-secondary">Wir haben deine Nachricht erhalten und melden uns so schnell wie möglich bei dir.</p>
+            <p>Wir haben deine Nachricht erhalten und melden uns so schnell wie möglich bei dir.</p>
             <button class="form-btn form-btn-secondary" @click="resetForm">Neue Anfrage</button>
           </div>
 
@@ -438,7 +432,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
       <!-- Modal -->
       <Teleport to="body">
-        <div v-if="isModalOpen && !lightboxVisible" class="modal-overlay" :class="{ 'theme-dark': isDarkMode }" @click.self="closeModal">
+        <div v-if="isModalOpen && !lightboxVisible" class="modal-overlay" @click.self="closeModal">
           <div class="modal-content">
             <button class="modal-close" @click="closeModal">×</button>
             <h3 class="modal-title">{{ selectedSpot?.label }}</h3>
@@ -503,7 +497,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
               />
             </div>
             <div v-else class="modal-placeholder">
-              <p class="theme-text-muted">Bilder folgen bald...</p>
+              <p>Bilder folgen bald...</p>
             </div>
           </div>
         </div>
@@ -526,51 +520,68 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 </template>
 
 <style scoped>
+/* ═══════════════════════════════════════════
+   HISTORIC ARCHITECTURAL SKETCH THEME
+   Inspired by 1906 Vereinsbank Hamburg facade
+   ═══════════════════════════════════════════ */
+
+/* Palette:
+   --ink:       #2a2318       (dark sepia ink)
+   --paper:     #f0e6d2       (aged parchment)
+   --paper-alt: #e8dbc4       (slightly darker paper)
+   --accent:    #b84c2a       (terracotta red from sketch)
+   --accent2:   #2b4a7a       (blueprint blue from sketch)
+   --cream:     #f5edd8       (lightest cream)
+   --muted:     #9c8b73       (faded ink)
+*/
+
 .request-page {
+  --ink: #2a2318;
+  --paper: #f0e6d2;
+  --paper-alt: #e8dbc4;
+  --accent: #b84c2a;
+  --accent2: #2b4a7a;
+  --cream: #f5edd8;
+  --muted: #9c8b73;
+
   min-height: 100vh;
-  background: transparent; /* Changed to transparent so MainLayout background shines through */
-  color: #1d1d1d;
+  background: #332e26;
+  color: var(--paper);
   position: relative;
   z-index: 1;
+  overflow: hidden;
+  isolation: isolate;
 }
 
-.rings-bg {
+/* ── Page-Clipped Parallax Facade ── */
+.bg-facade {
   position: absolute;
-  left: 50%;
-  width: 0;
-  height: 0;
+  inset: 0;
+  z-index: 0;
   pointer-events: none;
-  z-index: -1;
-  overflow: visible;
+  overflow: hidden;
 }
 
-.top-rings {
-  top: 0;
-}
-
-.bottom-rings {
-  bottom: 0;
-}
-
-.ring {
+.bg-facade-img {
   position: absolute;
-  border-radius: 50%;
-  width: calc(var(--i) * 200px);
-  height: calc(var(--i) * 200px);
-  top: calc(var(--i) * -100px);
-  left: calc(var(--i) * -100px);
-
-  background: transparent;
-  border: 4px solid var(--color);
-  opacity: max(0.02, calc(0.12 - (var(--i) - 1) * 0.001));
-  box-shadow: 0 0 8px color-mix(in srgb, var(--color) 50%, transparent), 0 0 16px color-mix(in srgb, var(--color) 20%, transparent);
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: auto;
+  opacity: 0.22;
+  filter: sepia(0.3) brightness(0.8) contrast(1.05);
+  mix-blend-mode: luminosity;
+  will-change: transform;
+  transform: translateY(0);
 }
 
 /* Hero Section */
 .hero-section {
-  padding: 5rem 2rem 4rem;
+  padding: 6rem 2rem 4rem;
   display: flex;
   justify-content: flex-start;
+  position: relative;
+  z-index: 1;
 }
 
 .hero-content {
@@ -579,13 +590,14 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   text-align: left;
 }
 
-/* Force text colors to overcome global !important values */
+/* Selection color */
 .request-page ::selection,
 .modal-overlay ::selection {
-  background: rgba(43, 44, 119, 0.4); /* Blue tone matching ring color #2b2c77 */
-  color: #1d1d1d;
+  background: rgba(184, 76, 42, 0.35);
+  color: var(--cream);
 }
 
+/* Text colors */
 .request-page p,
 .request-page span,
 .request-page div,
@@ -595,35 +607,37 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .request-page strong,
 .request-page label,
 .request-page legend {
-  color: #1d1d1d !important;
+  color: var(--paper) !important;
 }
 
-.request-page .theme-text-secondary,
-.request-page .theme-text-secondary p,
-.request-page .theme-text-muted {
-  color: rgba(0, 0, 0, 0.65) !important;
+.request-page .page-subtitle,
+.request-page .section-subtitle {
+  color: var(--muted) !important;
 }
 
 .page-title {
   font-size: clamp(2.1rem, 5.2vw, 3.4rem);
   margin-bottom: 1rem;
   font-weight: 300;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   font-family: var(--font-primary);
   white-space: nowrap;
+  color: var(--cream) !important;
+  text-shadow: 0 0 30px rgba(184, 76, 42, 0.15);
 }
 
 .page-subtitle {
   font-family: var(--font-secondary);
   font-size: 1.25rem;
-  opacity: 0.8;
   margin-bottom: 2rem;
+  font-style: italic;
+  letter-spacing: 0.04em;
 }
 
 .intro-text {
   font-size: 1.05rem;
-  line-height: 1.6;
+  line-height: 1.75;
   text-align: left;
   max-width: 800px;
   opacity: 0.85;
@@ -637,15 +651,15 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 }
 
 .text-link {
-  color: #FF9d66 !important;
+  color: var(--accent) !important;
   text-decoration: none;
-  border-bottom: 1px dotted rgba(255, 157, 102, 0.5);
+  border-bottom: 1px dotted rgba(184, 76, 42, 0.5);
   transition: all 0.3s ease;
 }
 
 .text-link:hover {
-  border-bottom-color: #FF9d66;
-  color: #fff !important;
+  border-bottom-color: var(--accent);
+  color: var(--cream) !important;
 }
 
 /* Container */
@@ -653,6 +667,8 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   max-width: 1400px;
   margin: 0 auto;
   padding: 0 2rem;
+  position: relative;
+  z-index: 1;
 }
 
 /* Section Titles */
@@ -661,26 +677,27 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   text-align: left;
   margin-bottom: 1rem;
   font-weight: 300;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #1d1d1d !important;
+  color: var(--cream) !important;
 }
 
 .section-subtitle {
   text-align: left;
   margin-bottom: 3rem;
-  opacity: 0.7;
 }
 
 /* Floorplan Section */
 .floorplan-section {
   padding: 4rem 0;
+  position: relative;
+  z-index: 1;
 }
 
 .rooms-loading {
   text-align: center;
   padding: 4rem;
-  color: rgba(0, 0, 0, 0.4) !important;
+  color: var(--muted) !important;
   font-size: 0.9rem;
   letter-spacing: 0.1em;
 }
@@ -695,9 +712,9 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 .sketch-wrapper {
   position: relative;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
+  background: rgba(240, 230, 210, 0.05);
+  border: 1px solid rgba(240, 230, 210, 0.12);
+  border-radius: 2px;
   overflow: hidden;
 }
 
@@ -717,12 +734,12 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   width: 100%;
   height: auto;
   display: block;
-  filter: grayscale(30%) brightness(0.9);
+  filter: brightness(0.95);
   transition: filter 0.3s ease;
 }
 
 .sketch-wrapper:hover .sketch-image {
-  filter: grayscale(0%) brightness(1);
+  filter: brightness(1.05);
 }
 
 /* Hotspots */
@@ -737,10 +754,10 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   display: block;
   width: 14px;
   height: 14px;
-  background: #FF9d66;
-  border: 2px solid #fff;
+  background: var(--accent);
+  border: 2px solid var(--cream);
   border-radius: 50%;
-  box-shadow: 0 0 8px rgba(255, 157, 102, 0.7);
+  box-shadow: 0 0 8px rgba(184, 76, 42, 0.7);
   transition: all 0.3s ease;
   position: relative;
   animation: dot-pulse 2s ease-in-out infinite;
@@ -758,7 +775,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   height: 100%;
   border-radius: 50%;
   transform: translate(-50%, -50%) scale(1);
-  background: rgba(255, 157, 102, 0.4);
+  background: rgba(184, 76, 42, 0.4);
   animation: ripple 2s ease-out infinite;
   pointer-events: none;
 }
@@ -769,7 +786,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 .hotspot:hover .hotspot-dot {
   transform: scale(1.4);
-  box-shadow: 0 0 20px rgba(255, 157, 102, 1);
+  box-shadow: 0 0 20px rgba(184, 76, 42, 1);
 }
 
 .hotspot:hover .hotspot-dot::before,
@@ -790,7 +807,9 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 /* Form Section */
 .form-section {
   padding: 6rem 0;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(240, 230, 210, 0.1);
+  position: relative;
+  z-index: 1;
 }
 
 .form-container {
@@ -801,9 +820,9 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .form-success {
   text-align: center;
   padding: 4rem 2rem;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px solid rgba(255, 157, 102, 0.25);
-  border-radius: 4px;
+  background: rgba(240, 230, 210, 0.04);
+  border: 1px solid rgba(184, 76, 42, 0.25);
+  border-radius: 2px;
 }
 
 .success-icon {
@@ -811,8 +830,8 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   height: 64px;
   margin: 0 auto 1.5rem;
   border-radius: 50%;
-  border: 2px solid #FF9d66;
-  color: #FF9d66;
+  border: 2px solid var(--accent);
+  color: var(--accent) !important;
   font-size: 2rem;
   display: flex;
   align-items: center;
@@ -834,13 +853,13 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 }
 
 .form-fieldset {
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  border-radius: 8px;
+  border: 1px solid rgba(240, 230, 210, 0.18);
+  border-radius: 2px;
   padding: 3rem 2rem 2rem;
-  background: rgba(255, 255, 255, 0.4);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.04), inset 0 0 0 1px rgba(255, 255, 255, 0.5);
+  background: rgba(240, 230, 210, 0.09);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  box-shadow: 0 4px 32px rgba(0, 0, 0, 0.15), inset 0 1px 0 rgba(240, 230, 210, 0.1);
   position: relative;
   margin-top: 1rem;
   display: flex;
@@ -850,15 +869,15 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .form-legend {
   font-size: 1.1rem;
   font-weight: 500;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: #1d1d1d !important;
+  color: var(--cream) !important;
   padding: 0;
   background: transparent;
   border: none;
   border-radius: 0;
   transform: none;
-  margin-bottom: 2rem; 
+  margin-bottom: 2rem;
   position: static;
   float: left;
   width: 100%;
@@ -882,38 +901,36 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 .form-label {
   font-size: 0.75rem;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: rgba(0, 0, 0, 0.65) !important;
+  color: var(--muted) !important;
 }
 
 .form-input {
-  background: rgba(255, 255, 255, 0.5);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  color: #1d1d1d !important;
+  background: rgba(240, 230, 210, 0.1);
+  border: 1px solid rgba(240, 230, 210, 0.18);
+  border-radius: 2px;
+  color: var(--paper) !important;
   padding: 0.75rem 1rem;
   font-size: 0.95rem;
   font-family: inherit;
   transition: border-color 0.25s ease, background 0.25s ease, box-shadow 0.25s ease;
   outline: none;
   width: 100%;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .form-input::placeholder {
-  color: rgba(0, 0, 0, 0.4) !important;
+  color: var(--muted) !important;
 }
 
 .form-input:focus {
-  border-color: rgba(255, 157, 102, 0.5);
-  background: rgba(255, 255, 255, 0.8);
-  box-shadow: 0 0 0 2px rgba(255, 157, 102, 0.2);
+  border-color: rgba(184, 76, 42, 0.5);
+  background: rgba(240, 230, 210, 0.16);
+  box-shadow: 0 0 0 2px rgba(184, 76, 42, 0.15);
 }
 
 .form-input.has-error {
-  border-color: #e74c3c;
+  border-color: #c0392b;
 }
 
 .form-input-sm {
@@ -928,7 +945,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 .form-error {
   font-size: 0.7rem;
-  color: #e74c3c !important;
+  color: #c0392b !important;
   letter-spacing: 0.02em;
 }
 
@@ -946,11 +963,11 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   cursor: pointer;
   user-select: none;
   font-size: 0.9rem;
-  color: rgba(0, 0, 0, 0.85) !important;
+  color: var(--paper) !important;
 }
 
 .form-toggle input[type="checkbox"] {
-  accent-color: #FF9d66;
+  accent-color: var(--accent);
   width: 16px;
   height: 16px;
   cursor: pointer;
@@ -994,10 +1011,10 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 }
 
 .room-chip {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  color: rgba(0, 0, 0, 0.85) !important;
+  background: rgba(240, 230, 210, 0.1);
+  border: 1px solid rgba(240, 230, 210, 0.18);
+  border-radius: 2px;
+  color: var(--paper) !important;
   padding: 0.6rem 1.1rem;
   font-size: 0.85rem;
   font-family: inherit;
@@ -1007,25 +1024,23 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   flex-direction: column;
   align-items: center;
   gap: 0.2rem;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .room-chip:hover {
-  border-color: rgba(255, 157, 102, 0.4);
-  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(184, 76, 42, 0.4);
+  background: rgba(240, 230, 210, 0.18);
 }
 
 .room-chip.active {
-  border-color: #FF9d66;
-  background: rgba(255, 157, 102, 0.15);
-  color: #1d1d1d !important;
-  box-shadow: inset 0 0 0 1px #FF9d66;
+  border-color: var(--accent);
+  background: rgba(184, 76, 42, 0.12);
+  color: var(--cream) !important;
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 .room-chip-cap {
   font-size: 0.65rem;
-  color: rgba(0, 0, 0, 0.5) !important;
+  color: var(--muted) !important;
   letter-spacing: 0.02em;
 }
 
@@ -1042,29 +1057,27 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 }
 
 .dj-quelle-btn {
-  background: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  color: rgba(0, 0, 0, 0.85) !important;
+  background: rgba(240, 230, 210, 0.1);
+  border: 1px solid rgba(240, 230, 210, 0.18);
+  border-radius: 2px;
+  color: var(--paper) !important;
   padding: 0.75rem 1.5rem;
   font-size: 0.9rem;
   font-family: inherit;
   cursor: pointer;
   transition: all 0.25s ease;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
 }
 
 .dj-quelle-btn:hover {
-  border-color: rgba(255, 157, 102, 0.4);
-  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(184, 76, 42, 0.4);
+  background: rgba(240, 230, 210, 0.18);
 }
 
 .dj-quelle-btn.active {
-  border-color: #FF9d66;
-  background: rgba(255, 157, 102, 0.15);
-  color: #1d1d1d !important;
-  box-shadow: inset 0 0 0 1px #FF9d66;
+  border-color: var(--accent);
+  background: rgba(184, 76, 42, 0.12);
+  color: var(--cream) !important;
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 
 /* Consent */
@@ -1081,7 +1094,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 }
 
 .form-checkbox input[type="checkbox"] {
-  accent-color: #FF9d66;
+  accent-color: var(--accent);
   width: 18px;
   height: 18px;
   margin-top: 2px;
@@ -1091,12 +1104,12 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 .checkbox-text {
   font-size: 0.85rem;
-  color: rgba(0, 0, 0, 0.75) !important;
+  color: var(--muted) !important;
   line-height: 1.5;
 }
 
 .checkbox-text a {
-  color: #FF9d66 !important;
+  color: var(--accent) !important;
   text-decoration: underline;
 }
 
@@ -1109,45 +1122,43 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .form-btn {
   font-family: inherit;
   font-size: 0.9rem;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   padding: 1rem 2.5rem;
-  border-radius: 4px;
+  border-radius: 2px;
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .form-btn-primary {
-  background: rgba(255, 157, 102, 0.15);
-  border-color: rgba(255, 157, 102, 0.5);
-  color: #FF9d66 !important;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(184, 76, 42, 0.12);
+  border-color: rgba(184, 76, 42, 0.5);
+  color: var(--accent) !important;
 }
 
 .form-btn-primary:hover {
-  background: rgba(255, 157, 102, 0.25);
-  border-color: #FF9d66 !important;
-  box-shadow: 0 4px 12px rgba(255, 157, 102, 0.2);
+  background: rgba(184, 76, 42, 0.22);
+  border-color: var(--accent) !important;
+  box-shadow: 0 4px 20px rgba(184, 76, 42, 0.2);
 }
 
 .form-btn-secondary {
   background: transparent;
-  border-color: rgba(0, 0, 0, 0.2);
-  color: rgba(0, 0, 0, 0.8) !important;
+  border-color: rgba(240, 230, 210, 0.2);
+  color: var(--paper) !important;
   margin-top: 1.5rem;
 }
 
 .form-btn-secondary:hover {
-  border-color: rgba(0, 0, 0, 0.5);
-  color: #1d1d1d !important;
+  border-color: rgba(240, 230, 210, 0.5);
+  color: var(--cream) !important;
 }
 
-/* Date/time input colour fixes (dark theme) */
+/* Date/time input colour fixes */
 .form-input[type="date"],
 .form-input[type="time"] {
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 /* Modal */
@@ -1157,8 +1168,8 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4); /* Weicheres Overlay für den weißen Hintergrund */
-  backdrop-filter: blur(4px);
+  background: rgba(20, 18, 14, 0.7);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1167,35 +1178,42 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 }
 
 .modal-content {
-  background: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 10px 40px rgba(0,0,0,0.1);
-  border-radius: 4px;
+  background: #2a2620;
+  border: 1px solid rgba(240, 230, 210, 0.14);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border-radius: 2px;
   max-width: 900px;
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
   padding: 3rem;
   position: relative;
-  color: #1d1d1d !important;
+  color: var(--paper) !important;
 }
 
 .modal-close {
   position: absolute;
   top: 1rem;
   right: 1rem;
-  background: none;
-  border: none;
-  color: #1d1d1d !important;
+  background: rgba(240, 230, 210, 0.06);
+  border: 1px solid rgba(240, 230, 210, 0.1);
+  border-radius: 2px;
+  color: var(--paper) !important;
   font-size: 2rem;
   cursor: pointer;
-  opacity: 0.5;
+  opacity: 0.6;
   transition: opacity 0.3s ease;
   line-height: 1;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-close:hover {
   opacity: 1;
+  background: rgba(240, 230, 210, 0.12);
 }
 
 .description-container {
@@ -1203,8 +1221,8 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 }
 
 .modal-description {
-  color: rgba(0, 0, 0, 0.7) !important;
-  line-height: 1.6;
+  color: var(--muted) !important;
+  line-height: 1.7;
   white-space: pre-line;
 }
 
@@ -1218,7 +1236,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .read-more-btn {
   background: none;
   border: none;
-  color: #FF9d66 !important;
+  color: var(--accent) !important;
   margin-top: 0.5rem;
   cursor: pointer;
   font-size: 0.9rem;
@@ -1234,10 +1252,10 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .modal-title {
   font-size: 1.5rem;
   font-weight: 400;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   margin-bottom: 1rem;
   text-transform: uppercase;
-  color: #1d1d1d !important;
+  color: var(--cream) !important;
 }
 
 /* Room Details */
@@ -1247,9 +1265,9 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   gap: 1.25rem;
   margin-bottom: 2rem;
   padding: 1.5rem;
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 4px;
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(240, 230, 210, 0.04);
+  border-radius: 2px;
+  border: 1px solid rgba(240, 230, 210, 0.08);
 }
 
 .detail-row {
@@ -1272,13 +1290,13 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   font-size: 0.75rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #FF9d66 !important;
+  color: var(--accent) !important;
   font-weight: 600;
 }
 
 .detail-value {
   font-size: 1rem;
-  color: rgba(0, 0, 0, 0.9) !important;
+  color: var(--paper) !important;
 }
 
 .feature-tags {
@@ -1289,20 +1307,20 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 .feature-tag {
   padding: 0.4rem 0.9rem;
-  background: rgba(255, 157, 102, 0.1);
-  border: 1px solid rgba(255, 157, 102, 0.4);
-  color: #1d1d1d !important;
+  background: rgba(184, 76, 42, 0.1);
+  border: 1px solid rgba(184, 76, 42, 0.3);
+  color: var(--paper) !important;
   font-size: 0.8rem;
-  border-radius: 3px;
+  border-radius: 2px;
   letter-spacing: 0.02em;
 }
 
 .extra-text {
   margin-top: 1rem;
   padding-top: 1rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  border-top: 1px solid rgba(240, 230, 210, 0.06);
   font-size: 0.8rem;
-  color: rgba(0, 0, 0, 0.5) !important;
+  color: var(--muted) !important;
   font-style: italic;
   text-align: center;
 }
@@ -1317,14 +1335,16 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   width: 100%;
   height: 150px;
   object-fit: cover;
-  border-radius: 4px;
+  border-radius: 2px;
   cursor: pointer;
   transition: all 0.3s ease;
+  filter: sepia(0.1);
 }
 
 .modal-image:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(255, 157, 102, 0.3);
+  box-shadow: 0 4px 20px rgba(184, 76, 42, 0.3);
+  filter: sepia(0);
 }
 
 /* vue-easy-lightbox z-index fix */
@@ -1335,10 +1355,10 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 .modal-placeholder {
   padding: 3rem;
   text-align: center;
-  background: rgba(0, 0, 0, 0.02);
-  border: 1px dashed rgba(0, 0, 0, 0.1);
-  border-radius: 4px;
-  color: rgba(0, 0, 0, 0.5) !important;
+  background: rgba(240, 230, 210, 0.03);
+  border: 1px dashed rgba(240, 230, 210, 0.1);
+  border-radius: 2px;
+  color: var(--muted) !important;
 }
 
 /* Mobile */
@@ -1384,253 +1404,10 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   .dj-quelle-btn {
     width: 100%;
   }
-}
 
-/* =========================================
-   DARK MODE OVERRIDES 
-   ========================================= */
-
-/* Theme Toggle Switch */
-.theme-toggle-wrapper {
-  position: absolute;
-  top: 2rem;
-  right: 2rem;
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  z-index: 100;
-  background: rgba(255, 255, 255, 0.6);
-  padding: 0.5rem 1rem;
-  border-radius: 30px;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-  transition: all 0.3s ease;
-}
-
-.request-page.theme-dark .theme-toggle-wrapper {
-  background: rgba(0, 0, 0, 0.4);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-}
-
-.theme-label {
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: rgba(0, 0, 0, 0.4) !important;
-  transition: color 0.3s ease;
-}
-.theme-label.active {
-  color: #1d1d1d !important;
-}
-
-.request-page.theme-dark .theme-label {
-  color: rgba(255, 255, 255, 0.3) !important;
-}
-.request-page.theme-dark .theme-label.active {
-  color: #fff !important;
-}
-
-.theme-switch {
-  position: relative;
-  display: inline-block;
-  width: 44px;
-  height: 24px;
-  margin: 0;
-}
-.theme-switch input {
-  opacity: 0;
-  width: 0;
-  height: 0;
-}
-
-.slider {
-  position: absolute;
-  cursor: pointer;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0, 0, 0, 0.2);
-  transition: .4s;
-  border-radius: 24px;
-}
-.slider:before {
-  position: absolute;
-  content: "";
-  height: 18px;
-  width: 18px;
-  left: 3px;
-  bottom: 3px;
-  background-color: white;
-  transition: .4s;
-  border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-input:checked + .slider {
-  background-color: #FF9d66;
-}
-input:checked + .slider:before {
-  transform: translateX(20px);
-}
-
-.request-page.theme-dark .slider {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-.request-page.theme-dark input:checked + .slider {
-  background-color: #FF9d66;
-}
-
-/* Page Text Colors */
-.request-page.theme-dark,
-.request-page.theme-dark p,
-.request-page.theme-dark span,
-.request-page.theme-dark div,
-.request-page.theme-dark h1,
-.request-page.theme-dark h2,
-.request-page.theme-dark h3,
-.request-page.theme-dark h4,
-.request-page.theme-dark strong,
-.request-page.theme-dark label,
-.request-page.theme-dark legend {
-  color: #ffffff !important;
-}
-
-.request-page.theme-dark ::selection,
-.modal-overlay.theme-dark ::selection {
-  background: rgba(255, 157, 102, 0.4); /* subtle orange for dark selection */
-  color: #fff;
-}
-
-.request-page.theme-dark .theme-text-secondary,
-.request-page.theme-dark .theme-text-secondary p,
-.request-page.theme-dark .theme-text-muted,
-.request-page.theme-dark .form-label,
-.request-page.theme-dark .checkbox-text {
-  color: rgba(255, 255, 255, 0.7) !important;
-}
-
-.request-page.theme-dark .section-subtitle,
-.request-page.theme-dark .page-subtitle {
-  opacity: 0.8;
-}
-
-/* Form UI */
-.request-page.theme-dark .form-fieldset {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 0 0 1px rgba(255, 255, 255, 0.05);
-}
-
-.request-page.theme-dark .form-input,
-.request-page.theme-dark .room-chip,
-.request-page.theme-dark .dj-quelle-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: #ffffff !important;
-}
-
-.request-page.theme-dark .form-input::placeholder {
-  color: rgba(255, 255, 255, 0.5) !important;
-}
-
-.request-page.theme-dark .form-input[type="date"],
-.request-page.theme-dark .form-input[type="time"] {
-  color-scheme: dark;
-}
-
-.request-page.theme-dark .form-input:focus,
-.request-page.theme-dark .room-chip:hover,
-.request-page.theme-dark .dj-quelle-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-}
-
-.request-page.theme-dark .room-chip.active,
-.request-page.theme-dark .dj-quelle-btn.active {
-  background: rgba(255, 157, 102, 0.15);
-  border-color: #FF9d66;
-  color: #FF9d66 !important;
-}
-
-.request-page.theme-dark .form-success {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 157, 102, 0.25);
-}
-
-.request-page.theme-dark .form-btn-secondary {
-  color: rgba(255, 255, 255, 0.8) !important;
-  border-color: rgba(255, 255, 255, 0.2);
-}
-.request-page.theme-dark .form-btn-secondary:hover {
-  color: #fff !important;
-  border-color: rgba(255, 255, 255, 0.6);
-}
-
-/* Floorplan Sketch Details */
-.request-page.theme-dark .sketch-wrapper {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 255, 255, 0.08);
-}
-.request-page.theme-dark .sketch-image {
-  filter: invert(1) brightness(1.2);
-}
-.request-page.theme-dark .sketch-wrapper:hover .sketch-image {
-  filter: invert(1) brightness(1.8);
-}
-
-/* Modal Dark Overrides */
-.modal-overlay.theme-dark .modal-content {
-  background: #151515;
-  border-color: rgba(255, 255, 255, 0.05);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-  color: #fff !important;
-}
-
-.modal-overlay.theme-dark .modal-close {
-  background: #2a2a2a;
-  color: #fff !important;
-}
-
-.modal-overlay.theme-dark .modal-close:hover {
-  background: #444;
-}
-
-.modal-overlay.theme-dark .modal-title,
-.modal-overlay.theme-dark .detail-value,
-.modal-overlay.theme-dark .feature-tag {
-  color: #ffffff !important;
-}
-
-.modal-overlay.theme-dark .room-details {
-  background: rgba(255, 255, 255, 0.05);
-  border-color: rgba(255, 255, 255, 0.05);
-}
-
-.modal-overlay.theme-dark .feature-tag {
-  background: rgba(255, 157, 102, 0.15);
-}
-
-.modal-overlay.theme-dark .extra-text {
-  color: #aaa !important;
-  border-top-color: rgba(255, 255, 255, 0.05);
-}
-
-.modal-overlay.theme-dark .modal-description {
-  color: rgba(255, 255, 255, 0.8) !important;
-}
-
-.modal-overlay.theme-dark .modal-placeholder {
-  background: rgba(255, 255, 255, 0.02);
-  border-color: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.5) !important;
-}
-
-.modal-overlay.theme-dark .detail-item.features {
-  border-top-color: rgba(255,255,255,0.06);
+  .bg-facade-img {
+    object-position: center center;
+  }
 }
 
 </style>
