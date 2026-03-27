@@ -14,6 +14,11 @@ const parallaxY = ref(0)
 const onScroll = () => {
   if (!requestPageRef.value || !facadeImageRef.value) return
 
+  if (window.innerWidth <= 768) {
+    parallaxY.value = 0
+    return
+  }
+
   const rect = requestPageRef.value.getBoundingClientRect()
   const pageScrollDistance = Math.max(rect.height - window.innerHeight, 1)
   const progress = Math.min(Math.max(-rect.top / pageScrollDistance, 0), 1)
@@ -1363,6 +1368,28 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
 
 /* Mobile */
 @media (max-width: 768px) {
+  .request-page {
+    overflow-x: clip;
+  }
+
+  .bg-facade {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+  }
+
+  .bg-facade-img {
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    object-position: center center;
+    transform: none !important;
+    will-change: auto;
+    opacity: 0.2;
+  }
+
   .container {
     padding: 0 1rem;
   }
@@ -1537,10 +1564,6 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   .modal-gallery {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.75rem;
-  }
-
-  .bg-facade-img {
-    opacity: 0.18;
   }
 }
 
