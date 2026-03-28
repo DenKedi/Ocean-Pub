@@ -97,6 +97,7 @@
                     target="_blank"
                     rel="noopener noreferrer"
                     class="event-link-btn theme-item-bg"
+                    @click="trackClick('ticket', event._id)"
                   >{{ truncateText(event.link_text) }}</a>
                   <button @click="goToEventDetails(event._id)" class="event-button theme-item-bg theme-text-primary">
                     Mehr Infos
@@ -122,6 +123,7 @@ import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import api from '@/utils/api'
 import { getImageUrl } from '@/utils/imageUrl'
+import { trackClick } from '@/utils/tracking'
 
 const router = useRouter()
 const upcomingEvents = ref([])
@@ -195,10 +197,12 @@ const truncateText = (text, maxChars = 15) => {
 }
 
 const goToEvents = () => {
+  trackClick('alle_events')
   router.push('/events')
 }
 
 const goToEventDetails = (eventId) => {
+  trackClick('mehr_infos', eventId)
   router.push(`/events#event-${eventId}`)
 }
 

@@ -7,7 +7,16 @@
             <h2 class="section-title theme-text-primary">@pallas_world</h2>
           </div>
 
-          <div class="instagram-post post-left">
+          <!-- Facade or Post Left -->
+          <div v-if="!consentGiven" class="instagram-post post-left instagram-facade theme-container-bg">
+            <div class="facade-inner">
+              <svg viewBox="0 0 24 24" width="40" height="40"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+              <p class="facade-text theme-text-secondary">Instagram-Inhalte werden von Meta bereitgestellt und übertragen Daten an Instagram.</p>
+              <button class="facade-btn" @click="giveConsent">Instagram-Inhalte laden</button>
+              <p class="facade-hint theme-text-muted">Mehr Infos in der <router-link to="/datenschutz" class="facade-link">Datenschutzerklärung</router-link>.</p>
+            </div>
+          </div>
+          <div v-else class="instagram-post post-left">
             <iframe 
               :src="`https://www.instagram.com/p/${postLeft}/embed/?img_index=1`"
               frameborder="0"
@@ -20,7 +29,12 @@
         </div>
 
         <div class="instagram-column instagram-column-right">
-          <div class="instagram-post post-right">
+          <div v-if="!consentGiven" class="instagram-post post-right instagram-facade theme-container-bg">
+            <div class="facade-inner">
+              <svg viewBox="0 0 24 24" width="40" height="40"><path fill="currentColor" d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
+            </div>
+          </div>
+          <div v-else class="instagram-post post-right">
             <iframe 
               :src="`https://www.instagram.com/p/${postRight}/embed/?img_index=1`"
               frameborder="0"
@@ -51,11 +65,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
+import { getConsent, setConsent } from '@/utils/embedConsent'
 
+const CONSENT_KEY = 'instagram'
 const postLeft = ref('DRP6UlhjnMN')
 const postRight = ref('DVTYNbNDATB')
+const consentGiven = ref(getConsent(CONSENT_KEY))
+
+function loadInstagramScript() {
+  if (window.instgrm) {
+    window.instgrm.Embeds.process()
+  } else {
+    const script = document.createElement('script')
+    script.src = '//www.instagram.com/embed.js'
+    script.async = true
+    document.head.appendChild(script)
+    script.onload = () => {
+      if (window.instgrm) window.instgrm.Embeds.process()
+    }
+  }
+}
+
+function giveConsent() {
+  setConsent(CONSENT_KEY)
+  consentGiven.value = true
+}
+
+// Load Instagram embed script once consent is given
+watch(consentGiven, (val) => {
+  if (val) loadInstagramScript()
+})
 
 onMounted(async () => {
   try {
@@ -66,18 +107,8 @@ onMounted(async () => {
     // keep defaults
   }
 
-  if (window.instgrm) {
-    window.instgrm.Embeds.process()
-  } else {
-    const script = document.createElement('script')
-    script.src = '//www.instagram.com/embed.js'
-    script.async = true
-    document.head.appendChild(script)
-    script.onload = () => {
-      if (window.instgrm) {
-        window.instgrm.Embeds.process()
-      }
-    }
+  if (consentGiven.value) {
+    loadInstagramScript()
   }
 })
 </script>
@@ -154,6 +185,61 @@ onMounted(async () => {
   border: none;
   box-shadow: none;
 }
+
+/* Facade Placeholder */
+.instagram-facade {
+  border-radius: 8px;
+  border: 1px solid var(--theme-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.facade-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 2rem;
+  text-align: center;
+  opacity: 0.85;
+}
+
+.facade-text {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  max-width: 280px;
+  margin: 0;
+}
+
+.facade-btn {
+  padding: 0.6rem 1.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--theme-border);
+  border-radius: 50px;
+  color: inherit;
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  letter-spacing: 0.03em;
+}
+
+.facade-btn:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-2px);
+}
+
+.facade-hint {
+  font-size: 0.75rem;
+  margin: 0;
+}
+
+.facade-link {
+  color: var(--theme-text-secondary, #aaa);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
 
 .follow-section {
   width: 400px;

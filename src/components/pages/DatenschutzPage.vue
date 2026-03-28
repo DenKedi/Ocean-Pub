@@ -110,6 +110,70 @@ import MainLayout from '@/layouts/MainLayout.vue'
           </p>
         </section>
 
+        <section class="legal-section">
+          <h2>6. Nutzungsanalyse (Click-Tracking)</h2>
+          <p>
+            Diese Website erfasst anonymisierte Klick-Interaktionen (z. B. Klicks auf Ticket-Links oder 
+            Event-Buttons), um die Nutzung unseres Angebots statistisch auszuwerten und zu verbessern.
+          </p>
+          <h3>Welche Daten werden erfasst?</h3>
+          <ul>
+            <li>Art des geklickten Elements (z. B. „Ticket", „Mehr Infos")</li>
+            <li>Referenz auf das betreffende Event (interne ID)</li>
+            <li>Anonymisierte IP-Adresse (letztes Oktett wird vor der Speicherung auf „0" gesetzt)</li>
+            <li>Anonyme Sitzungs-ID (zufällig generiert, im Tab-Speicher des Browsers – wird beim Tab-Schließen gelöscht)</li>
+            <li>Zeitstempel</li>
+          </ul>
+          <h3>Rechtsgrundlage</h3>
+          <p>
+            Die Verarbeitung erfolgt auf Grundlage von Art. 6 Abs. 1 lit. f DSGVO (berechtigtes Interesse 
+            zur anonymen Nutzungsanalyse). Da keine personenbezogenen Daten im Sinne der DSGVO gespeichert 
+            werden (IP vollständig anonymisiert, keine Cookies), ist keine Einwilligung erforderlich.
+          </p>
+          <h3>Weitergabe an Dritte</h3>
+          <p>
+            Die erfassten Daten werden ausschließlich auf unseren eigenen Servern gespeichert und nicht 
+            an Dritte weitergegeben.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h2>7. Spotify-Einbettung</h2>
+          <p>
+            Auf dieser Website besteht die Möglichkeit, Inhalte des Musikdienstes Spotify einzubetten. 
+            Anbieter ist die Spotify AB, Regeringsgatan 19, 111 53 Stockholm, Schweden.
+          </p>
+          <p>
+            Die Spotify-Inhalte werden erst geladen, wenn Sie aktiv auf die Schaltfläche 
+            „Spotify-Inhalt laden" klicken (2-Klick-Lösung). Erst dann wird eine Verbindung zu den 
+            Servern von Spotify hergestellt und dabei Ihre IP-Adresse sowie Nutzungsdaten übertragen. 
+            Ihre Zustimmung wird im lokalen Speicher Ihres Browsers gespeichert, sodass Sie beim nächsten 
+            Besuch nicht erneut zustimmen müssen.
+          </p>
+          <p>
+            Weitere Informationen finden Sie in der 
+            <a href="https://www.spotify.com/de/legal/privacy-policy/" target="_blank" rel="noopener noreferrer">Datenschutzerklärung von Spotify</a>.
+          </p>
+        </section>
+
+        <section class="legal-section">
+          <h2>8. Instagram-Einbettung</h2>
+          <p>
+            Auf dieser Website werden Inhalte des sozialen Netzwerks Instagram eingebettet. 
+            Anbieter ist die Meta Platforms Ireland Limited, 4 Grand Canal Square, Dublin 2, Irland.
+          </p>
+          <p>
+            Die Instagram-Inhalte (Beiträge) werden erst geladen, wenn Sie aktiv auf die Schaltfläche 
+            „Instagram-Inhalte laden" klicken (2-Klick-Lösung). Erst dann wird eine Verbindung zu den 
+            Servern von Instagram/Meta hergestellt und dabei Ihre IP-Adresse sowie das Instagram-Einbettungs-Script 
+            übertragen. Ihre Zustimmung wird im lokalen Speicher Ihres Browsers gespeichert.
+          </p>
+          <p>
+            Weitere Informationen finden Sie im 
+            <a href="https://privacycenter.instagram.com/policy" target="_blank" rel="noopener noreferrer">Datenschutzcenter von Instagram</a>.
+          </p>
+        </section>
+
         <div class="legal-footer">
           <p><small>Stand: März 2026</small></p>
         </div>
@@ -199,6 +263,15 @@ import MainLayout from '@/layouts/MainLayout.vue'
 
 .legal-footer small {
   color: rgba(255, 255, 255, 0.6);
+}
+
+.legal-content a {
+  color: rgba(255, 255, 255, 0.7);
+  text-underline-offset: 3px;
+}
+
+.legal-content a:hover {
+  color: #fff;
 }
 
 /* Mobile Optimization */

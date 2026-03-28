@@ -156,6 +156,36 @@ function extractInstagramId(input) {
 const instagramIdLeft = computed(() => extractInstagramId(instagramUrlLeft.value))
 const instagramIdRight = computed(() => extractInstagramId(instagramUrlRight.value))
 
+// Analytics State
+const analyticsRange = ref('30d')
+const analyticsRanges = [
+  { label: '7 Tage', value: '7d' },
+  { label: '30 Tage', value: '30d' },
+  { label: 'Alle Zeit', value: 'all' }
+]
+const analyticsStats = ref({ totalClicks: 0, byButtonType: {}, topEvents: [] })
+const analyticsLoading = ref(false)
+const analyticsError = ref('')
+
+const fetchAnalytics = async () => {
+  analyticsLoading.value = true
+  analyticsError.value = ''
+  try {
+    const params = analyticsRange.value !== 'all' ? { range: analyticsRange.value } : {}
+    const { data } = await api.get('/interactions/stats', { params })
+    analyticsStats.value = data
+  } catch (err) {
+    analyticsError.value = 'Analytics konnten nicht geladen werden.'
+  } finally {
+    analyticsLoading.value = false
+  }
+}
+
+const formatAnalyticsDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString('de-DE', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+
 // Computed
 const stats = computed(() => ({
   total: events.value.length,
@@ -1067,6 +1097,9 @@ async function deleteJob(job) {
           <a href="#" class="nav-item" :class="{ active: activeSection === 'drinks' }" @click.prevent="activeSection = 'drinks'; toggleMobileMenu()">
             Drinks
           </a>
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'analytics' }" @click.prevent="activeSection = 'analytics'; fetchAnalytics(); toggleMobileMenu()">
+            Analytics
+          </a>
         </nav>
 
         <div class="sidebar-footer">
@@ -1561,6 +1594,83 @@ async function deleteJob(job) {
             <div class="instagram-settings-actions">
               <span v-if="drinksPdfSuccess" class="save-success">✓ Erfolgreich hochgeladen</span>
               <span v-if="drinksPdfError" class="save-error">{{ drinksPdfError }}</span>
+            </div>
+          </div>
+        </section>
+
+        <!-- Analytics Section -->
+        <section v-if="activeSection === 'analytics'" class="section">
+          <div class="section-header">
+            <h2>Analytics</h2>
+          </div>
+
+          <div class="analytics-range-filter">
+            <button
+              v-for="r in analyticsRanges"
+              :key="r.value"
+              class="range-btn"
+              :class="{ active: analyticsRange === r.value }"
+              @click="analyticsRange = r.value; fetchAnalytics()"
+            >{{ r.label }}</button>
+          </div>
+
+          <div v-if="analyticsLoading" class="analytics-loading">
+            <div class="spinner"></div>
+          </div>
+
+          <div v-else-if="analyticsError" class="analytics-error">{{ analyticsError }}</div>
+
+          <div v-else>
+            <!-- Summary Cards -->
+            <div class="analytics-cards">
+              <div class="analytics-card">
+                <span class="analytics-card-label">Gesamt Klicks</span>
+                <span class="analytics-card-value">{{ analyticsStats.totalClicks ?? 0 }}</span>
+              </div>
+              <div class="analytics-card">
+                <span class="analytics-card-label">Ticket-Klicks</span>
+                <span class="analytics-card-value">{{ analyticsStats.byButtonType?.ticket ?? 0 }}</span>
+              </div>
+              <div class="analytics-card">
+                <span class="analytics-card-label">Mehr Infos</span>
+                <span class="analytics-card-value">{{ analyticsStats.byButtonType?.mehr_infos ?? 0 }}</span>
+              </div>
+              <div class="analytics-card">
+                <span class="analytics-card-label">Alle Events</span>
+                <span class="analytics-card-value">{{ analyticsStats.byButtonType?.alle_events ?? 0 }}</span>
+              </div>
+              <div class="analytics-card">
+                <span class="analytics-card-label">Kategorie-Filter</span>
+                <span class="analytics-card-value">{{ analyticsStats.byButtonType?.category_filter ?? 0 }}</span>
+              </div>
+            </div>
+
+            <!-- Top Events Table -->
+            <div class="analytics-table-wrapper">
+              <h3 class="analytics-table-title">Top Events</h3>
+              <div v-if="!analyticsStats.topEvents || analyticsStats.topEvents.length === 0" class="analytics-empty">
+                Noch keine Daten vorhanden.
+              </div>
+              <table v-else class="analytics-table">
+                <thead>
+                  <tr>
+                    <th>Event</th>
+                    <th>Datum</th>
+                    <th>Ticket</th>
+                    <th>Mehr Infos</th>
+                    <th>Gesamt</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="row in analyticsStats.topEvents" :key="row._id">
+                    <td>{{ row.eventTitle || '(gelöscht)' }}</td>
+                    <td>{{ row.eventStartTime ? formatAnalyticsDate(row.eventStartTime) : '–' }}</td>
+                    <td>{{ row.ticket }}</td>
+                    <td>{{ row.mehr_infos }}</td>
+                    <td class="analytics-total">{{ row.total }}</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </section>
@@ -3839,6 +3949,117 @@ async function deleteJob(job) {
 
 .save-error {
   color: #f44336;
+  font-size: 0.9rem;
+}
+
+/* Analytics */
+.analytics-range-filter {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.range-btn {
+  padding: 0.4rem 1.1rem;
+  border-radius: 50px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.85rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.range-btn.active,
+.range-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.analytics-cards {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2.5rem;
+}
+
+.analytics-card {
+  flex: 1 1 140px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.analytics-card-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.analytics-card-value {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1;
+}
+
+.analytics-table-wrapper {
+  overflow-x: auto;
+}
+
+.analytics-table-title {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 1rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.analytics-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.analytics-table th,
+.analytics-table td {
+  padding: 0.65rem 1rem;
+  text-align: left;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+.analytics-table th {
+  color: rgba(255, 255, 255, 0.45);
+  font-weight: 400;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.analytics-table td {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.analytics-total {
+  font-weight: 600;
+  color: #fff !important;
+}
+
+.analytics-loading,
+.analytics-empty {
+  color: rgba(255, 255, 255, 0.4);
+  padding: 2rem 0;
+  font-size: 0.9rem;
+}
+
+.analytics-error {
+  color: #f44336;
+  padding: 1rem 0;
   font-size: 0.9rem;
 }
 </style>

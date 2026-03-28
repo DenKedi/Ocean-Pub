@@ -35,16 +35,7 @@ onMounted(async () => {
 
 function onPdfLoaded(pdf) {
   pageCount.value = pdf.numPages
-  if (isMobile.value) currentPage.value = 1
   pdfLoaded.value = true
-}
-
-function prevPage() {
-  if (currentPage.value > 1) currentPage.value--
-}
-
-function nextPage() {
-  if (currentPage.value < pageCount.value) currentPage.value++
 }
 
 const showQrModal = ref(false)
@@ -64,20 +55,11 @@ async function openQrModal() {
 <template>
   <MainLayout>
     <div class="drinks-page">
-      <div class="pdf-header">
-        <h1 class="page-title">Pallas.Drinks</h1>
-        <div class="header-buttons">
-          <a :href="directUrl" download class="header-btn">PDF Herunterladen</a>
-          <button class="header-btn" @click="openQrModal">QR Code anzeigen</button>
-        </div>
-      </div>
-
       <!-- QR Modal -->
       <Teleport to="body">
         <div v-if="showQrModal" class="qr-overlay" @click.self="showQrModal = false">
           <div class="qr-modal">
             <button class="qr-close" @click="showQrModal = false">✕</button>
-            <p class="qr-label">Pallas.Drinks</p>
             <img :src="qrDataUrl" alt="QR Code" class="qr-image" />
             <p class="qr-url">{{ drinksPageUrl }}</p>
           </div>
@@ -88,6 +70,9 @@ async function openQrModal() {
         <div v-if="loading" class="pdf-loading">Lade Karte…</div>
 
         <template v-else>
+          <div v-if="!pdfLoaded" class="pdf-spinner-wrapper">
+            <div class="pdf-spinner"></div>
+          </div>
           <div class="pdf-canvas-wrapper">
             <VuePdfEmbed
               :source="pdfUrl"
@@ -95,11 +80,19 @@ async function openQrModal() {
               class="pdf-embed"
               @loaded="onPdfLoaded"
             />
-            <template v-if="isMobile && pdfLoaded && pageCount > 1">
-              <button class="page-btn page-btn--prev" :disabled="currentPage <= 1" @click="prevPage">&#8592;</button>
-              <span class="page-indicator">{{ currentPage }} / {{ pageCount }}</span>
-              <button class="page-btn page-btn--next" :disabled="currentPage >= pageCount" @click="nextPage">&#8594;</button>
-            </template>
+            <h1 class="pdf-title">Pallas.Drinks</h1>
+            <div class="pdf-corner-group">
+              <button class="pdf-corner-btn" @click="openQrModal" title="QR Code anzeigen">
+                <img src="/qr-code-outline.svg" alt="" aria-hidden="true" class="pdf-corner-icon pdf-corner-icon--qr" />
+              </button>
+              <a :href="directUrl" download class="pdf-corner-btn" title="PDF herunterladen">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              </a>
+            </div>
           </div>
 
           <div v-if="!isMobile && pdfLoaded && pageCount > 1" class="page-info">
@@ -116,40 +109,8 @@ async function openQrModal() {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: 3.5rem;
+  padding-top: 0;
 }
-
-.pdf-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.75rem 2rem 0.5rem;
-  max-width: 900px;
-  margin: 0 auto;
-  width: 100%;
-}
-
-.page-title {
-  font-size: clamp(1.6rem, 3vw, 2.5rem);
-  font-weight: 300;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: #ffffff;
-}
-
-.open-link {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.45);
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.2s ease;
-}
-.open-link:hover { color: #ffffff; }
 
 .pdf-wrapper {
   flex: 1;
@@ -167,48 +128,86 @@ async function openQrModal() {
   letter-spacing: 0.1em;
 }
 
-.page-btn {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+.pdf-spinner-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 6rem 0;
+}
+
+.pdf-spinner {
+  width: 36px;
+  height: 36px;
+  border: 2px solid rgba(255, 255, 255, 0.15);
+  border-top-color: rgba(255, 255, 255, 0.7);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.pdf-title {
+  position: absolute;
+  top: 5.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  font-size: clamp(1.2rem, 2.5vw, 2rem);
+  font-weight: 300;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: #ffffff;
-  font-size: 1.1rem;
-  width: 40px;
-  height: 40px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.2s ease;
+  white-space: nowrap;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+  pointer-events: none;
+  margin: 0;
+  line-height: 34px;
+  width: calc(100% - 14rem);
+  text-align: center;
+}
+
+.pdf-corner-group {
+  position: absolute;
+  top: 5.25rem;
+  left: 1rem;
+  z-index: 10;
+  display: flex;
+  gap: 0.4rem;
+}
+
+.pdf-corner-btn {
+  width: 34px;
+  height: 34px;
   display: flex;
   align-items: center;
   justify-content: center;
+  background: rgba(0, 0, 0, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+  color: rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  text-decoration: none;
+  backdrop-filter: blur(4px);
+  transition: background 0.2s ease, color 0.2s ease;
 }
-.page-btn:disabled { opacity: 0.25; cursor: default; }
-.page-btn:not(:disabled):hover { background: rgba(255, 255, 255, 0.16); }
-
-.page-btn--prev {
-  position: absolute;
-  top: 50%;
-  left: 0.5rem;
-  transform: translateY(-50%);
-}
-
-.page-btn--next {
-  position: absolute;
-  top: 50%;
-  right: 0.5rem;
-  transform: translateY(-50%);
+.pdf-corner-btn:hover {
+  background: rgba(0, 0, 0, 0.8);
+  color: #ffffff;
 }
 
-.page-indicator {
-  position: absolute;
-  bottom: 1.2rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-size: 0.85rem;
-  letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.5);
-  min-width: 4rem;
-  text-align: center;
-  pointer-events: none;
+.pdf-corner-icon {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+
+.pdf-corner-icon--qr {
+  width: 18px;
+  height: 18px;
+  filter: brightness(0) invert(1);
+  opacity: 0.9;
 }
 
 .pdf-canvas-wrapper {
@@ -229,35 +228,6 @@ async function openQrModal() {
   font-size: 0.75rem;
   letter-spacing: 0.06em;
   color: rgba(255, 255, 255, 0.25);
-}
-
-.header-buttons {
-  display: flex;
-  gap: 0.75rem;
-  flex-wrap: wrap;
-  justify-content: center;
-}
-
-.header-btn {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.45rem 1rem;
-  font-size: 0.7rem;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.7);
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-  cursor: pointer;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color 0.2s ease, border-color 0.2s ease;
-  font-family: inherit;
-}
-.header-btn:hover {
-  color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.7);
 }
 
 .qr-overlay {
@@ -320,13 +290,17 @@ async function openQrModal() {
 }
 
 @media (max-width: 768px) {
-  .pdf-wrapper { padding: 0 0.5rem 4rem; }
-  .pdf-header {
-    padding: 0.5rem 1rem 0.4rem;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
-    text-align: center;
+  .pdf-wrapper { padding: 0 0 4rem; }
+  .pdf-title {
+    position: fixed;
+    top: 1rem;
+    font-size: 1.1rem;
+    width: calc(100% - 8rem);
+  }
+  .pdf-corner-group {
+    position: fixed;
+    top: 1rem;
+    left: 1rem;
   }
 }
 </style>

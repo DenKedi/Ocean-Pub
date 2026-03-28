@@ -3,6 +3,7 @@ import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import api from '../utils/api'
 import { getImageUrl } from '../utils/imageUrl'
+import { trackClick } from '../utils/tracking'
 import bgImage from '@/assets/pictures/decke5.webp'
 import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
@@ -117,8 +118,11 @@ const formatRooms = (rooms) => {
 }
 
 // Filter by category
-const filterByCategory = (categoryId) => {
+const filterByCategory = (categoryId, catName = null) => {
   selectedCategory.value = categoryId === selectedCategory.value ? null : categoryId
+  if (categoryId && selectedCategory.value) {
+    trackClick('category_filter', null, { categoryId, categoryName: catName })
+  }
   fetchEvents()
 }
 
@@ -216,7 +220,7 @@ onUnmounted(() => {
                 class="filter-btn"
                 :class="{ active: selectedCategory === cat._id }"
                 :style="{ '--cat-color': cat.color }"
-                @click="filterByCategory(cat._id)"
+                @click="filterByCategory(cat._id, cat.name)"
               >
                 {{ cat.name }}
               </button>
@@ -363,6 +367,7 @@ onUnmounted(() => {
                     target="_blank"
                     rel="noopener noreferrer"
                     class="event-link-btn"
+                    @click="trackClick('ticket', event._id)"
                   >{{ truncateText(event.link_text) }}</a>
                 </div>
               </div>
@@ -427,6 +432,7 @@ onUnmounted(() => {
                     target="_blank"
                     rel="noopener noreferrer"
                     class="event-link-btn"
+                    @click="trackClick('ticket', event._id)"
                   >{{ truncateText(event.link_text) }}</a>
                 </div>
               </article>
