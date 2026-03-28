@@ -900,14 +900,14 @@ function closeCropperModal() {
 async function handleCropComplete() {
   const { canvas } = cropper.value.getResult()
   if (canvas) {
-    // Canvas zu Blob konvertieren
+    // PNG verwenden um Transparenz (Alpha-Kanal) zu erhalten
     canvas.toBlob((blob) => {
-      // Blob zu File konvertieren
-      const file = new File([blob], originalFileName.value || 'image.jpg', {
-        type: 'image/jpeg'
+      const baseName = (originalFileName.value || 'image').replace(/\.[^.]+$/, '')
+      const file = new File([blob], `${baseName}.png`, {
+        type: 'image/png'
       })
       
-      const preview = canvas.toDataURL('image/jpeg')
+      const preview = canvas.toDataURL('image/png')
       
       if (croppingMode.value === 'category') {
         categoryImageFile.value = file
@@ -918,7 +918,7 @@ async function handleCropComplete() {
       }
       
       closeCropperModal()
-    }, 'image/jpeg', 0.9)
+    }, 'image/png')
   }
 }
 
