@@ -465,10 +465,13 @@ onUnmounted(() => {
   position: fixed;
   top: 0;
   left: 0;
+  width: 100vw;
+  height: 170vh;
   opacity: 0.5;
   z-index: 0;
   pointer-events: none;
   will-change: transform;
+  overflow: hidden;
 }
 
 .parallax-bg-image {
