@@ -4,7 +4,7 @@ const asyncHandler = require('../middleware/AsyncHandler');
 const auth = require('../middleware/auth');
 const Interaction = require('../models/Interaction');
 
-const VALID_BUTTON_TYPES = ['ticket', 'mehr_infos', 'alle_events', 'category_filter'];
+const VALID_BUTTON_TYPES = ['link', 'mehr_infos', 'alle_events', 'category_filter'];
 
 // Anonymizes IP: keeps first 3 octets, replaces last with 0
 // For IPv6, replaces the last group with 0
@@ -79,19 +79,17 @@ router.get('/stats', auth, asyncHandler(async (req, res) => {
       { $group: { _id: '$buttonType', count: { $sum: 1 } } }
     ]),
 
-    // Top events by total clicks
+    // Events sorted chronologically
     Interaction.aggregate([
       { $match: { ...matchStage, eventId: { $ne: null } } },
       {
         $group: {
           _id: '$eventId',
           total: { $sum: 1 },
-          ticket: { $sum: { $cond: [{ $eq: ['$buttonType', 'ticket'] }, 1, 0] } },
+          link: { $sum: { $cond: [{ $eq: ['$buttonType', 'link'] }, 1, 0] } },
           mehr_infos: { $sum: { $cond: [{ $eq: ['$buttonType', 'mehr_infos'] }, 1, 0] } }
         }
       },
-      { $sort: { total: -1 } },
-      { $limit: 20 },
       {
         $lookup: {
           from: 'events',
@@ -100,17 +98,20 @@ router.get('/stats', auth, asyncHandler(async (req, res) => {
           as: 'event'
         }
       },
-      { $unwind: { path: '$event', preserveNullAndEmpty: true } },
+      { $unwind: { path: '$event', preserveNullAndEmptyArrays: true } },
       {
         $project: {
           _id: 1,
           total: 1,
-          ticket: 1,
+          link: 1,
           mehr_infos: 1,
           eventTitle: '$event.title',
-          eventStartTime: '$event.startTime'
+          eventStartTime: '$event.startTime',
+          eventImageUrl: '$event.eventImageUrl',
+          eventLinkUrl: '$event.link_url'
         }
-      }
+      },
+      { $sort: { eventStartTime: 1 } }
     ])
   ]);
 
@@ -123,7 +124,7 @@ router.get('/stats', auth, asyncHandler(async (req, res) => {
     success: true,
     totalClicks: totalResult,
     byButtonType: byButtonTypeMap,
-    topEvents: topEventsRaw
+    events: topEventsRaw
   });
 }));
 

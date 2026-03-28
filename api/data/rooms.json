@@ -23,24 +23,6 @@
       "images": [
         "https://cdn.pallas.world/rooms/bar/bar-1773240943000-g46krxkhtvg.webp"
       ]
-    },
-    {
-      "id": 2,
-      "x": 82,
-      "y": 78,
-      "label": "DJ Booth",
-      "imageFolder": "dj",
-      "description": "DJ Bereich",
-      "features": [
-        "DJ",
-        "Musik",
-        "Sound",
-        "Licht"
-      ],
-      "capacity": null,
-      "area": "9 qm",
-      "extraText": null,
-      "images": []
     }
   ],
   "sketch2": [

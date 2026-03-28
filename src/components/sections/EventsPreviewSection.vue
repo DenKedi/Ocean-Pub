@@ -97,7 +97,7 @@
                     target="_blank"
                     rel="noopener noreferrer"
                     class="event-link-btn theme-item-bg"
-                    @click="trackClick('ticket', event._id)"
+                    @click="trackClick('link', event._id)"
                   >{{ truncateText(event.link_text) }}</a>
                   <button @click="goToEventDetails(event._id)" class="event-button theme-item-bg theme-text-primary">
                     Mehr Infos

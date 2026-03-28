@@ -367,7 +367,7 @@ onUnmounted(() => {
                     target="_blank"
                     rel="noopener noreferrer"
                     class="event-link-btn"
-                    @click="trackClick('ticket', event._id)"
+                    @click="trackClick('link', event._id)"
                   >{{ truncateText(event.link_text) }}</a>
                 </div>
               </div>
@@ -432,7 +432,7 @@ onUnmounted(() => {
                     target="_blank"
                     rel="noopener noreferrer"
                     class="event-link-btn"
-                    @click="trackClick('ticket', event._id)"
+                    @click="trackClick('link', event._id)"
                   >{{ truncateText(event.link_text) }}</a>
                 </div>
               </article>

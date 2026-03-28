@@ -1628,8 +1628,8 @@ async function deleteJob(job) {
                 <span class="analytics-card-value">{{ analyticsStats.totalClicks ?? 0 }}</span>
               </div>
               <div class="analytics-card">
-                <span class="analytics-card-label">Ticket-Klicks</span>
-                <span class="analytics-card-value">{{ analyticsStats.byButtonType?.ticket ?? 0 }}</span>
+                <span class="analytics-card-label">Link-Interaktionen</span>
+                <span class="analytics-card-value">{{ analyticsStats.byButtonType?.link ?? 0 }}</span>
               </div>
               <div class="analytics-card">
                 <span class="analytics-card-label">Mehr Infos</span>
@@ -1639,33 +1639,40 @@ async function deleteJob(job) {
                 <span class="analytics-card-label">Alle Events</span>
                 <span class="analytics-card-value">{{ analyticsStats.byButtonType?.alle_events ?? 0 }}</span>
               </div>
-              <div class="analytics-card">
-                <span class="analytics-card-label">Kategorie-Filter</span>
-                <span class="analytics-card-value">{{ analyticsStats.byButtonType?.category_filter ?? 0 }}</span>
-              </div>
             </div>
 
-            <!-- Top Events Table -->
+            <!-- Events Table -->
             <div class="analytics-table-wrapper">
-              <h3 class="analytics-table-title">Top Events</h3>
-              <div v-if="!analyticsStats.topEvents || analyticsStats.topEvents.length === 0" class="analytics-empty">
+              <h3 class="analytics-table-title">Events</h3>
+              <div v-if="!analyticsStats.events || analyticsStats.events.length === 0" class="analytics-empty">
                 Noch keine Daten vorhanden.
               </div>
               <table v-else class="analytics-table">
                 <thead>
                   <tr>
+                    <th style="width:44px"></th>
                     <th>Event</th>
                     <th>Datum</th>
-                    <th>Ticket</th>
+                    <th>Link</th>
                     <th>Mehr Infos</th>
                     <th>Gesamt</th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr v-for="row in analyticsStats.topEvents" :key="row._id">
+                  <tr v-for="row in analyticsStats.events" :key="row._id">
+                    <td>
+                      <img
+                        v-if="row.eventImageUrl"
+                        :src="getFullImageUrl(row.eventImageUrl)"
+                        :alt="row.eventTitle"
+                        class="analytics-event-img"
+                        @error="$event.target.style.display='none'"
+                      />
+                      <div v-else class="analytics-event-img-placeholder"></div>
+                    </td>
                     <td>{{ row.eventTitle || '(gelöscht)' }}</td>
                     <td>{{ row.eventStartTime ? formatAnalyticsDate(row.eventStartTime) : '–' }}</td>
-                    <td>{{ row.ticket }}</td>
+                    <td>{{ row.eventLinkUrl ? row.link : '–' }}</td>
                     <td>{{ row.mehr_infos }}</td>
                     <td class="analytics-total">{{ row.total }}</td>
                   </tr>
@@ -4055,6 +4062,36 @@ async function deleteJob(job) {
   color: rgba(255, 255, 255, 0.4);
   padding: 2rem 0;
   font-size: 0.9rem;
+}
+
+.analytics-event-img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+.analytics-event-img-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.analytics-event-img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
+
+.analytics-event-img-placeholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.06);
 }
 
 .analytics-error {

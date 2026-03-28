@@ -9,7 +9,7 @@ const interactionSchema = new mongoose.Schema({
   buttonType: {
     type: String,
     required: true,
-    enum: ['ticket', 'mehr_infos', 'alle_events', 'category_filter']
+    enum: ['link', 'mehr_infos', 'alle_events', 'category_filter']
   },
   sessionId: {
     type: String,
