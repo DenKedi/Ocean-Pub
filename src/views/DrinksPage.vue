@@ -88,12 +88,6 @@ async function openQrModal() {
         <div v-if="loading" class="pdf-loading">Lade Karte…</div>
 
         <template v-else>
-          <div v-if="isMobile && pdfLoaded && pageCount > 1" class="page-controls">
-            <button class="page-btn" :disabled="currentPage <= 1" @click="prevPage">&#8592;</button>
-            <span class="page-indicator">{{ currentPage }} / {{ pageCount }}</span>
-            <button class="page-btn" :disabled="currentPage >= pageCount" @click="nextPage">&#8594;</button>
-          </div>
-
           <div class="pdf-canvas-wrapper">
             <VuePdfEmbed
               :source="pdfUrl"
@@ -101,6 +95,11 @@ async function openQrModal() {
               class="pdf-embed"
               @loaded="onPdfLoaded"
             />
+            <template v-if="isMobile && pdfLoaded && pageCount > 1">
+              <button class="page-btn page-btn--prev" :disabled="currentPage <= 1" @click="prevPage">&#8592;</button>
+              <span class="page-indicator">{{ currentPage }} / {{ pageCount }}</span>
+              <button class="page-btn page-btn--next" :disabled="currentPage >= pageCount" @click="nextPage">&#8594;</button>
+            </template>
           </div>
 
           <div v-if="!isMobile && pdfLoaded && pageCount > 1" class="page-info">
@@ -168,14 +167,6 @@ async function openQrModal() {
   letter-spacing: 0.1em;
 }
 
-.page-controls {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1.5rem;
-  padding: 0.75rem 0 1rem;
-}
-
 .page-btn {
   background: rgba(255, 255, 255, 0.08);
   border: 1px solid rgba(255, 255, 255, 0.15);
@@ -193,18 +184,36 @@ async function openQrModal() {
 .page-btn:disabled { opacity: 0.25; cursor: default; }
 .page-btn:not(:disabled):hover { background: rgba(255, 255, 255, 0.16); }
 
+.page-btn--prev {
+  position: absolute;
+  bottom: 1rem;
+  left: 1rem;
+}
+
+.page-btn--next {
+  position: absolute;
+  bottom: 1rem;
+  right: 1rem;
+}
+
 .page-indicator {
+  position: absolute;
+  bottom: 1.2rem;
+  left: 50%;
+  transform: translateX(-50%);
   font-size: 0.85rem;
   letter-spacing: 0.06em;
   color: rgba(255, 255, 255, 0.5);
   min-width: 4rem;
   text-align: center;
+  pointer-events: none;
 }
 
 .pdf-canvas-wrapper {
   border-radius: 4px;
   overflow: hidden;
   background: #1a1a1a;
+  position: relative;
 }
 
 .pdf-embed {

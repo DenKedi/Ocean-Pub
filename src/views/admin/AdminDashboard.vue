@@ -671,12 +671,14 @@ function resetForm() {
 
 function formatDateTimeLocal(dateStr) {
   const d = new Date(dateStr)
-  return d.toISOString().slice(0, 16)
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
 }
 
 function formatDateLocal(dateStr) {
   const d = new Date(dateStr)
-  return d.toISOString().slice(0, 10)
+  const pad = n => String(n).padStart(2, '0')
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
 function contrastColor(hex) {
@@ -1493,7 +1495,7 @@ async function deleteJob(job) {
             <h2>Drinks Karte</h2>
           </div>
           <div class="drinks-pdf-settings">
-            <p class="instagram-settings-hint">Lade hier die aktuelle Drinks-Karte als PDF hoch. Sie wird sofort auf der Website angezeigt.</p>
+            <p class="instagram-settings-hint">Upload der Drinks-Karte als PDF. Wird sofort auf der Website angezeigt.</p>
 
             <div class="form-group">
               <label>Aktuelle Karte</label>
@@ -1813,7 +1815,7 @@ async function deleteJob(job) {
                   <div v-if="eventImagePreview" class="image-upload-actions">
                     <button
                       type="button"
-                      @click="eventImagePreview = null; eventImageFile = null"
+                      @click="eventImagePreview = null; eventImageFile = null; form.eventImageUrl = ''"
                       class="btn btn-danger"
                     >
                       Eigenes Bild entfernen
