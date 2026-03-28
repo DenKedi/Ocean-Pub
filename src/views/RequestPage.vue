@@ -1406,6 +1406,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
     white-space: normal;
     line-height: 0.98;
     letter-spacing: 0.08em;
+    font-size: clamp(1.5rem, 7.5vw, 2.4rem);
   }
 
   .page-subtitle {
@@ -1573,7 +1574,7 @@ Klick dich unten durch unseren interaktiven Raumplan oder schau dir in unseren <
   }
 
   .page-title {
-    font-size: clamp(1.9rem, 11vw, 2.6rem);
+    font-size: clamp(1.4rem, 7.5vw, 1.9rem);
   }
 
   .page-subtitle {

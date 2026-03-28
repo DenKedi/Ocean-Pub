@@ -11,7 +11,6 @@ gsap.registerPlugin(ScrollTrigger)
 
 // State
 const events = ref([])
-const categories = ref([])
 const loading = ref(true)
 const error = ref(null)
 const selectedCategory = ref(null)
@@ -39,15 +38,28 @@ const fetchEvents = async () => {
   }
 }
 
-// Fetch categories for filter
-const fetchCategories = async () => {
+// Fetch all upcoming events (unfiltered) to derive available categories
+const allUpcomingEvents = ref([])
+const fetchAllUpcomingEvents = async () => {
   try {
-    const response = await api.get('/categories')
-    categories.value = response.data.data || []
+    const response = await api.get('/events', { params: { startDate: new Date().toISOString() } })
+    allUpcomingEvents.value = response.data.data || []
   } catch (err) {
-    console.error('Error fetching categories:', err)
+    console.error('Error fetching all upcoming events:', err)
   }
 }
+
+// Only show categories that have at least one upcoming event
+const categories = computed(() => {
+  const seen = new Map()
+  allUpcomingEvents.value.forEach(event => {
+    const cat = event.category
+    if (cat && cat._id && !seen.has(cat._id)) {
+      seen.set(cat._id, cat)
+    }
+  })
+  return Array.from(seen.values())
+})
 
 // Format date
 const formatDate = (dateString) => {
@@ -155,7 +167,7 @@ const initParallax = () => {
 }
 
 onMounted(() => {
-  fetchCategories()
+  fetchAllUpcomingEvents()
   fetchEvents().then(() => {
     nextTick(() => {
       initParallax()
