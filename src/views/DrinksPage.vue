@@ -318,7 +318,37 @@ async function openQrModal() {
 }
 
 @media (max-width: 768px) {
-  .pdf-wrapper { padding: 0 0.5rem 4rem; }
+  .drinks-page {
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .pdf-wrapper {
+    padding: 0 0.5rem;
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .pdf-canvas-wrapper {
+    flex: 1;
+    min-height: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow: hidden;
+  }
+  .pdf-canvas-wrapper :deep(.pdf-embed) {
+    height: 100%;
+    width: auto;
+    max-width: 100%;
+    display: block;
+  }
+  .pdf-canvas-wrapper :deep(.pdf-embed canvas) {
+    height: 100% !important;
+    width: auto !important;
+    max-width: 100%;
+    display: block;
+  }
   .pdf-header {
     padding: 1.25rem 1rem 0.75rem;
     flex-direction: column;

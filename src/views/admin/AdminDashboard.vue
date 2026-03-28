@@ -669,16 +669,48 @@ function resetForm() {
   formError.value = ''
 }
 
+// Always display stored UTC times in Hamburg/Berlin timezone
 function formatDateTimeLocal(dateStr) {
   const d = new Date(dateStr)
-  const pad = n => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).formatToParts(d)
+  const get = type => parts.find(p => p.type === type)?.value ?? '00'
+  const hour = get('hour') === '24' ? '00' : get('hour')
+  return `${get('year')}-${get('month')}-${get('day')}T${hour}:${get('minute')}`
 }
 
 function formatDateLocal(dateStr) {
   const d = new Date(dateStr)
-  const pad = n => String(n).padStart(2, '0')
-  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric', month: '2-digit', day: '2-digit'
+  }).formatToParts(d)
+  const get = type => parts.find(p => p.type === type)?.value ?? '00'
+  return `${get('year')}-${get('month')}-${get('day')}`
+}
+
+// Interpret a datetime-local string as Europe/Berlin time and return UTC ISO string
+function hamburgToISO(datetimeLocalStr) {
+  const [date, time] = datetimeLocalStr.split('T')
+  const [year, month, day] = date.split('-').map(Number)
+  const [hour, minute] = time.split(':').map(Number)
+  // Treat the input as UTC first to get a reference point
+  const utcMs = Date.UTC(year, month - 1, day, hour, minute)
+  // Find what Berlin's clock shows at that UTC timestamp
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: 'Europe/Berlin',
+    year: 'numeric', month: '2-digit', day: '2-digit',
+    hour: '2-digit', minute: '2-digit', hour12: false
+  }).formatToParts(new Date(utcMs))
+  const get = type => parseInt(parts.find(p => p.type === type)?.value ?? '0')
+  const berlinDisplayedMs = Date.UTC(get('year'), get('month') - 1, get('day'), get('hour') % 24, get('minute'))
+  // Offset = how far Berlin is ahead of UTC at this moment
+  const offsetMs = berlinDisplayedMs - utcMs
+  // Subtract offset so the stored UTC maps back to our intended Hamburg time
+  return new Date(utcMs - offsetMs).toISOString()
 }
 
 function contrastColor(hex) {
@@ -734,8 +766,8 @@ async function handleSubmit() {
       category: form.value.category,
       description: form.value.description,
       room: form.value.room.split(',').map(r => r.trim()).filter(Boolean),
-      startTime: new Date(form.value.startTime).toISOString(),
-      endTime: form.value.endTime ? new Date(form.value.endTime).toISOString() : null,
+      startTime: hamburgToISO(form.value.startTime),
+      endTime: form.value.endTime ? hamburgToISO(form.value.endTime) : null,
       price: parseFloat(form.value.price) || 0,
       eventImageUrl: eventImageUrl || null,
       extra_label: form.value.extra_label || null,
