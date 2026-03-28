@@ -3,6 +3,7 @@ import { ref, onMounted, computed } from 'vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import VuePdfEmbed from 'vue-pdf-embed'
 import defaultPdf from '@/assets/Karten/Karte_Pallas.pdf?url'
+import QRCode from 'qrcode'
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL
 const pdfUrl = ref(defaultPdf)
@@ -45,6 +46,19 @@ function prevPage() {
 function nextPage() {
   if (currentPage.value < pageCount.value) currentPage.value++
 }
+
+const showQrModal = ref(false)
+const qrDataUrl = ref('')
+const drinksPageUrl = window.location.origin + '/drinks'
+
+async function openQrModal() {
+  qrDataUrl.value = await QRCode.toDataURL(drinksPageUrl, {
+    width: 280,
+    margin: 2,
+    color: { dark: '#000000', light: '#ffffff' }
+  })
+  showQrModal.value = true
+}
 </script>
 
 <template>
@@ -52,10 +66,23 @@ function nextPage() {
     <div class="drinks-page">
       <div class="pdf-header">
         <h1 class="page-title">Pallas.Drinks</h1>
-        <a :href="directUrl" target="_blank" rel="noopener" class="open-link">
-          PDF öffnen
-        </a>
+        <div class="header-buttons">
+          <a :href="directUrl" download class="header-btn">PDF Herunterladen</a>
+          <button class="header-btn" @click="openQrModal">QR Code anzeigen</button>
+        </div>
       </div>
+
+      <!-- QR Modal -->
+      <Teleport to="body">
+        <div v-if="showQrModal" class="qr-overlay" @click.self="showQrModal = false">
+          <div class="qr-modal">
+            <button class="qr-close" @click="showQrModal = false">✕</button>
+            <p class="qr-label">Pallas.Drinks</p>
+            <img :src="qrDataUrl" alt="QR Code" class="qr-image" />
+            <p class="qr-url">{{ drinksPageUrl }}</p>
+          </div>
+        </div>
+      </Teleport>
 
       <div class="pdf-wrapper">
         <div v-if="loading" class="pdf-loading">Lade Karte…</div>
@@ -193,8 +220,102 @@ function nextPage() {
   color: rgba(255, 255, 255, 0.25);
 }
 
+.header-buttons {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.header-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.45rem 1rem;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.7);
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 3px;
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s ease, border-color 0.2s ease;
+  font-family: inherit;
+}
+.header-btn:hover {
+  color: #ffffff;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.qr-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.qr-modal {
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  position: relative;
+  min-width: 300px;
+}
+
+.qr-close {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0.25rem;
+  transition: color 0.2s;
+}
+.qr-close:hover { color: #ffffff; }
+
+.qr-label {
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0;
+}
+
+.qr-image {
+  display: block;
+  border-radius: 4px;
+}
+
+.qr-url {
+  font-size: 0.65rem;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.25);
+  margin: 0;
+}
+
 @media (max-width: 768px) {
   .pdf-wrapper { padding: 0 0.5rem 4rem; }
-  .pdf-header { padding: 1.25rem 1rem 0.75rem; }
+  .pdf-header {
+    padding: 1.25rem 1rem 0.75rem;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: center;
+  }
 }
 </style>

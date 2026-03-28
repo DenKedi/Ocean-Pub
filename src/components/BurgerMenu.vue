@@ -1,6 +1,5 @@
 <script setup>
 import { ref } from 'vue'
-import { currentTheme, themes, saveTheme } from '../stores/themeStore.js'
 
 defineProps({
   isOpen: {
@@ -15,16 +14,7 @@ defineProps({
 
 defineEmits(['toggle'])
 
-const showThemeSelector = ref(false)
 
-const toggleThemeSelector = () => {
-  showThemeSelector.value = !showThemeSelector.value
-}
-
-const selectTheme = (themeName) => {
-  saveTheme(themeName)
-  showThemeSelector.value = false
-}
 </script>
 
 <template>
@@ -40,40 +30,7 @@ const selectTheme = (themeName) => {
       <span class="burger-line"></span>
     </button>
     
-    <!-- Theme Selector Button -->
-    <button 
-      class="theme-button"
-      @click="toggleThemeSelector"
-      :class="{ 'active': showThemeSelector, 'is-light-theme': theme === 'light' && !isOpen }"
-      aria-label="Change theme"
-      title="Design Varianten"
-    >
-      🎨
-    </button>
-    
-    <!-- Theme Selector Dropdown -->
-    <div class="theme-selector" :class="{ 'show': showThemeSelector }">
-      <div class="theme-header">
-        <h3>Design Varianten</h3>
-      </div>
-      
-      <div class="theme-options">
-        <div 
-          v-for="(theme, key) in themes" 
-          :key="key"
-          class="theme-option"
-          :class="{ 'active': currentTheme === key }"
-          @click="selectTheme(key)"
-        >
-          <div class="theme-preview" :data-theme="key"></div>
-          <div class="theme-info">
-            <h4>{{ theme.name }}</h4>
-            <p>{{ theme.description }}</p>
-          </div>
-          <div class="theme-check" v-if="currentTheme === key">✓</div>
-        </div>
-      </div>
-    </div>
+
   </div>
 </template>
 
