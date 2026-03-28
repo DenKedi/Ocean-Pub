@@ -116,14 +116,14 @@ async function openQrModal() {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  padding-top: 5rem;
+  padding-top: 3.5rem;
 }
 
 .pdf-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 1.5rem 2rem 1rem;
+  padding: 0.75rem 2rem 0.5rem;
   max-width: 900px;
   margin: 0 auto;
   width: 100%;
@@ -186,14 +186,16 @@ async function openQrModal() {
 
 .page-btn--prev {
   position: absolute;
-  bottom: 1rem;
-  left: 1rem;
+  top: 50%;
+  left: 0.5rem;
+  transform: translateY(-50%);
 }
 
 .page-btn--next {
   position: absolute;
-  bottom: 1rem;
-  right: 1rem;
+  top: 50%;
+  right: 0.5rem;
+  transform: translateY(-50%);
 }
 
 .page-indicator {
@@ -320,10 +322,10 @@ async function openQrModal() {
 @media (max-width: 768px) {
   .pdf-wrapper { padding: 0 0.5rem 4rem; }
   .pdf-header {
-    padding: 1.25rem 1rem 0.75rem;
+    padding: 0.5rem 1rem 0.4rem;
     flex-direction: column;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     text-align: center;
   }
 }
