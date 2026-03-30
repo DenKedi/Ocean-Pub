@@ -8,6 +8,7 @@ import RequestPage from '../views/RequestPage.vue'
 import ImpressumPage from '../components/pages/ImpressumPage.vue'
 import DatenschutzPage from '../components/pages/DatenschutzPage.vue'
 import DrinksPage from '../views/DrinksPage.vue'
+import JobsPage from '../views/JobsPage.vue'
 import AdminLogin from '../views/admin/AdminLogin.vue'
 import AdminDashboard from '../views/admin/AdminDashboard.vue'
 
@@ -46,6 +47,11 @@ const routes = [
     path: '/request',
     name: 'Request',
     component: RequestPage
+  },
+  {
+    path: '/jobs',
+    name: 'Jobs',
+    component: JobsPage
   },
   {
     path: '/impressum',

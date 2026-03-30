@@ -294,17 +294,16 @@ const resetForm = () => {
         <div class="container form-container">
           <h2 class="section-title">Anfrage senden</h2>
           <p class="section-subtitle">
-            Interesse an einem Event bei uns? Füll das Formular aus und wir
-            melden uns bei dir.
+            Interesse an einem Event bei uns? Füllt das Formular aus und wir
+            melden uns bei euch.
           </p>
 
           <!-- Success state -->
           <div v-if="formSubmitted" class="form-success">
             <div class="success-icon">✓</div>
-            <h3>Vielen Dank für deine Anfrage!</h3>
+            <h3>Anfrage erhalten!</h3>
             <p>
-              Wir haben deine Nachricht erhalten und melden uns so schnell wie
-              möglich bei dir.
+              Wir melden uns bald bei euch!
             </p>
             <button class="form-btn form-btn-secondary" @click="resetForm">
               Neue Anfrage
@@ -475,7 +474,7 @@ const resetForm = () => {
                 <!-- DJ Quelle -->
                 <div class="form-group dj-quelle-group full-width">
                   <label class="form-label"
-                    >Soll Pallas sich um den DJ kümmern?</label
+                    >Soll sich das Pallas um die DJs kümmern?</label
                   >
                   <div class="dj-quelle-buttons">
                     <button
@@ -505,7 +504,7 @@ const resetForm = () => {
               <!-- Räume (multiple choice) -->
               <div class="form-group rooms-group">
                 <label class="form-label"
-                  >Welche Räume interessieren dich?</label
+                  >Welche Räume interessieren euch?</label
                 >
                 <div class="rooms-choices">
                   <button
