@@ -60,6 +60,7 @@ router.post('/category-image', upload.single('image'), async (req, res) => {
     const key = `categories/${filename}`;
 
     const webpBuffer = await sharp(req.file.buffer)
+      .rotate()
       .webp({ quality: 85, effort: 4 })
       .toBuffer();
 
@@ -89,6 +90,7 @@ router.post('/event-image', upload.single('image'), async (req, res) => {
     const key = `events/${filename}`;
 
     const webpBuffer = await sharp(req.file.buffer)
+      .rotate()
       .webp({ quality: 85, effort: 4 })
       .toBuffer();
 

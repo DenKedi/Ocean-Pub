@@ -1,14 +1,12 @@
 const express = require('express');
 const router = express.Router();
 const path = require('path');
-const fs = require('fs');
 const multer = require('multer');
 const sharp = require('sharp');
 const { PutObjectCommand, DeleteObjectCommand } = require('@aws-sdk/client-s3');
 const r2Client = require('../config/r2');
 const auth = require('../middleware/auth');
-
-const ROOMS_FILE = path.join(__dirname, '../data/rooms.json');
+const Room = require('../models/Room');
 
 // Multer: memory storage – kein Schreiben auf Disk
 const upload = multer({
@@ -35,27 +33,25 @@ function r2KeyFromUrl(url) {
   return url.replace(`${process.env.R2_PUBLIC_URL}/`, '');
 }
 
-// Helper: find hotspot by sketch + id
-function findHotspot(rooms, sketch, id) {
-  const list = rooms[sketch];
-  if (!list) return null;
-  return list.find(s => String(s.id) === String(id));
-}
-
-function readRooms() {
-  return JSON.parse(fs.readFileSync(ROOMS_FILE, 'utf8'));
-}
-
-function writeRooms(data) {
-  fs.writeFileSync(ROOMS_FILE, JSON.stringify(data, null, 2), 'utf8');
+// Alle Räume als { sketch1: [...], sketch2: [...] } formatieren
+function groupBySketches(docs) {
+  const result = {};
+  for (const doc of docs) {
+    const obj = doc.toObject();
+    const { sketch, _id, __v, createdAt, updatedAt, ...rest } = obj;
+    if (!result[sketch]) result[sketch] = [];
+    result[sketch].push(rest);
+  }
+  return result;
 }
 
 // ─────────────────────────────────────────────
 // GET /api/rooms  — public
 // ─────────────────────────────────────────────
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    res.json(readRooms());
+    const docs = await Room.find().sort({ sketch: 1, id: 1 });
+    res.json(groupBySketches(docs));
   } catch (err) {
     res.status(500).json({ msg: 'Could not read rooms data' });
   }
@@ -64,14 +60,31 @@ router.get('/', (req, res) => {
 // ─────────────────────────────────────────────
 // PUT /api/rooms  — protected, full overwrite
 // ─────────────────────────────────────────────
-router.put('/', auth, (req, res) => {
+router.put('/', auth, async (req, res) => {
   try {
     const data = req.body;
     if (!data || typeof data !== 'object') {
       return res.status(400).json({ msg: 'Invalid data' });
     }
-    writeRooms(data);
-    res.json({ msg: 'Rooms updated successfully', data });
+
+    // data ist { sketch1: [...], sketch2: [...] }
+    const ops = [];
+    for (const [sketch, spots] of Object.entries(data)) {
+      for (const spot of spots) {
+        const { id, ...fields } = spot;
+        ops.push({
+          updateOne: {
+            filter: { sketch, id },
+            update: { $set: { sketch, id, ...fields } },
+            upsert: true
+          }
+        });
+      }
+    }
+    if (ops.length) await Room.bulkWrite(ops);
+
+    const docs = await Room.find().sort({ sketch: 1, id: 1 });
+    res.json({ msg: 'Rooms updated successfully', data: groupBySketches(docs) });
   } catch (err) {
     res.status(500).json({ msg: 'Could not write rooms data' });
   }
@@ -80,25 +93,21 @@ router.put('/', auth, (req, res) => {
 // ─────────────────────────────────────────────
 // PATCH /api/rooms/:sketch/:id  — protected, single hotspot metadata
 // ─────────────────────────────────────────────
-router.patch('/:sketch/:id', auth, (req, res) => {
+router.patch('/:sketch/:id', auth, async (req, res) => {
   try {
     const { sketch, id } = req.params;
-    const rooms = readRooms();
 
-    if (!rooms[sketch]) {
-      return res.status(404).json({ msg: `Sketch "${sketch}" not found` });
-    }
+    // Bilder-Array nicht über diesen Endpoint überschreiben
+    const { images, _id, __v, ...fields } = req.body;
 
-    const index = rooms[sketch].findIndex(s => String(s.id) === String(id));
-    if (index === -1) {
-      return res.status(404).json({ msg: `Hotspot with id ${id} not found` });
-    }
+    const doc = await Room.findOneAndUpdate(
+      { sketch, id: Number(id) },
+      { $set: fields },
+      { new: true, runValidators: true }
+    );
+    if (!doc) return res.status(404).json({ msg: 'Hotspot not found' });
 
-    // Don't allow overwriting the images array via this endpoint
-    const { images, ...fields } = req.body;
-    rooms[sketch][index] = { ...rooms[sketch][index], ...fields };
-    writeRooms(rooms);
-    res.json({ msg: 'Hotspot updated', data: rooms[sketch][index] });
+    res.json({ msg: 'Hotspot updated', data: doc });
   } catch (err) {
     res.status(500).json({ msg: 'Could not update hotspot' });
   }
@@ -114,27 +123,25 @@ router.post('/:sketch/:id/images', auth, upload.array('images', 20), async (req,
     }
 
     const { sketch, id } = req.params;
-    const rooms = readRooms();
-    const spot = findHotspot(rooms, sketch, id);
-    if (!spot) return res.status(404).json({ msg: 'Hotspot not found' });
+    const doc = await Room.findOne({ sketch, id: Number(id) });
+    if (!doc) return res.status(404).json({ msg: 'Hotspot not found' });
 
-    if (!Array.isArray(spot.images)) spot.images = [];
-
-    const folder = spot.imageFolder;
+    const folder = doc.imageFolder;
     const newUrls = [];
     for (const file of req.files) {
       const filename = `${folder}-${Date.now()}-${Math.random().toString(36).slice(2)}.webp`;
       const key = `rooms/${folder}/${filename}`;
       const webpBuffer = await sharp(file.buffer)
+        .rotate()
         .webp({ quality: 85, effort: 4 })
         .toBuffer();
       const url = await uploadToR2(webpBuffer, key);
       newUrls.push(url);
     }
 
-    spot.images = [...spot.images, ...newUrls];
-    writeRooms(rooms);
-    res.json({ msg: 'Images uploaded', images: spot.images });
+    doc.images = [...doc.images, ...newUrls];
+    await doc.save();
+    res.json({ msg: 'Images uploaded', images: doc.images });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
@@ -142,18 +149,14 @@ router.post('/:sketch/:id/images', auth, upload.array('images', 20), async (req,
 
 // ─────────────────────────────────────────────
 // DELETE /api/rooms/:sketch/:id/images/:filename  — protected
-// filename param is the base filename (e.g. orangerie-abc.webp)
-// The full R2 URL is matched in the images array
 // ─────────────────────────────────────────────
 router.delete('/:sketch/:id/images/:filename', auth, async (req, res) => {
   try {
     const { sketch, id, filename } = req.params;
-    const rooms = readRooms();
-    const spot = findHotspot(rooms, sketch, id);
-    if (!spot) return res.status(404).json({ msg: 'Hotspot not found' });
+    const doc = await Room.findOne({ sketch, id: Number(id) });
+    if (!doc) return res.status(404).json({ msg: 'Hotspot not found' });
 
-    // Find the full URL in the images array that ends with this filename
-    const imageUrl = (spot.images || []).find(img => img.endsWith(`/${filename}`));
+    const imageUrl = (doc.images || []).find(img => img.endsWith(`/${filename}`));
     if (imageUrl) {
       const key = r2KeyFromUrl(imageUrl);
       await r2Client.send(new DeleteObjectCommand({
@@ -162,9 +165,9 @@ router.delete('/:sketch/:id/images/:filename', auth, async (req, res) => {
       }));
     }
 
-    spot.images = (spot.images || []).filter(img => !img.endsWith(`/${filename}`));
-    writeRooms(rooms);
-    res.json({ msg: 'Image deleted', images: spot.images });
+    doc.images = (doc.images || []).filter(img => !img.endsWith(`/${filename}`));
+    await doc.save();
+    res.json({ msg: 'Image deleted', images: doc.images });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }
@@ -173,7 +176,7 @@ router.delete('/:sketch/:id/images/:filename', auth, async (req, res) => {
 // ─────────────────────────────────────────────
 // PUT /api/rooms/:sketch/:id/images/order  — protected, save new image order
 // ─────────────────────────────────────────────
-router.put('/:sketch/:id/images/order', auth, (req, res) => {
+router.put('/:sketch/:id/images/order', auth, async (req, res) => {
   try {
     const { sketch, id } = req.params;
     const { images } = req.body;
@@ -181,13 +184,14 @@ router.put('/:sketch/:id/images/order', auth, (req, res) => {
       return res.status(400).json({ msg: 'images must be an array' });
     }
 
-    const rooms = readRooms();
-    const spot = findHotspot(rooms, sketch, id);
-    if (!spot) return res.status(404).json({ msg: 'Hotspot not found' });
+    const doc = await Room.findOneAndUpdate(
+      { sketch, id: Number(id) },
+      { $set: { images } },
+      { new: true }
+    );
+    if (!doc) return res.status(404).json({ msg: 'Hotspot not found' });
 
-    spot.images = images;
-    writeRooms(rooms);
-    res.json({ msg: 'Order saved', images: spot.images });
+    res.json({ msg: 'Order saved', images: doc.images });
   } catch (err) {
     res.status(500).json({ msg: err.message });
   }

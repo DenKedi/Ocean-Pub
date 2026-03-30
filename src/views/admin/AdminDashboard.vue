@@ -596,7 +596,8 @@ async function onRoomFileDrop(event) {
   await uploadRoomImagesFromFiles(event.dataTransfer.files)
 }
 
-async function deleteRoomImage(filename) {
+async function deleteRoomImage(imgUrl) {
+  const filename = imgUrl.split('/').pop()
   if (!confirm(`Bild "${filename}" wirklich löschen?`)) return
   const { sketch, index } = editingRoom.value
   const id = roomsData.value[sketch][index].id
@@ -1079,16 +1080,16 @@ async function deleteJob(job) {
       
       <div class="mobile-menu-wrapper" :class="{ open: mobileMenuOpen }">
         <nav class="sidebar-nav">
-          <a href="#" class="nav-item" :class="{ active: activeSection === 'events' }" @click.prevent="activeSection = 'events'">
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'events' }" @click.prevent="activeSection = 'events'; toggleMobileMenu()">
             Events
           </a>
-          <a href="#" class="nav-item" :class="{ active: activeSection === 'rooms' }" @click.prevent="activeSection = 'rooms'">
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'rooms' }" @click.prevent="activeSection = 'rooms'; toggleMobileMenu()">
             Räume
           </a>
-          <a href="#" class="nav-item" :class="{ active: activeSection === 'users' }" @click.prevent="activeSection = 'users'">
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'users' }" @click.prevent="activeSection = 'users'; toggleMobileMenu()">
             Benutzer
           </a>
-          <a href="#" class="nav-item" :class="{ active: activeSection === 'instagram' }" @click.prevent="activeSection = 'instagram'">
+          <a href="#" class="nav-item" :class="{ active: activeSection === 'instagram' }" @click.prevent="activeSection = 'instagram'; toggleMobileMenu()">
             Instagram
           </a>
           <a href="#" class="nav-item" :class="{ active: activeSection === 'jobs' }" @click.prevent="activeSection = 'jobs'; toggleMobileMenu()">
@@ -1428,7 +1429,12 @@ async function deleteJob(job) {
                         class="img-delete-btn"
                         title="Löschen"
                         @click="deleteRoomImage(img)"
-                      >×</button>
+                      >
+                        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+                          <line x1="1" y1="1" x2="9" y2="9"/>
+                          <line x1="9" y1="1" x2="1" y2="9"/>
+                        </svg>
+                      </button>
                       <div class="img-drag-handle" title="Zum Sortieren ziehen">⠿</div>
                     </div>
                   </div>
@@ -3185,8 +3191,16 @@ async function deleteJob(job) {
 /* Responsive */
 @media (max-width: 768px) {
 
+  .admin-dashboard {
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
   .sidebar {
     width: 100%;
+    height: auto;
+    flex-shrink: 0;
     border-right: none;
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   }
@@ -3241,8 +3255,13 @@ async function deleteJob(job) {
     text-align: center;
   }
 
-  .form-row {
-    grid-template-columns: 1fr;
+  /* Main Content fills remaining height and scrolls */
+  .main-content {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: auto;
   }
 
   .content-header {
@@ -3250,6 +3269,159 @@ async function deleteJob(job) {
     flex-direction: column;
     gap: 1rem;
     align-items: stretch;
+    padding: 1rem;
+  }
+
+  .content-body {
+    padding: 1rem;
+  }
+
+  /* Tables: horizontal scroll on small screens */
+  .events-table {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .events-table table {
+    min-width: 520px;
+  }
+
+  .analytics-table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .analytics-table {
+    min-width: 480px;
+  }
+
+  /* Section header wraps on mobile */
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+
+  .sort-controls {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    width: 100%;
+  }
+
+  .sort-select {
+    flex: 1;
+    min-width: 0;
+  }
+
+  /* Stats grid: 2 columns on mobile */
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .stat-card {
+    padding: 1rem;
+  }
+
+  .stat-value {
+    font-size: 1.5rem;
+  }
+
+  /* Form grid: single column */
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* User rows: stack on very small screens */
+  .user-row {
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+
+  .user-row-meta {
+    align-items: flex-start;
+  }
+
+  /* Rooms editor: single column (already handled at 900px) */
+  .rooms-editor {
+    grid-template-columns: 1fr;
+  }
+
+  .rooms-spot-list {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  /* Modals: full screen on mobile */
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
+  .modal {
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 92dvh;
+  }
+
+  .modal-with-preview {
+    max-width: 100%;
+    border-radius: 16px 16px 0 0;
+    max-height: 92dvh;
+  }
+
+  .modal-body {
+    flex-direction: column;
+  }
+
+  .modal-with-preview .modal-form {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    max-height: 55dvh;
+  }
+
+  .modal-preview-col {
+    width: 100%;
+    max-height: 30dvh;
+  }
+
+  .preview-toggle-btn {
+    display: inline-flex;
+  }
+
+  .modal-sm {
+    width: 100% !important;
+    border-radius: 16px 16px 0 0;
+  }
+
+  /* Analytics cards: 2 columns */
+  .analytics-cards {
+    gap: 0.75rem;
+  }
+
+  .analytics-card {
+    flex: 1 1 calc(50% - 0.375rem);
+    padding: 1rem;
+  }
+
+  .analytics-card-value {
+    font-size: 1.5rem;
+  }
+
+  /* Range buttons: wrap */
+  .analytics-range-filter {
+    flex-wrap: wrap;
+  }
+
+  /* Instagram settings: full width */
+  .instagram-settings {
+    max-width: 100%;
+  }
+
+  /* Drinks section */
+  .drinks-pdf-settings {
+    max-width: 100%;
   }
 }
 
@@ -3523,22 +3695,22 @@ async function deleteJob(job) {
 
 .img-delete-btn {
   position: absolute;
-  top: 4px;
-  right: 4px;
-  width: 22px;
-  height: 22px;
-  background: rgba(0, 0, 0, 0.75);
-  border: none;
-  color: #fff;
-  border-radius: 50%;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  background: rgba(15, 15, 15, 0.7);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.8);
+  border-radius: 6px;
   cursor: pointer;
-  font-size: 1rem;
-  line-height: 1;
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
-  transition: opacity 0.15s, background 0.15s;
+  transition: opacity 0.15s, background 0.15s, border-color 0.15s, color 0.15s;
+  padding: 0;
 }
 
 .room-img-item:hover .img-delete-btn {
@@ -3546,7 +3718,9 @@ async function deleteJob(job) {
 }
 
 .img-delete-btn:hover {
-  background: rgba(220, 50, 50, 0.85);
+  background: rgba(200, 40, 40, 0.85);
+  border-color: rgba(200, 40, 40, 0.6);
+  color: #fff;
 }
 
 .img-drag-handle {
