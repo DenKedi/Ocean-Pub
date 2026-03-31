@@ -70,7 +70,7 @@ const formatDate = (dateString) => {
     day: '2-digit',
     month: 'short',
     year: 'numeric'
-  })
+  }).replace(',', '')
 }
 
 // Format time
