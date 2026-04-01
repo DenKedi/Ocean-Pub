@@ -192,7 +192,14 @@ const submitForm = async () => {
   formLoading.value = true;
   formServerError.value = null;
   try {
-    await api.post('/contact', form.value);
+    const payload = {
+      ...form.value,
+      raeume: form.value.raeume.map((id) => {
+        const room = availableRooms.value.find((r) => r.id === id);
+        return room ? room.label : String(id);
+      }),
+    };
+    await api.post('/contact', payload);
     formSubmitted.value = true;
   } catch (err) {
     formServerError.value =
@@ -412,8 +419,7 @@ const resetForm = () => {
                   <input
                     id="req-gaeste"
                     v-model="form.gaeste"
-                    type="number"
-                    min="1"
+                    type="text"
                     class="form-input"
                     :class="{ 'has-error': formErrors.gaeste }"
                   />
