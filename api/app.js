@@ -11,6 +11,7 @@ const roomRoutes = require('./routes/roomRoutes');
 const settingsRoutes = require('./routes/settingsRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const interactionRoutes = require('./routes/interactionRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 const ErrorHandler = require('./middleware/ErrorHandler');
 require('dotenv').config();
 require('./serverRoutines');
@@ -70,6 +71,7 @@ app.use('/api/upload', uploadRoutes);
 app.use('/api/rooms', roomRoutes);
 app.use('/api/settings', settingsRoutes);
 app.use('/api/interactions', interactionRoutes);
+app.use('/api/contact', contactRoutes);
 
 // Debug endpoint (moved to specific path instead of catch-all)
 app.get('/api/debug/headers', (req, res) => {

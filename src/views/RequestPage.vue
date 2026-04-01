@@ -1,6 +1,7 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted } from "vue";
 import MainLayout from "../layouts/MainLayout.vue";
+import api from "@/utils/api";
 import VueEasyLightbox from "vue-easy-lightbox";
 import sketch1 from "@/assets/raumplan/sketch1.png";
 import sketch2 from "@/assets/raumplan/sketch2.png";
@@ -160,6 +161,8 @@ const form = ref({
 
 const formSubmitted = ref(false);
 const formErrors = ref({});
+const formLoading = ref(false);
+const formServerError = ref(null);
 
 const validate = () => {
   const errors = {};
@@ -184,11 +187,20 @@ const toggleRoom = (id) => {
   else form.value.raeume.splice(idx, 1);
 };
 
-const submitForm = () => {
+const submitForm = async () => {
   if (!validate()) return;
-  // No e-mail functionality yet — just show success
-  formSubmitted.value = true;
-  console.log("Request form data:", JSON.parse(JSON.stringify(form.value)));
+  formLoading.value = true;
+  formServerError.value = null;
+  try {
+    await api.post('/contact', form.value);
+    formSubmitted.value = true;
+  } catch (err) {
+    formServerError.value =
+      err?.response?.data?.message ||
+      'Die Anfrage konnte nicht gesendet werden. Bitte versuche es später erneut.';
+  } finally {
+    formLoading.value = false;
+  }
 };
 
 const resetForm = () => {
@@ -563,8 +575,13 @@ const resetForm = () => {
 
             <!-- ── Submit ── -->
             <div class="form-actions">
-              <button type="submit" class="form-btn form-btn-primary">
-                Anfrage absenden
+              <p v-if="formServerError" class="form-server-error">{{ formServerError }}</p>
+              <button
+                type="submit"
+                class="form-btn form-btn-primary"
+                :disabled="formLoading"
+              >
+                {{ formLoading ? 'Wird gesendet…' : 'Anfrage absenden' }}
               </button>
             </div>
           </form>
@@ -1118,6 +1135,12 @@ const resetForm = () => {
   font-size: 0.7rem;
   color: #c0392b !important;
   letter-spacing: 0.02em;
+}
+
+.form-server-error {
+  font-size: 0.85rem;
+  color: #c0392b;
+  margin-bottom: 0.75rem;
 }
 
 /* Toggle / checkbox inline */
