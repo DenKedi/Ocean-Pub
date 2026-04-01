@@ -24,6 +24,7 @@ onMounted(async () => {
         directUrl.value = data.drinksPdfUrl
         // Use proxy to avoid CORS issues with R2 CDN
         pdfUrl.value = `${API_BASE}/settings/drinks-pdf`
+        console.log('Karte geladen aus R2:', data.drinksPdfUrl)
       }
     }
   } catch {
@@ -36,6 +37,13 @@ onMounted(async () => {
 function onPdfLoaded(pdf) {
   pageCount.value = pdf.numPages
   pdfLoaded.value = true
+}
+
+function onPdfError() {
+  if (pdfUrl.value !== defaultPdf) {
+    pdfUrl.value = defaultPdf
+    directUrl.value = defaultPdf
+  }
 }
 
 const showQrModal = ref(false)
@@ -79,6 +87,7 @@ async function openQrModal() {
               :page="currentPage ?? undefined"
               class="pdf-embed"
               @loaded="onPdfLoaded"
+              @loading-failed="onPdfError"
             />
             <h1 class="pdf-title">Pallas.Drinks</h1>
             <div class="pdf-corner-group">

@@ -55,7 +55,7 @@ const scrollToSection = (sectionId) => {
       </div>
       
       <div class="footer-bottom"> 
-        <p class="theme-text-muted">&copy; 2026 PALLAS.WORLD. All rights reserved.</p>
+        <p class="theme-text-muted">&copy; 2026 PALLAS.WORLD. All rights reserved. | Made with ♥ by Cedric Bleck</p>
       </div>
     </div>
   </footer>
