@@ -155,6 +155,7 @@ const navItems = computed(() => {
   position: relative;
   width: 100%;
   min-height: 100vh;
+  min-height: 100dvh;
   overflow: hidden; /* Clips elements that extend past the footer */
 }
 
@@ -169,6 +170,7 @@ const navItems = computed(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
