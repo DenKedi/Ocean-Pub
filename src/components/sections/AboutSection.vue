@@ -26,7 +26,7 @@
 
 <style scoped>
 .content-section {
-  padding: 8rem 0;
+  padding: 8rem 0 4rem;
   border-top: 1px solid var(--theme-border);
   border-bottom: 1px solid var(--theme-border);
   position: relative;
