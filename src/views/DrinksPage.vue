@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import MainLayout from '../layouts/MainLayout.vue'
 import VuePdfEmbed from 'vue-pdf-embed'
 import defaultPdf from '@/assets/Karten/Karte_Pallas.pdf?url'
@@ -15,7 +15,39 @@ const currentPage = ref(null)
 
 const isMobile = computed(() => /iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
 
+const drinkImages = Array.from({ length: 20 }, (_, i) => `/drinks/${i + 1}.webp`)
+
+const leftCol = ref(null)
+const rightCol = ref(null)
+let rafId = null
+
+function updateParallax() {
+  const col = leftCol.value
+  if (!col) return
+  const pageH = document.documentElement.scrollHeight - window.innerHeight
+  const colH = col.scrollHeight - window.innerHeight
+  if (colH <= 0 || pageH <= 0) return
+  // Images shorter than page → positive translateY pushes them back down = slower scroll
+  const speed = colH / pageH
+  const ty = window.scrollY * (1 - speed)
+  col.style.transform = `translateY(${ty}px)`
+  if (rightCol.value) {
+    rightCol.value.style.transform = `scaleX(-1) translateY(${ty}px)`
+  }
+}
+
+function onScroll() {
+  if (rafId) return
+  rafId = requestAnimationFrame(() => {
+    updateParallax()
+    rafId = null
+  })
+}
+
 onMounted(async () => {
+  window.addEventListener('scroll', onScroll, { passive: true })
+  // initial position after images load
+  setTimeout(updateParallax, 200)
   try {
     const res = await fetch(`${API_BASE}/settings`)
     if (res.ok) {
@@ -32,6 +64,11 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', onScroll)
+  if (rafId) cancelAnimationFrame(rafId)
 })
 
 function onPdfLoaded(pdf) {
@@ -63,6 +100,16 @@ async function openQrModal() {
 <template>
   <MainLayout>
     <div class="drinks-page">
+      <!-- Left image column -->
+      <div ref="leftCol" class="drinks-col drinks-col--left" aria-hidden="true">
+        <img v-for="(img, idx) in drinkImages" :key="idx" :src="img" alt="" class="drinks-col-img" loading="lazy" />
+      </div>
+
+      <!-- Right column: mirrored + blurred -->
+      <div ref="rightCol" class="drinks-col drinks-col--right" aria-hidden="true">
+        <img v-for="(img, idx) in drinkImages" :key="idx" :src="img" alt="" class="drinks-col-img" loading="lazy" />
+      </div>
+
       <!-- QR Modal -->
       <Teleport to="body">
         <div v-if="showQrModal" class="qr-overlay" @click.self="showQrModal = false">
@@ -118,15 +165,52 @@ async function openQrModal() {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  align-items: center;
   padding-top: 0;
+  position: relative;
+  overflow: hidden;
 }
 
+/* ── Side image columns ── */
+.drinks-col {
+  position: absolute;
+  top: 0;
+  width: 22vw;
+  pointer-events: none;
+  z-index: 0;
+  display: flex;
+  flex-direction: column;
+  will-change: transform;
+}
+
+.drinks-col--left {
+  left: 0;
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
+}
+
+.drinks-col--right {
+  right: 0;
+  transform: scaleX(-1);
+  filter: blur(28px) saturate(1.4) brightness(0.85);
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
+}
+
+.drinks-col-img {
+  width: 100%;
+  display: block;
+}
+
+/* ── PDF content ── */
 .pdf-wrapper {
   flex: 1;
   padding: 0 1rem 4rem;
-  max-width: 900px;
+  max-width: 720px;
   margin: 0 auto;
   width: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 .pdf-loading {
@@ -298,8 +382,12 @@ async function openQrModal() {
   margin: 0;
 }
 
+@media (max-width: 1200px) {
+  .drinks-col { width: 18vw; }
+}
+
 @media (max-width: 768px) {
-  .pdf-wrapper { padding: 0 0 4rem; }
+  .pdf-wrapper { padding: 0 0 4rem; max-width: 100%; }
   .pdf-title {
     position: fixed;
     top: 1rem;
@@ -310,6 +398,9 @@ async function openQrModal() {
     position: fixed;
     top: 1rem;
     left: 1rem;
+  }
+  .drinks-col {
+    display: none;
   }
 }
 </style>

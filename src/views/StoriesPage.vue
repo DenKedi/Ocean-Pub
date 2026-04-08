@@ -15,6 +15,7 @@ const heroSection = ref(null)
 const backgroundLayer = ref(null)
 const foregroundLayer = ref(null)
 const nameItems = ref([])
+const historyStatement = ref(null)
 const isLoading = ref(true)
 
 const clients = [
@@ -116,6 +117,24 @@ const initParallax = () => {
     })
     scrollTriggers.push(trig.scrollTrigger)
   })
+
+  // History statement fly-in
+  if (historyStatement.value) {
+    gsap.set(historyStatement.value, { yPercent: 40, opacity: 0 })
+    const histTrig = gsap.to(historyStatement.value, {
+      yPercent: 0,
+      opacity: 1,
+      ease: 'power3.out',
+      scrollTrigger: {
+        trigger: historyStatement.value,
+        start: 'top 90%',
+        end: 'top 55%',
+        scrub: false,
+        toggleActions: 'play none none reverse',
+      },
+    })
+    scrollTriggers.push(histTrig.scrollTrigger)
+  }
 }
 
 onMounted(() => {
@@ -208,14 +227,15 @@ onUnmounted(() => {
                 {{ client }}
               </li>
             </ul>
+            <p ref="historyStatement" class="history-statement">...And the Rest is History</p>
           </div>
         </div>
 
-        <!-- CTA to Request Page -->
-        <div class="cta-section">
+        <!-- History Closing Statement -->
+        <div class="history-section">
           <div class="container">
-            <p class="cta-label">Du willst auch Teil dieser Liste werden?</p>
-            <router-link to="/request" class="cta-link">Pallas.Request</router-link>
+            <p class="history-sub">Write your own Story:</p>
+            <p class="history-bookings">Bookings via <router-link to="/request" class="history-link">Pallas.Request</router-link></p>
           </div>
         </div>
 
@@ -427,14 +447,27 @@ onUnmounted(() => {
   padding: 0 2rem;
 }
 
-/* CTA Section */
-.cta-section {
+/* History Section */
+.history-section {
   pointer-events: auto;
-  padding: 8rem 0 4rem;
+  padding: 12rem 0 6rem;
   text-align: center;
 }
 
-.cta-label {
+.history-statement {
+  text-align: center;
+  font-size: clamp(0.75rem, 1.5vw, 1rem);
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  margin-top: 6rem;
+  margin-bottom: 0;
+  line-height: 1.1;
+  will-change: transform, opacity;
+}
+
+.history-sub {
   text-transform: uppercase;
   letter-spacing: 0.25em;
   font-size: clamp(0.7rem, 1.2vw, 0.9rem);
@@ -442,23 +475,30 @@ onUnmounted(() => {
   margin-bottom: 1.5rem;
 }
 
-.cta-link {
-  display: inline-block;
+.history-bookings {
+  font-size: clamp(1rem, 2.5vw, 1.75rem);
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.history-link {
+  display: inline;
   font-family: 'Krona One', sans-serif;
-  font-size: clamp(1.5rem, 4vw, 3rem);
+  font-size: clamp(1rem, 2.5vw, 1.75rem);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: -0.02em;
-  color: #ffffff;
+  letter-spacing: -0.01em;
+  color: #FF9d66;
   text-decoration: none;
   position: relative;
   transition: color 0.3s ease;
 }
 
-.cta-link::after {
+.history-link::after {
   content: '';
   position: absolute;
-  bottom: -6px;
+  bottom: -4px;
   left: 0;
   width: 100%;
   height: 2px;
@@ -468,11 +508,11 @@ onUnmounted(() => {
   transition: transform 0.4s ease;
 }
 
-.cta-link:hover {
-  color: #FF9d66;
+.history-link:hover {
+  color: #ffffff;
 }
 
-.cta-link:hover::after {
+.history-link:hover::after {
   transform: scaleX(1);
 }
 
