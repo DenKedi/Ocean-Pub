@@ -102,12 +102,28 @@ async function openQrModal() {
     <div class="drinks-page">
       <!-- Left image column -->
       <div ref="leftCol" class="drinks-col drinks-col--left" aria-hidden="true">
-        <img v-for="(img, idx) in drinkImages" :key="idx" :src="img" alt="" class="drinks-col-img" loading="lazy" />
+        <img
+          v-for="(img, idx) in drinkImages"
+          :key="idx"
+          :src="img"
+          alt=""
+          class="drinks-col-img"
+          :loading="idx === 0 ? 'eager' : 'lazy'"
+          :fetchpriority="idx === 0 ? 'high' : 'auto'"
+        />
       </div>
 
       <!-- Right column: mirrored + blurred -->
       <div ref="rightCol" class="drinks-col drinks-col--right" aria-hidden="true">
-        <img v-for="(img, idx) in drinkImages" :key="idx" :src="img" alt="" class="drinks-col-img" loading="lazy" />
+        <img
+          v-for="(img, idx) in drinkImages"
+          :key="idx"
+          :src="img"
+          alt=""
+          class="drinks-col-img"
+          :loading="idx === 0 ? 'eager' : 'lazy'"
+          :fetchpriority="idx === 0 ? 'high' : 'auto'"
+        />
       </div>
 
       <!-- QR Modal -->
