@@ -494,6 +494,11 @@ onUnmounted(() => {
     padding: 0 1.25rem;
   }
 
+  .layer-subject {
+    background-size: cover;
+    background-position: center center;
+  }
+
   .name-item {
     text-align: left !important;
   }
