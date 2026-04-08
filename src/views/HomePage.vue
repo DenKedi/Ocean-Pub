@@ -5,7 +5,6 @@ import HeroSection from '../components/sections/HeroSection.vue'
 import AboutSection from '../components/sections/AboutSection.vue'
 import EventsPreviewSection from '../components/sections/EventsPreviewSection.vue'
 import InstagramSection from '../components/sections/InstagramSection.vue'
-import AwarenessBanner from '../components/sections/AwarenessBanner.vue'
 import ContactSection from '../components/sections/ContactSection.vue'
 import PartnersSection from '../components/sections/PartnersSection.vue'
 import sitzeckeImg from '../assets/pictures/sitzecke.webp'
@@ -68,7 +67,6 @@ onMounted(() => {
     <HeroSection />
     <EventsPreviewSection />
     <AboutSection />
-    <AwarenessBanner />
     <InstagramSection />
     <ContactSection />
     <PartnersSection />

@@ -38,7 +38,6 @@ const scrollToSection = (sectionId) => {
         <div class="footer-section contact-section">
           <h4 class="theme-text-primary">Kontakt</h4>
           <div class="contact-info">
-            <span class="contact-item theme-text-secondary">+49 40 98246368</span>
             <span class="contact-item theme-text-secondary">adjsavedmylife@pallas.world</span>
             <a href="https://instagram.com/pallas_world" target="_blank" class="contact-item footer-link theme-text-secondary">@pallas_world</a>
           </div>

@@ -20,16 +20,16 @@ const isLoading = ref(true)
 
 const clients = [
   'OMR',
-  'Deutsche Funkturm AG',
   'Warner Music',
-  'Warner Bros.',
+  'Warner Movies',
   'Hamburg Towers',
   'FC St. Pauli',
+  'Amazon Music',
   'Google',
   'Heineken',
-  'Amazon Music',
   'Planted',
   'Die Zeit',
+  'Deutsche Funkturm AG',
 ]
 
 let scrollTriggers = []
@@ -376,7 +376,7 @@ onUnmounted(() => {
 }
 
 .page-subtitle {
-  font-size: 1rem;
+  font-size: 1.3rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: rgba(255, 255, 255, 0.5);
@@ -410,7 +410,7 @@ onUnmounted(() => {
   text-align: center;
   text-transform: uppercase;
   letter-spacing: 0.3em;
-  font-size: clamp(0.75rem, 1.5vw, 1rem);
+  font-size: clamp(1rem, 2vw, 1.5rem);
   color: #FF9d66;
   font-weight: 600;
   margin-bottom: 4rem;
@@ -427,7 +427,7 @@ onUnmounted(() => {
 
 .name-item {
   font-family: 'Krona One', sans-serif;
-  font-size: clamp(2.5rem, 8vw, 7rem);
+  font-size: clamp(1.8rem, 5.5vw, 4.5rem);
   font-weight: 700;
   text-transform: uppercase;
   line-height: 1;
@@ -456,7 +456,7 @@ onUnmounted(() => {
 
 .history-statement {
   text-align: center;
-  font-size: clamp(0.75rem, 1.5vw, 1rem);
+  font-size: clamp(1rem, 2vw, 1.5rem);
   font-weight: 600;
   color: #ffffff;
   letter-spacing: 0.3em;

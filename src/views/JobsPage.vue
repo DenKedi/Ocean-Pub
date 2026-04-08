@@ -187,7 +187,7 @@ onUnmounted(() => {
           <div class="cta-box">
             <h2 class="cta-heading">Initiativbewerbung</h2>
             <p class="cta-text">
-              Kein Job dabei? Versuch es mit einer Initiativbewerbung!
+              Schicke uns deine Bewerbung mit Anschreiben und Lebenslauf an:
             </p>
             <a href="mailto:jobs@pallas.world" class="cta-button">
               jobs@pallas.world
@@ -484,8 +484,9 @@ onUnmounted(() => {
   font-size: 0.95rem;
   line-height: 1.7;
   color: rgba(255, 255, 255, 0.55);
-  max-width: 500px;
+  max-width: 100%;
   margin: 0 auto 2rem;
+  white-space: nowrap;
 }
 
 .cta-button {

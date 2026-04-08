@@ -2,7 +2,10 @@
   <section class="content-section theme-section-bg about-section">
     <div class="container">
       <h2 class="section-title theme-text-primary">Über das Pallas</h2>
-      <p class="section-subtitle theme-text-secondary">Dein Persönliches Wohnzimmer</p>
+      <p class="section-subtitle theme-text-secondary">Das Pallas versteht sich als dein persönliches Wohnzimmer - ein Ort, an dem Begegnung, Kultur und Nachtleben miteinander verschmelzen ganz ohne Timing, ohne Hektik, aber mit Haltung.
+Sorgsam kuratierte Musik trifft auf hochwertige Drinks und künstlerische Impulse. 
+
+Am Wochenende verwandelt sich dieses Wohnzimmer in einen pulsierenden Mikrokosmos voller Energie und Leichtigkeit. Zwischen Beats und Begegnungen entsteht eine Dynamik, die trägt - mal subtil, mal mitreißend, aber immer authentisch</p>
       <p class="about-body theme-text-secondary">
 
       </p>

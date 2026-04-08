@@ -147,7 +147,6 @@ const form = ref({
   thema: "",
   gaeste: "",
   datum: "",
-  musikrichtung: "",
   djQuelle: "", // 'uns' oder 'pallas'
   raeume: [], // multiple choice room ids
   budget: "",
@@ -220,7 +219,6 @@ const resetForm = () => {
     thema: "",
     gaeste: "",
     datum: "",
-    musikrichtung: "",
     djQuelle: "",
     raeume: [],
     budget: "",
@@ -474,19 +472,6 @@ const resetForm = () => {
                       }}</span>
                     </div>
                   </div>
-                </div>
-
-                <!-- Musikrichtung -->
-                <div class="form-group">
-                  <label class="form-label" for="req-musik"
-                    >Musikrichtung</label
-                  >
-                  <input
-                    id="req-musik"
-                    v-model="form.musikrichtung"
-                    type="text"
-                    class="form-input"
-                  />
                 </div>
 
                 <!-- DJ Quelle -->
