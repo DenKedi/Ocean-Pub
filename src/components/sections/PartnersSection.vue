@@ -29,7 +29,7 @@ const partners = [
   { id: 2, name: 'Birra Moretti', logo: '/partners/Birra_Moretti_Logo.png' },
   { id: 3, name: 'Cramer Möbel',  logo: '/partners/Cramer_Logo.png', size: '28px' },
   { id: 4, name: 'Typeholics',    logo: '/partners/typeholics.png' },
-  { id: 5, name: 'Slomo',         logo: null },
+  { id: 5, name: 'Slomo',         logo: '/partners/Slomo.svg', size: '52px' },
   { id: 6, name: 'Flor de Caña',  logo: '/partners/Flor_de_Cana_logo.png' },
 ]
 </script>
