@@ -136,6 +136,7 @@ const drinksPdfUploading = ref(false)
 const drinksPdfSuccess = ref(false)
 const drinksPdfError = ref('')
 const drinksPdfInput = ref(null)
+const pdfDropActive = ref(false)
 
 // Instagram Settings State
 const instagramUrlLeft = ref('')
@@ -416,9 +417,24 @@ async function fetchDrinksSettings() {
   }
 }
 
+async function handlePdfDrop(event) {
+  pdfDropActive.value = false
+  const file = event.dataTransfer?.files?.[0]
+  if (!file) return
+  await uploadDrinksPdfFile(file)
+}
+
 async function uploadDrinksPdf(event) {
   const file = event.target.files?.[0]
   if (!file) return
+  await uploadDrinksPdfFile(file)
+}
+
+async function uploadDrinksPdfFile(file) {
+  if (!/\.pdf$/i.test(file.name) && file.type !== 'application/pdf') {
+    drinksPdfError.value = 'Nur PDF-Dateien sind erlaubt'
+    return
+  }
   drinksPdfError.value = ''
   drinksPdfSuccess.value = false
   drinksPdfUploading.value = true
@@ -1580,8 +1596,11 @@ async function deleteJob(job) {
               <label>Neue PDF hochladen</label>
               <div
                 class="room-drop-area"
-                :class="{ 'room-drop-area--uploading': drinksPdfUploading }"
+                :class="{ 'room-drop-area--uploading': drinksPdfUploading, 'room-drop-area--active': pdfDropActive }"
                 @click="drinksPdfInput.click()"
+                @dragover.prevent="pdfDropActive = true"
+                @dragleave="pdfDropActive = false"
+                @drop.prevent="handlePdfDrop"
               >
                 <input
                   ref="drinksPdfInput"
