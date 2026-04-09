@@ -74,7 +74,7 @@ const applyThemeToCSS = (theme) => {
 
 // Theme beim App-Start laden
 export const initTheme = () => {
-  const savedTheme = localStorage.getItem('pallas-theme') || 'glassmorphism'
+  const savedTheme = 'glassmorphism'
   setTheme(savedTheme)
 }
 

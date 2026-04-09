@@ -168,8 +168,11 @@ const navItems = computed(() => {
   position: fixed;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
+  width: 100%;
+  /* Use lvh (largest viewport height) so the element doesn't resize when
+     the mobile browser chrome (address bar / navigation) appears/disappears.
+     This prevents the background-size: cover from recalculating and zooming. */
+  height: 100lvh;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
