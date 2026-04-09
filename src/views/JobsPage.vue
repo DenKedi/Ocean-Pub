@@ -6,6 +6,7 @@ import { gsap } from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 import heroImage from '@/assets/pictures/Pallas Jobs/Drink1.webp'
+import barImage from '@/assets/pictures/bar1.webp'
 import galleryImage2 from '@/assets/pictures/Pallas Jobs/Barkeeper2.webp'
 import galleryImage3 from '@/assets/pictures/Pallas Jobs/Drink2.webp'
 import galleryImage4 from '@/assets/pictures/Pallas Jobs/Drink3.webp'
@@ -17,7 +18,7 @@ import galleryImage8 from '@/assets/pictures/Pallas Jobs/Drink7.webp'
 // All images for marquee strip
 const marqueeImages = [
   galleryImage2, galleryImage3, galleryImage4,
-  galleryImage5, galleryImage6, galleryImage7, galleryImage8
+  galleryImage5, galleryImage6, galleryImage7, galleryImage8, barImage
 ]
 
 gsap.registerPlugin(ScrollTrigger)

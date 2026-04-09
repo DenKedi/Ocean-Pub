@@ -23,3 +23,4 @@ preview/
 *.njsproj
 *.sln
 *.sw?
+_unused/
