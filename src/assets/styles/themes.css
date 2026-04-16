@@ -68,8 +68,6 @@
 .theme-text-primary,
 .theme-text-secondary,
 .theme-text-muted {
-  transition: background var(--theme-transition-duration) ease, 
-              border-color var(--theme-transition-duration) ease, 
-              color var(--theme-transition-duration) ease, 
+  transition: background var(--theme-transition-duration) ease,
               box-shadow var(--theme-transition-duration) ease;
 }

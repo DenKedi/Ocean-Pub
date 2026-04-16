@@ -74,8 +74,8 @@ export default defineNuxtConfig({
   googleFonts: {
     families: {
       'Krona One': true,
-      'Montserrat': [100, 200, 300, 400, 500, 600, 700],
-      'Source Sans 3': [200, 300, 400, 500, 600, 700],
+      'Montserrat': [300, 400, 500, 600, 700],
+      'Source Sans 3': [300, 400, 600, 700],
     },
     display: 'swap',
     preconnect: true,

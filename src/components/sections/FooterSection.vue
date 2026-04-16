@@ -23,7 +23,7 @@ const scrollToSection = (sectionId) => {
       <div class="footer-content">
         <!-- PALLAS Info Section -->
         <div class="footer-section brand-section">
-          <img :src="pallasLogo" alt="Pallas.world Logo" class="footer-logo" />
+          <img :src="pallasLogo" alt="Pallas.world Logo" class="footer-logo" width="160" height="48" />
           <p class="theme-text-secondary footer-slogan">Everybody Welcome</p>
           <div class="footer-address theme-text-secondary">
             <p>

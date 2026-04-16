@@ -18,7 +18,10 @@ useSeoMeta({
 })
 
 useHead({
-  link: [{ rel: 'canonical', href: 'https://pallas.world/stories' }],
+  link: [
+    { rel: 'canonical', href: 'https://pallas.world/stories' },
+    { rel: 'preload', as: 'image', href: spinneFrontImg, fetchpriority: 'high' },
+  ],
 })
 
 const parallaxPage = ref(null)
@@ -195,7 +198,7 @@ onUnmounted(() => {
     <div v-if="isLoading" class="loading-overlay">
       <div class="loader-spinner"></div>
     </div>
-    <div v-else ref="parallaxPage" class="parallax-page">
+    <div ref="parallaxPage" class="parallax-page">
 
       <!-- BACKGROUND LAYER - spinne_full -->
       <div ref="backgroundLayer" class="parallax-layer background-layer">
