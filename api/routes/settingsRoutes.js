@@ -39,11 +39,21 @@ router.get('/drinks-pdf', async (req, res) => {
     const url = settings.drinksPdfUrl;
     if (!url) return res.status(404).json({ msg: 'Keine Drinks-PDF hinterlegt' });
     const axios = require('axios');
-    const response = await axios.get(url, { responseType: 'stream', timeout: 15000 });
+    const response = await axios.get(url, {
+      responseType: 'stream',
+      timeout: 10000,
+      maxRedirects: 3,
+      headers: { 'Accept': 'application/pdf' },
+    });
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Cache-Control', 'public, max-age=3600');
+    res.setHeader('Access-Control-Allow-Origin', '*');
     response.data.pipe(res);
+    response.data.on('error', () => {
+      if (!res.headersSent) res.status(502).json({ msg: 'PDF stream error' });
+    });
   } catch (err) {
+    console.error('drinks-pdf proxy error:', err.message);
     res.status(502).json({ msg: 'PDF konnte nicht geladen werden' });
   }
 });

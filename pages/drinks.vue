@@ -2,7 +2,7 @@
 import { ref, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
 
 const VuePdfEmbed = defineAsyncComponent(() => import('vue-pdf-embed'))
-import defaultPdf from '~/assets/Karten/Karte_Pallas.pdf?url'
+import defaultPdf from '~/assets/Karten/drinks-menu.pdf?url'
 
 let QRCode
 if (import.meta.client) {
@@ -33,13 +33,14 @@ const pdfLoaded = ref(false)
 const pageCount = ref(0)
 const currentPage = ref(null)
 
-const isMobile = computed(() => import.meta.client ? /iPhone|iPad|iPod|Android/i.test(navigator.userAgent) : false)
+const isMobile = ref(false)
 
 const drinkImages = Array.from({ length: 20 }, (_, i) => `/drinks/${i + 1}.webp`)
 
 const leftCol = ref(null)
 const rightCol = ref(null)
 let rafId = null
+const usingFallback = ref(false)
 
 function updateParallax() {
   const col = leftCol.value
@@ -65,6 +66,7 @@ function onScroll() {
 }
 
 onMounted(async () => {
+  isMobile.value = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
   window.addEventListener('scroll', onScroll, { passive: true })
   // initial position after images load
   setTimeout(updateParallax, 200)
@@ -98,14 +100,16 @@ function onPdfLoaded(pdf) {
 
 function onPdfError() {
   if (pdfUrl.value !== defaultPdf) {
+    console.warn('Remote PDF failed, falling back to local drinks-menu.pdf')
     pdfUrl.value = defaultPdf
     directUrl.value = defaultPdf
+    usingFallback.value = true
   }
 }
 
 const showQrModal = ref(false)
 const qrDataUrl = ref('')
-const drinksPageUrl = import.meta.client ? window.location.origin + '/drinks' : 'https://pallas.world/drinks'
+const drinksPageUrl = 'https://pallas.world/drinks'
 
 async function openQrModal() {
   qrDataUrl.value = await QRCode.toDataURL(drinksPageUrl, {
