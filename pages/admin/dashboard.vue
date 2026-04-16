@@ -137,7 +137,6 @@ const editUserFormLoading = ref(false)
 const drinksPdfUrl = ref('')
 const drinksPdfUploading = ref(false)
 const drinksPdfSuccess = ref(false)
-const drinksPdfSuccessMsg = ref('')
 const drinksPdfError = ref('')
 const drinksPdfInput = ref(null)
 const pdfDropActive = ref(false)
@@ -450,12 +449,7 @@ async function uploadDrinksPdfFile(file) {
     })
     drinksPdfUrl.value = data.pdfUrl
     drinksPdfSuccess.value = true
-    if (data.compressed) {
-      drinksPdfSuccessMsg.value = `PDF komprimiert: ${data.originalSize} → ${data.finalSize}`
-    } else {
-      drinksPdfSuccessMsg.value = ''
-    }
-    setTimeout(() => { drinksPdfSuccess.value = false; drinksPdfSuccessMsg.value = '' }, 6000)
+    setTimeout(() => { drinksPdfSuccess.value = false }, 4000)
   } catch (err) {
     drinksPdfError.value = err.response?.data?.error || 'Fehler beim Hochladen'
   } finally {
@@ -1626,7 +1620,7 @@ async function deleteJob(job) {
             </div>
 
             <div class="instagram-settings-actions">
-              <span v-if="drinksPdfSuccess" class="save-success">✓ Erfolgreich hochgeladen<template v-if="drinksPdfSuccessMsg"> ({{ drinksPdfSuccessMsg }})</template></span>
+              <span v-if="drinksPdfSuccess" class="save-success">✓ Erfolgreich hochgeladen</span>
               <span v-if="drinksPdfError" class="save-error">{{ drinksPdfError }}</span>
             </div>
           </div>

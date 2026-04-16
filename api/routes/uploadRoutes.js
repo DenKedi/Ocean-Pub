@@ -4,7 +4,6 @@ const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
-const { PDFDocument, PDFName, PDFRawStream } = require('pdf-lib');
 const { PutObjectCommand } = require('@aws-sdk/client-s3');
 const r2Client = require('../config/r2');
 const auth = require('../middleware/auth');
@@ -103,75 +102,13 @@ router.post('/event-image', upload.single('image'), async (req, res) => {
   }
 });
 
-// PDF-Komprimierung via pdf-lib + sharp (recomprimiert eingebettete JPEG-Bilder)
-async function compressPdf(inputBuffer) {
-  const pdfDoc = await PDFDocument.load(inputBuffer, { updateMetadata: false });
-
-  const objects = pdfDoc.context.enumerateIndirectObjects();
-  let imagesCompressed = 0;
-
-  for (const [ref, pdfObject] of objects) {
-    if (!(pdfObject instanceof PDFRawStream)) continue;
-
-    const { dict } = pdfObject;
-    const subtype = dict.get(PDFName.of('Subtype'));
-    if (!subtype || subtype.toString() !== '/Image') continue;
-
-    const filter = dict.get(PDFName.of('Filter'));
-    if (!filter) continue;
-    const filterStr = filter.toString();
-
-    // Nur DCTDecode (JPEG) Bilder recomprimieren
-    if (!filterStr.includes('DCTDecode')) continue;
-
-    const width = dict.get(PDFName.of('Width'));
-    const height = dict.get(PDFName.of('Height'));
-    if (!width || !height) continue;
-
-    try {
-      const originalData = pdfObject.contents;
-      const recompressed = await sharp(Buffer.from(originalData))
-        .jpeg({ quality: 55, mozjpeg: true })
-        .toBuffer();
-
-      if (recompressed.length < originalData.length) {
-        pdfObject.contents = new Uint8Array(recompressed);
-        dict.set(PDFName.of('Length'), pdfDoc.context.obj(recompressed.length));
-        imagesCompressed++;
-      }
-    } catch {
-      // Bild konnte nicht verarbeitet werden, überspringen
-    }
-  }
-
-  console.log(`PDF: ${imagesCompressed} Bilder recomprimiert`);
-  const compressed = await pdfDoc.save({ useObjectStreams: true });
-  return Buffer.from(compressed);
-}
-
 // @route   POST /api/upload/drinks-pdf
-// @desc    Upload drinks menu PDF to R2 (compressed) and persist URL in settings.json
+// @desc    Upload drinks menu PDF to R2 and persist URL in settings.json
 // @access  Private (admin only)
 router.post('/drinks-pdf', auth, uploadPdf.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'Keine Datei hochgeladen' });
-    }
-
-    let pdfBuffer = req.file.buffer;
-    const originalSize = pdfBuffer.length;
-    let compressed = false;
-
-    // Komprimiere PDF wenn größer als 2MB
-    if (originalSize > 2 * 1024 * 1024) {
-      try {
-        pdfBuffer = await compressPdf(pdfBuffer);
-        compressed = true;
-        console.log(`PDF komprimiert: ${(originalSize / 1024 / 1024).toFixed(1)}MB → ${(pdfBuffer.length / 1024 / 1024).toFixed(1)}MB`);
-      } catch (err) {
-        console.warn('PDF-Komprimierung fehlgeschlagen:', err.message);
-        pdfBuffer = req.file.buffer;
-      }
     }
 
     const filename = `drinks-menu-${Date.now()}.pdf`;
@@ -180,7 +117,7 @@ router.post('/drinks-pdf', auth, uploadPdf.single('pdf'), async (req, res) => {
     await r2Client.send(new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME,
       Key: key,
-      Body: pdfBuffer,
+      Body: req.file.buffer,
       ContentType: 'application/pdf',
     }));
 
@@ -191,13 +128,7 @@ router.post('/drinks-pdf', auth, uploadPdf.single('pdf'), async (req, res) => {
     settings.drinksPdfUrl = pdfUrl;
     fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf8');
 
-    res.status(200).json({
-      success: true,
-      pdfUrl,
-      originalSize: (originalSize / 1024 / 1024).toFixed(1) + 'MB',
-      finalSize: (pdfBuffer.length / 1024 / 1024).toFixed(1) + 'MB',
-      compressed,
-    });
+    res.status(200).json({ success: true, pdfUrl });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message || 'Fehler beim Hochladen' });
   }
