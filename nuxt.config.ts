@@ -44,14 +44,14 @@ export default defineNuxtConfig({
       viewport: 'width=device-width, initial-scale=1',
       title: 'PALLAS.WORLD – Bar, Events & Kultur in Hamburg',
       meta: [
-        { name: 'description', content: 'PALLAS.WORLD – Dein Wohnzimmer in Hamburg-St. Pauli. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.' },
+        { name: 'description', content: 'PALLAS.WORLD – Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.' },
         { name: 'theme-color', content: '#000000' },
 
         // Open Graph
         { property: 'og:type', content: 'website' },
         { property: 'og:site_name', content: 'PALLAS.WORLD' },
         { property: 'og:title', content: 'PALLAS.WORLD – Bar, Events & Kultur in Hamburg' },
-        { property: 'og:description', content: 'Dein Wohnzimmer in Hamburg-St. Pauli. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.' },
+        { property: 'og:description', content: 'Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.' },
         { property: 'og:image', content: 'https://pallas.world/og-image.jpg' },
         { property: 'og:url', content: 'https://pallas.world' },
         { property: 'og:locale', content: 'de_DE' },
@@ -59,7 +59,7 @@ export default defineNuxtConfig({
         // Twitter Card
         { name: 'twitter:card', content: 'summary_large_image' },
         { name: 'twitter:title', content: 'PALLAS.WORLD – Bar, Events & Kultur in Hamburg' },
-        { name: 'twitter:description', content: 'Dein Wohnzimmer in Hamburg-St. Pauli. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13.' },
+        { name: 'twitter:description', content: 'Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13.' },
         { name: 'twitter:image', content: 'https://pallas.world/og-image.jpg' },
       ],
       link: [
@@ -119,7 +119,7 @@ export default defineNuxtConfig({
       url: 'https://pallas.world',
       logo: 'https://pallas.world/icon.png',
       image: 'https://pallas.world/og-image.jpg',
-      description: 'Bar, Events & Kultur in Hamburg-St. Pauli. Everybody Welcome.',
+      description: 'Bar, Events & Kultur in der Hamburger Schanze. Everybody Welcome.',
       address: {
         streetAddress: 'Neuer Pferdemarkt 13',
         addressLocality: 'Hamburg',

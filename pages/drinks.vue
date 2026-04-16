@@ -16,8 +16,8 @@ const API_BASE = config.public.apiBaseUrl
 useSeoMeta({
   title: 'Getränkekarte | PALLAS.WORLD',
   ogTitle: 'Getränkekarte | PALLAS.WORLD',
-  description: 'Die Getränkekarte der PALLAS.WORLD Bar in Hamburg-St. Pauli. Hochwertige Drinks und ausgewählte Cocktails.',
-  ogDescription: 'Die Getränkekarte der PALLAS.WORLD Bar in Hamburg-St. Pauli.',
+  description: 'Die Getränkekarte der PALLAS Bar in der Hamburger Schanze. Hochwertige Drinks und ausgewählte Cocktails.',
+  ogDescription: 'Die Getränkekarte der PALLAS Bar in der Hamburger Schanze.',
   ogImage: 'https://pallas.world/og-drinks.jpg',
   ogUrl: 'https://pallas.world/drinks',
 })

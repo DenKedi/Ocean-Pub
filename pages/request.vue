@@ -13,8 +13,8 @@ const api = useApi()
 useSeoMeta({
   title: 'Raumvermietung & Event-Anfragen | PALLAS.WORLD',
   ogTitle: 'Raumvermietung & Event-Anfragen | PALLAS.WORLD',
-  description: 'Plane dein Event in der PALLAS.WORLD Bar am Neuen Pferdemarkt 13 in Hamburg. Raumvermietung, DJ-Bookings und private Veranstaltungen.',
-  ogDescription: 'Plane dein Event in der PALLAS.WORLD Bar in Hamburg-St. Pauli. Raumvermietung und private Veranstaltungen.',
+  description: 'Plane dein Event in der PALLAS Bar am Neuen Pferdemarkt 13 in Hamburg. Raumvermietung, DJ-Bookings und private Veranstaltungen.',
+  ogDescription: 'Plane dein Event in der PALLAS Bar in der Hamburger Schanze. Raumvermietung und private Veranstaltungen.',
   ogImage: 'https://pallas.world/og-request.jpg',
   ogUrl: 'https://pallas.world/request',
 })

@@ -18,8 +18,8 @@ const api = useApi()
 useSeoMeta({
   title: 'Jobs bei PALLAS.WORLD in Hamburg',
   ogTitle: 'Jobs bei PALLAS.WORLD in Hamburg',
-  description: 'Arbeite bei PALLAS.WORLD in Hamburg-St. Pauli. Aktuelle Stellenangebote für Barkeeper, Service und mehr.',
-  ogDescription: 'Aktuelle Stellenangebote bei PALLAS.WORLD in Hamburg-St. Pauli.',
+  description: 'Arbeite im PALLAS in der Hamburger Schanze. Aktuelle Stellenangebote für Barkeeper, Service und mehr.',
+  ogDescription: 'Aktuelle Stellenangebote bei PALLAS in der Hamburger Schanze',
   ogImage: 'https://pallas.world/og-jobs.jpg',
   ogUrl: 'https://pallas.world/jobs',
 })

@@ -9,10 +9,10 @@ const { $gsap: gsap, $ScrollTrigger: ScrollTrigger } = useNuxtApp()
 
 // SEO
 useSeoMeta({
-  title: 'Pallas.Stories – Referenzen & Event-Locations Hamburg | PALLAS.WORLD',
+  title: 'Pallas.Stories – Referenzen & Event-Location Hamburg | PALLAS.WORLD',
   ogTitle: 'Pallas.Stories – Wer schon hier war',
   description: 'Vom Kulturabend bis zur Firmenfeier: OMR, FC St. Pauli, Warner Music, Amazon Music und Google haben ihre Events im Pallas am Neuen Pferdemarkt veranstaltet. Wann bist du dran?',
-  ogDescription: 'Von OMR bis FC St. Pauli – wer Events im Herzen von Hamburg-St. Pauli feiert, feiert im Pallas.',
+  ogDescription: 'Von OMR bis FC St. Pauli – wer Events im Herzen von Hamburg feiern möchte, feiert im Pallas.',
   ogImage: 'https://pallas.world/og-stories.jpg',
   ogUrl: 'https://pallas.world/stories',
 })

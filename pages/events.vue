@@ -12,8 +12,8 @@ const { getImageUrl } = useImageUrl()
 useSeoMeta({
   title: 'Events & Veranstaltungen | PALLAS.WORLD',
   ogTitle: 'Events & Veranstaltungen | PALLAS.WORLD',
-  description: 'Aktuelle Events und Veranstaltungen in der PALLAS.WORLD Bar in Hamburg-St. Pauli. Konzerte, DJ-Sets, Kulturabende und mehr.',
-  ogDescription: 'Aktuelle Events und Veranstaltungen in der PALLAS.WORLD Bar in Hamburg-St. Pauli.',
+  description: 'Aktuelle Events und Veranstaltungen in der PALLAS Bar in der Hamburger Schanze. Konzerte, DJ-Sets, Kunst und mehr.',
+  ogDescription: 'Aktuelle Events und Veranstaltungen in der PALLAS Bar in der Hamburger Schanze.',
   ogImage: 'https://pallas.world/og-events.jpg',
   ogUrl: 'https://pallas.world/events',
 })

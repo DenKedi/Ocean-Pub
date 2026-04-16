@@ -6,10 +6,10 @@ import spinnexImg from '~/assets/pictures/spinnex.webp'
 
 // SEO
 useSeoMeta({
-  title: 'PALLAS.WORLD – Bar, Events & Kultur in Hamburg-St. Pauli',
-  ogTitle: 'PALLAS.WORLD – Bar, Events & Kultur in Hamburg-St. Pauli',
-  description: 'Dein Wohnzimmer in Hamburg-St. Pauli. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.',
-  ogDescription: 'Dein Wohnzimmer in Hamburg-St. Pauli. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.',
+  title: 'PALLAS.WORLD – Bar, Events & Kultur in der Hamburger Schanze',
+  ogTitle: 'PALLAS.WORLD – Bar, Events & Kultur in der Hamburger Schanze',
+  description: 'Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.',
+  ogDescription: 'Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.',
   ogImage: 'https://pallas.world/og-image.jpg',
   ogUrl: 'https://pallas.world',
 })
@@ -68,7 +68,7 @@ onMounted(() => {
 
 <template>
   <NuxtLayout :bg-image="currentBackgroundImage">
-    <h1 class="sr-only">PALLAS.WORLD – Bar, Events & Kultur in Hamburg-St. Pauli</h1>
+    <h1 class="sr-only">PALLAS.WORLD – Bar, Events & Kultur in der Hamburger Schanze</h1>
     <SectionsHeroSection />
     <SectionsEventsPreviewSection />
     <SectionsAboutSection />
