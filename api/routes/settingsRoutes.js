@@ -3,22 +3,30 @@ const router = express.Router();
 const path = require('path');
 const fs = require('fs');
 const auth = require('../middleware/auth');
+const Settings = require('../models/Settings');
 
 const SETTINGS_FILE = path.join(__dirname, '../data/settings.json');
+const SETTINGS_KEY = 'global';
 
-function readSettings() {
-  return JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
-}
-
-function writeSettings(data) {
-  fs.writeFileSync(SETTINGS_FILE, JSON.stringify(data, null, 2), 'utf8');
+// Load settings from MongoDB, seeding from JSON file on first run
+async function getSettings() {
+  let doc = await Settings.findOne({ key: SETTINGS_KEY });
+  if (!doc) {
+    // Seed from JSON file if it exists
+    let seed = { instagram: { postLeft: '', postRight: '' }, drinksPdfUrl: '' };
+    try {
+      seed = JSON.parse(fs.readFileSync(SETTINGS_FILE, 'utf8'));
+    } catch (_) {}
+    doc = await Settings.create({ key: SETTINGS_KEY, ...seed });
+  }
+  return doc;
 }
 
 // GET /api/settings — public
-router.get('/', (req, res) => {
+router.get('/', async (req, res) => {
   try {
-    const settings = readSettings();
-    res.json(settings);
+    const settings = await getSettings();
+    res.json({ instagram: settings.instagram, drinksPdfUrl: settings.drinksPdfUrl });
   } catch (err) {
     res.status(500).json({ msg: 'Fehler beim Lesen der Einstellungen' });
   }
@@ -27,7 +35,7 @@ router.get('/', (req, res) => {
 // GET /api/settings/drinks-pdf — proxy PDF to avoid CORS
 router.get('/drinks-pdf', async (req, res) => {
   try {
-    const settings = readSettings();
+    const settings = await getSettings();
     const url = settings.drinksPdfUrl;
     if (!url) return res.status(404).json({ msg: 'Keine Drinks-PDF hinterlegt' });
     const axios = require('axios');
@@ -41,7 +49,7 @@ router.get('/drinks-pdf', async (req, res) => {
 });
 
 // PUT /api/settings/instagram — admin only
-router.put('/instagram', auth, (req, res) => {
+router.put('/instagram', auth, async (req, res) => {
   try {
     const { postLeft, postRight } = req.body;
     if (!postLeft || !postRight) {
@@ -51,9 +59,11 @@ router.put('/instagram', auth, (req, res) => {
     if (!/^[A-Za-z0-9_-]+$/.test(postLeft) || !/^[A-Za-z0-9_-]+$/.test(postRight)) {
       return res.status(400).json({ msg: 'Ungültige Post-ID' });
     }
-    const settings = readSettings();
-    settings.instagram = { postLeft, postRight };
-    writeSettings(settings);
+    const settings = await Settings.findOneAndUpdate(
+      { key: SETTINGS_KEY },
+      { $set: { 'instagram.postLeft': postLeft, 'instagram.postRight': postRight } },
+      { new: true, upsert: true }
+    );
     res.json(settings.instagram);
   } catch (err) {
     res.status(500).json({ msg: 'Fehler beim Speichern der Einstellungen' });
