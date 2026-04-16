@@ -319,12 +319,12 @@ onUnmounted(() => {
 
 .background-layer {
   z-index: 0;
-  height: 120vh;
+  height: 120lvh;
 }
 
 .foreground-layer {
   z-index: 1;
-  height: 120vh;
+  height: 120lvh;
 }
 
 .layer-bg-blur {

@@ -1591,7 +1591,7 @@ const resetForm = () => {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100vh;
+    height: 100lvh;
     object-fit: cover;
     object-position: center center;
     transform: none !important;

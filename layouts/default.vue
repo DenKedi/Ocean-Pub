@@ -37,11 +37,30 @@ const handleScroll = () => {
   lastScrollY.value = currentScrollY;
 };
 
+const bgHeight = ref('100vh');
+let lastWindowWidth = 0;
+
+const updateBgHeight = () => {
+  // Only update if width changed significantly (indicates orientation change)
+  if (typeof window !== 'undefined') {
+    if (Math.abs(window.innerWidth - lastWindowWidth) > 50) {
+      bgHeight.value = `${window.innerHeight}px`;
+      lastWindowWidth = window.innerWidth;
+    }
+  }
+};
+
 onMounted(() => {
+  if (typeof window !== 'undefined') lastWindowWidth = window.innerWidth;
+  bgHeight.value = `${window.innerHeight}px`;
+  window.addEventListener('resize', updateBgHeight);
+  window.addEventListener('orientationchange', updateBgHeight);
   window.addEventListener('scroll', handleScroll, { passive: true });
 });
 
 onUnmounted(() => {
+  window.removeEventListener('resize', updateBgHeight);
+  window.removeEventListener('orientationchange', updateBgHeight);
   window.removeEventListener('scroll', handleScroll);
 });
 
@@ -79,7 +98,7 @@ const navItems = computed(() => {
     <div
       v-if="props.bgImage"
       class="background-image"
-      :style="{ backgroundImage: `url(${props.bgImage})` }"
+      :style="{ backgroundImage: `url(${props.bgImage})`, height: bgHeight }"
     ></div>
 
     <!-- Desktop Navigation Bar -->
@@ -169,10 +188,7 @@ const navItems = computed(() => {
   top: 0;
   left: 0;
   width: 100%;
-  /* Use lvh (largest viewport height) so the element doesn't resize when
-     the mobile browser chrome (address bar / navigation) appears/disappears.
-     This prevents the background-size: cover from recalculating and zooming. */
-  height: 100lvh;
+  /* Height is dynamically set via JS to prevent mobile scroll-zoom issues */
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
