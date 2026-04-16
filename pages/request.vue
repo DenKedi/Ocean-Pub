@@ -1388,6 +1388,7 @@ const resetForm = () => {
   justify-content: center;
   z-index: 9999;
   padding: 2rem;
+  overflow: hidden;
 }
 
 .modal-content {
@@ -1399,6 +1400,7 @@ const resetForm = () => {
   width: 90%;
   max-height: 90vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 3rem;
   position: relative;
   color: var(--paper) !important;
