@@ -9,7 +9,7 @@ const EventSchema = new mongoose.Schema({
     category: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Category',
-        required: [true, 'Eine Kategorie ist erforderlich']
+        required: false
     },
     eventImageUrl: {
         type: String,

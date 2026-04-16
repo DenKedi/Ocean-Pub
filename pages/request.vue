@@ -269,11 +269,11 @@ const resetForm = () => {
           <p class="page-subtitle">Dein Event in unserer Location</p>
 
           <div class="intro-text">
-            <p>Fünf Bereiche, viele Möglichkeiten.<br>
-            Im Pallas lässt sich jeder Raum so nutzen, wie du es brauchst.</p>
-            <p>Von entspannt bis lebendig, von klein bis groß.<br>
-            Sowohl einzeln als auch in Kombination.</p>
-            <p>Mehr zu den einzelnen Bereichen findest du im interaktiven Raumplan.<br>
+            <p class="intro-lead">Fünf Bereiche, viele Möglichkeiten —
+            im Pallas lässt sich jeder Raum so nutzen, wie du es brauchst.
+            Von entspannt bis lebendig, von klein bis groß,
+            sowohl einzeln als auch in Kombination.</p>
+            <p class="intro-sub">Mehr zu den einzelnen Bereichen findest du im interaktiven Raumplan.
             Anfragen kannst du ganz einfach über das Formular stellen.</p>
           </div>
         </div>
@@ -816,14 +816,25 @@ const resetForm = () => {
 }
 
 .intro-text {
-  font-size: 1.05rem;
-  line-height: 1.75;
-  text-align: left;
-  max-width: 800px;
-  opacity: 0.85;
+  max-width: 640px;
   display: flex;
   flex-direction: column;
-  gap: 1.5rem;
+  gap: 1.25rem;
+}
+
+.intro-lead {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+}
+
+.intro-sub {
+  font-size: 0.9rem;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.45);
+  margin: 0;
+  letter-spacing: 0.01em;
 }
 
 .intro-text p {

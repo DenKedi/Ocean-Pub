@@ -10,7 +10,7 @@ const CategorySchema = new mongoose.Schema({
     },
     defaultImageUrl: {
         type: String,
-        required: [true, 'Ein Standardbild für die Kategorie ist erforderlich']
+        required: false
     },
     description: {
         type: String,
