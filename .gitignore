@@ -24,3 +24,9 @@ preview/
 *.sln
 *.sw?
 _unused/
+
+# Nuxt
+.nuxt
+.output
+.nitro
+.cache
