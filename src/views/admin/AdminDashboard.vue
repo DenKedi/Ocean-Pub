@@ -1906,9 +1906,9 @@ async function deleteJob(job) {
                 </div>
 
                 <div class="form-group">
-                  <label>Kategorie *</label>
+                  <label>Kategorie</label>
                   <div class="input-with-button">
-                    <select v-model="form.category" required>
+                    <select v-model="form.category">
                       <option value="" disabled>Kategorie wählen</option>
                       <option v-for="cat in categories" :key="cat._id" :value="cat._id">
                         {{ cat.name }}
@@ -2102,7 +2102,7 @@ async function deleteJob(job) {
             </div>
 
             <div class="form-group">
-              <label>Kategorie-Bild *</label>
+              <label>Kategorie-Bild</label>
               <input
                 type="file"
                 ref="categoryImageInput"
