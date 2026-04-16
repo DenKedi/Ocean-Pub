@@ -117,7 +117,6 @@ const openSpotModal = (spot) => {
   isModalOpen.value = true;
   document.body.style.overflow = "hidden";
   document.documentElement.style.overflow = "hidden";
-  document.body.style.backgroundColor = "#332e26";
 };
 
 const closeModal = () => {
@@ -126,13 +125,11 @@ const closeModal = () => {
   closeLightbox();
   document.body.style.overflow = "";
   document.documentElement.style.overflow = "";
-  document.body.style.backgroundColor = "";
 };
 
 onUnmounted(() => {
   document.body.style.overflow = "";
   document.documentElement.style.overflow = "";
-  document.body.style.backgroundColor = "";
 });
 
 // Lightbox state (vue-easy-lightbox)
@@ -1391,7 +1388,6 @@ const resetForm = () => {
   justify-content: center;
   z-index: 9999;
   padding: 2rem;
-  overflow: hidden;
 }
 
 .modal-content {
@@ -1401,7 +1397,7 @@ const resetForm = () => {
   border-radius: 2px;
   max-width: 900px;
   width: 90%;
-  max-height: 90vh;
+  max-height: 85dvh;
   overflow-y: auto;
   overscroll-behavior: contain;
   padding: 3rem;
@@ -1410,9 +1406,9 @@ const resetForm = () => {
 }
 
 .modal-close {
-  position: sticky;
-  top: 0;
-  float: right;
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
   background: rgba(240, 230, 210, 0.06);
   border: 1px solid rgba(240, 230, 210, 0.1);
   border-radius: 2px;
@@ -1427,8 +1423,6 @@ const resetForm = () => {
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1;
-  flex-shrink: 0;
 }
 
 .modal-close:hover {
@@ -1756,13 +1750,11 @@ const resetForm = () => {
 
   .modal-overlay {
     padding: 1rem;
-    padding-top: calc(1rem + env(safe-area-inset-top, 0px));
-    padding-bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   }
 
   .modal-content {
     width: 100%;
-    max-height: calc(100dvh - 2rem - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
+    max-height: 80dvh;
     padding: 1.25rem 1rem 1rem;
   }
 

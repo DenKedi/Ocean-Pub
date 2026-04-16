@@ -31,7 +31,6 @@ html, body {
   min-height: 100%; /* Changed to min-height to allow scrolling */
   background-color: #000000;
   overflow-x: hidden;
-  overscroll-behavior: none;
 }
 
 body {
