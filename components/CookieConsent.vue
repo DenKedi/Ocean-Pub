@@ -39,6 +39,7 @@ const { consentGiven, acceptAll, acceptEssentialOnly } = useCookieConsent()
   align-items: center;
   gap: 1.5rem;
   padding: 1.25rem 1.75rem;
+  position: relative;
   background: rgba(10, 10, 10, 0.92);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);

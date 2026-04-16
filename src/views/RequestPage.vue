@@ -1377,9 +1377,9 @@ const resetForm = () => {
 }
 
 .modal-close {
-  position: absolute;
-  top: 1rem;
-  right: 1rem;
+  position: sticky;
+  top: 0;
+  float: right;
   background: rgba(240, 230, 210, 0.06);
   border: 1px solid rgba(240, 230, 210, 0.1);
   border-radius: 2px;
@@ -1394,6 +1394,8 @@ const resetForm = () => {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 1;
+  flex-shrink: 0;
 }
 
 .modal-close:hover {
@@ -1720,12 +1722,12 @@ const resetForm = () => {
   }
 
   .modal-overlay {
-    padding: 1rem;
+    padding: max(1rem, env(safe-area-inset-top, 0px)) 1rem max(1rem, env(safe-area-inset-bottom, 0px));
   }
 
   .modal-content {
     width: 100%;
-    max-height: calc(100vh - 2rem);
+    max-height: calc(100dvh - max(2rem, env(safe-area-inset-top, 0px) + env(safe-area-inset-bottom, 0px)));
     padding: 1.25rem 1rem 1rem;
   }
 
