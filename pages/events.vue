@@ -915,7 +915,7 @@ onUnmounted(() => {
   border-left: 3px solid transparent;
   background: #111;
   transition: all 0.3s ease;
-  align-items: center;
+  align-items: start;
 }
 
 .event-list-item:hover {
@@ -980,11 +980,6 @@ onUnmounted(() => {
   font-size: 0.85rem;
   line-height: 1.5;
   margin: 0;
-  display: -webkit-box;
-  line-clamp: 2;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
   white-space: pre-wrap;
 }
 

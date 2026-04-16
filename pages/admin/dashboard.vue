@@ -10,7 +10,6 @@ const api = useApi()
 const config = useRuntimeConfig()
 const API_URL = config.public.apiUrl
 const API_BASE = config.public.apiBaseUrl
-const BASE_URL = import.meta.env.BASE_URL || 'https://pallas.bleck.it'
 
 definePageMeta({
   middleware: 'auth',
@@ -1088,9 +1087,9 @@ async function deleteJob(job) {
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <a :href="BASE_URL" class="logo-link">
+        <NuxtLink to="/" class="logo-link">
           <img src="~/assets/icons/Pallas_Logo_III.svg" alt="Pallas Logo" class="logo" />
-        </a>
+        </NuxtLink>
         <button @click="toggleMobileMenu" class="hamburger-btn">
           <span></span>
           <span></span>
