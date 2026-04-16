@@ -144,6 +144,9 @@ const navItems = computed(() => {
 
     <!-- Footer -->
     <SectionsFooterSection :theme="theme" />
+
+    <!-- Cookie Consent Banner -->
+    <CookieConsent />
   </div>
 </template>
 

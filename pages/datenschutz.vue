@@ -3,6 +3,12 @@ useSeoMeta({
   title: 'Datenschutz | PALLAS.WORLD',
   robots: 'noindex, nofollow',
 })
+
+const { consentGiven, revokeConsent } = useCookieConsent()
+
+function resetConsent() {
+  revokeConsent()
+}
 </script>
 
 <template>
@@ -177,8 +183,33 @@ useSeoMeta({
           </p>
         </section>
 
+        <section class="legal-section">
+          <h2>9. Cookie-Einstellungen</h2>
+          <p>
+            Beim ersten Besuch dieser Website werden Sie über einen Banner um Ihre Zustimmung zur Nutzung
+            externer Dienste (Instagram, Spotify) gebeten. Sie können Ihre Einwilligung jederzeit widerrufen,
+            indem Sie die Schaltfläche unten verwenden. Danach werden externe Inhalte erst nach erneuter
+            Zustimmung geladen.
+          </p>
+          <p>
+            Ihre Einstellungen werden im lokalen Speicher (localStorage) Ihres Browsers gespeichert und
+            laufen nach 6 Monaten automatisch ab. Es werden keine Cookies an Drittanbieter übertragen.
+          </p>
+          <div class="consent-revoke">
+            <p v-if="consentGiven" class="consent-status">
+              ✓ Sie haben Ihre Cookie-Einstellungen bereits festgelegt.
+            </p>
+            <p v-else class="consent-status">
+              Sie haben noch keine Cookie-Einstellungen festgelegt.
+            </p>
+            <button v-if="consentGiven" class="revoke-btn" @click="resetConsent">
+              Cookie-Einstellungen zurücksetzen
+            </button>
+          </div>
+        </section>
+
         <div class="legal-footer">
-          <p><small>Stand: März 2026</small></p>
+          <p><small>Stand: April 2026</small></p>
         </div>
       </div>
     </div>
@@ -275,6 +306,40 @@ useSeoMeta({
 
 .legal-content a:hover {
   color: #fff;
+}
+
+/* Consent Revoke Section */
+.consent-revoke {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.consent-status {
+  font-size: 0.85rem;
+  margin-bottom: 0.75rem;
+}
+
+.revoke-btn {
+  padding: 0.6rem 1.5rem;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50px;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.82rem;
+  font-weight: 400;
+  letter-spacing: 0.03em;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+.revoke-btn:hover {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-1px);
 }
 
 /* Mobile Optimization */

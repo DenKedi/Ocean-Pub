@@ -58,11 +58,18 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, watch } from 'vue'
 import { getConsent, setConsent } from '~/utils/embedConsent'
 
 const CONSENT_KEY = 'spotify'
 const consentGiven = ref(getConsent(CONSENT_KEY))
+
+const { embedsAllowed } = useCookieConsent()
+
+// React to global consent changes
+watch(embedsAllowed, (val) => {
+  if (val) consentGiven.value = true
+})
 
 function giveConsent() {
   setConsent(CONSENT_KEY)

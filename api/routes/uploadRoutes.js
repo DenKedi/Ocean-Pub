@@ -4,6 +4,8 @@ const multer = require('multer');
 const sharp = require('sharp');
 const path = require('path');
 const fs = require('fs');
+const os = require('os');
+const { execFile } = require('child_process');
 const { PutObjectCommand } = require('@aws-sdk/client-s3');
 const r2Client = require('../config/r2');
 const auth = require('../middleware/auth');
@@ -102,13 +104,68 @@ router.post('/event-image', upload.single('image'), async (req, res) => {
   }
 });
 
+// PDF-Komprimierung via Ghostscript (8MB → ~1-2MB)
+async function compressPdf(inputBuffer) {
+  const tmpDir = os.tmpdir();
+  const inputPath = path.join(tmpDir, `pdf-in-${Date.now()}.pdf`);
+  const outputPath = path.join(tmpDir, `pdf-out-${Date.now()}.pdf`);
+
+  fs.writeFileSync(inputPath, inputBuffer);
+
+  try {
+    await new Promise((resolve, reject) => {
+      execFile('gs', [
+        '-sDEVICE=pdfwrite',
+        '-dCompatibilityLevel=1.4',
+        '-dPDFSETTINGS=/ebook',
+        '-dDownsampleColorImages=true',
+        '-dColorImageResolution=150',
+        '-dDownsampleGrayImages=true',
+        '-dGrayImageResolution=150',
+        '-dDownsampleMonoImages=true',
+        '-dMonoImageResolution=150',
+        '-dNOPAUSE',
+        '-dQUIET',
+        '-dBATCH',
+        `-sOutputFile=${outputPath}`,
+        inputPath
+      ], { timeout: 30000 }, (error) => {
+        if (error) reject(error);
+        else resolve();
+      });
+    });
+
+    const compressed = fs.readFileSync(outputPath);
+    return compressed;
+  } finally {
+    try { fs.unlinkSync(inputPath); } catch {}
+    try { fs.unlinkSync(outputPath); } catch {}
+  }
+}
+
 // @route   POST /api/upload/drinks-pdf
-// @desc    Upload drinks menu PDF to R2 and persist URL in settings.json
+// @desc    Upload drinks menu PDF to R2 (compressed) and persist URL in settings.json
 // @access  Private (admin only)
 router.post('/drinks-pdf', auth, uploadPdf.single('pdf'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ success: false, error: 'Keine Datei hochgeladen' });
+    }
+
+    let pdfBuffer = req.file.buffer;
+    const originalSize = pdfBuffer.length;
+    let compressed = false;
+
+    // Komprimiere PDF wenn größer als 2MB
+    if (originalSize > 2 * 1024 * 1024) {
+      try {
+        pdfBuffer = await compressPdf(pdfBuffer);
+        compressed = true;
+        console.log(`PDF komprimiert: ${(originalSize / 1024 / 1024).toFixed(1)}MB → ${(pdfBuffer.length / 1024 / 1024).toFixed(1)}MB`);
+      } catch (err) {
+        console.warn('PDF-Komprimierung fehlgeschlagen (Ghostscript installiert?), lade Original hoch:', err.message);
+        pdfBuffer = req.file.buffer;
+      }
     }
 
     const filename = `drinks-menu-${Date.now()}.pdf`;
@@ -117,7 +174,7 @@ router.post('/drinks-pdf', auth, uploadPdf.single('pdf'), async (req, res) => {
     await r2Client.send(new PutObjectCommand({
       Bucket: process.env.R2_BUCKET_NAME,
       Key: key,
-      Body: req.file.buffer,
+      Body: pdfBuffer,
       ContentType: 'application/pdf',
     }));
 
@@ -128,7 +185,13 @@ router.post('/drinks-pdf', auth, uploadPdf.single('pdf'), async (req, res) => {
     settings.drinksPdfUrl = pdfUrl;
     fs.writeFileSync(SETTINGS_FILE, JSON.stringify(settings, null, 2), 'utf8');
 
-    res.status(200).json({ success: true, pdfUrl });
+    res.status(200).json({
+      success: true,
+      pdfUrl,
+      originalSize: (originalSize / 1024 / 1024).toFixed(1) + 'MB',
+      finalSize: (pdfBuffer.length / 1024 / 1024).toFixed(1) + 'MB',
+      compressed,
+    });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message || 'Fehler beim Hochladen' });
   }

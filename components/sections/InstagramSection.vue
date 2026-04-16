@@ -72,7 +72,14 @@ import { getConsent, setConsent } from '~/utils/embedConsent'
 const CONSENT_KEY = 'instagram'
 const postLeft = ref('DRP6UlhjnMN')
 const postRight = ref('DVTYNbNDATB')
+
+const { embedsAllowed } = useCookieConsent()
 const consentGiven = ref(getConsent(CONSENT_KEY))
+
+// React to global consent changes
+watch(embedsAllowed, (val) => {
+  if (val) consentGiven.value = true
+})
 
 function loadInstagramScript() {
   if (window.instgrm) {
