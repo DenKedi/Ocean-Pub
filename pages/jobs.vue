@@ -497,7 +497,8 @@ onUnmounted(() => {
   color: rgba(255, 255, 255, 0.55);
   max-width: 100%;
   margin: 0 auto 2rem;
-  white-space: nowrap;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
 }
 
 .cta-button {
@@ -593,6 +594,21 @@ onUnmounted(() => {
 
   .cta-box {
     padding: 2rem 1.5rem;
+  }
+
+  .cta-heading {
+    font-size: 1.1rem;
+  }
+
+  .cta-text {
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .cta-button {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.85rem;
+    word-break: break-word;
   }
 }
 </style>
