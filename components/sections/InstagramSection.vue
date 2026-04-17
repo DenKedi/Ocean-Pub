@@ -293,6 +293,42 @@ onMounted(async () => {
   width: 100%;
 }
 
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1100px) {
+  .instagram-container {
+    gap: 2rem;
+  }
+
+  .instagram-column-left {
+    padding-top: 4rem;
+  }
+
+  .instagram-column-right {
+    gap: 2rem;
+  }
+
+  .section-title {
+    font-size: clamp(1.6rem, 3.5vw, 2.8rem);
+    letter-spacing: 4px;
+    max-width: 100%;
+  }
+
+  .instagram-post {
+    width: 100%;
+    height: 380px;
+  }
+
+  .follow-section {
+    width: 100%;
+  }
+
+  .follow-link {
+    padding: 14px 30px;
+    font-size: 12px;
+    letter-spacing: 2px;
+  }
+}
+
 /* Mobile */
 @media (max-width: 768px) {
   .instagram-section {
