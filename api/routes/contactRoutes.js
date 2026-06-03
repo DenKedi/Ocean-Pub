@@ -1,19 +1,34 @@
 const express = require('express');
 const nodemailer = require('nodemailer');
+const { google } = require('googleapis');
 const asyncHandler = require('../middleware/AsyncHandler');
 
 const router = express.Router();
 
-// Nodemailer transporter – konfiguriert via .env
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT) || 465,
-  secure: true,
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
+// Gmail OAuth2 transporter
+function createTransporter() {
+  const oauth2Client = new google.auth.OAuth2(
+    process.env.GMAIL_CLIENT_ID,
+    process.env.GMAIL_CLIENT_SECRET,
+    'https://developers.google.com/oauthplayground'
+  );
+
+  oauth2Client.setCredentials({
+    refresh_token: process.env.GMAIL_REFRESH_TOKEN,
+  });
+
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      type: 'OAuth2',
+      user: process.env.GMAIL_USER,
+      clientId: process.env.GMAIL_CLIENT_ID,
+      clientSecret: process.env.GMAIL_CLIENT_SECRET,
+      refreshToken: process.env.GMAIL_REFRESH_TOKEN,
+      accessToken: oauth2Client.getAccessToken(),
+    },
+  });
+}
 
 // POST /api/contact
 router.post(
@@ -27,13 +42,11 @@ router.post(
       thema,
       gaeste,
       datum,
-      musikrichtung,
-      djQuelle,
-      raeume,
       budget,
       nachricht,
       altDatum,
       altDatumWert,
+      bookingType,
     } = req.body;
 
     // Minimal server-side validation
@@ -45,51 +58,49 @@ router.post(
       return res.status(400).json({ message: 'Ungültige E-Mail-Adresse.' });
     }
 
-    const raeumeListe = Array.isArray(raeume) && raeume.length
-      ? raeume.join(', ')
-      : '—';
+    const buchungsart = bookingType === 'bike' ? 'Ocean Bike (mobil)' : 'Ocean Pub Dahme (Strandbar)';
 
     const htmlBody = `
 <!DOCTYPE html>
 <html lang="de">
 <head><meta charset="UTF-8" /></head>
-<body style="font-family: Arial, sans-serif; background: #f4f4f4; padding: 24px;">
-  <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 8px; overflow: hidden;">
-    <div style="background: #111; padding: 24px 32px;">
-      <h1 style="color: #fff; font-size: 1.4rem; margin: 0; letter-spacing: 0.15em; text-transform: uppercase;">
-        Neue Anfrage — Pallas
+<body style="font-family: Arial, sans-serif; background: #EAF6FB; padding: 24px;">
+  <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(22,58,78,0.1);">
+    <div style="background: linear-gradient(135deg, #163A4E 0%, #2A7FA5 100%); padding: 28px 32px;">
+      <h1 style="color: #fff; font-size: 1.4rem; margin: 0; font-weight: 800;">
+        Neue Anfrage — Ocean Pub
       </h1>
+      <p style="color: rgba(255,255,255,0.75); margin: 6px 0 0; font-size: 0.9rem;">
+        Buchungsart: <strong style="color:#fff;">${escapeHtml(buchungsart)}</strong>
+      </p>
     </div>
     <div style="padding: 32px;">
-      <h2 style="font-size: 1rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0;">
+      <h2 style="font-size: 0.85rem; color: #2A7FA5; text-transform: uppercase; letter-spacing: 0.1em; margin-top: 0; border-bottom: 2px solid #E8614D; padding-bottom: 6px;">
         Ansprechpartner
       </h2>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-        <tr><td style="padding: 6px 0; color: #888; width: 40%;">Name</td><td style="padding: 6px 0;">${escapeHtml(name)}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">E-Mail</td><td style="padding: 6px 0;"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Telefon</td><td style="padding: 6px 0;">${escapeHtml(telefon || '—')}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Firma / Organisation</td><td style="padding: 6px 0;">${escapeHtml(firma || '—')}</td></tr>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 28px;">
+        <tr><td style="padding: 7px 0; color: #888; width: 40%;">Name</td><td style="padding: 7px 0; color: #163A4E; font-weight: 600;">${escapeHtml(name)}</td></tr>
+        <tr><td style="padding: 7px 0; color: #888;">E-Mail</td><td style="padding: 7px 0;"><a href="mailto:${escapeHtml(email)}" style="color: #2A7FA5;">${escapeHtml(email)}</a></td></tr>
+        <tr><td style="padding: 7px 0; color: #888;">Telefon</td><td style="padding: 7px 0; color: #163A4E;">${escapeHtml(telefon || '—')}</td></tr>
+        <tr><td style="padding: 7px 0; color: #888;">Firma / Organisation</td><td style="padding: 7px 0; color: #163A4E;">${escapeHtml(firma || '—')}</td></tr>
       </table>
 
-      <h2 style="font-size: 1rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em;">
+      <h2 style="font-size: 0.85rem; color: #2A7FA5; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid #E8614D; padding-bottom: 6px;">
         Veranstaltung
       </h2>
-      <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
-        <tr><td style="padding: 6px 0; color: #888; width: 40%;">Thema / Anlass</td><td style="padding: 6px 0;">${escapeHtml(thema)}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Gästeanzahl</td><td style="padding: 6px 0;">${escapeHtml(String(gaeste))}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Wunschdatum</td><td style="padding: 6px 0;">${escapeHtml(datum)}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Alternativdatum</td><td style="padding: 6px 0;">${altDatum && altDatumWert ? escapeHtml(altDatumWert) : '—'}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Musikrichtung</td><td style="padding: 6px 0;">${escapeHtml(musikrichtung || '—')}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">DJ</td><td style="padding: 6px 0;">${escapeHtml(djQuelle || '—')}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Räume</td><td style="padding: 6px 0;">${escapeHtml(raeumeListe)}</td></tr>
-        <tr><td style="padding: 6px 0; color: #888;">Budget</td><td style="padding: 6px 0;">${escapeHtml(budget || '—')}</td></tr>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 28px;">
+        <tr><td style="padding: 7px 0; color: #888; width: 40%;">Thema / Anlass</td><td style="padding: 7px 0; color: #163A4E; font-weight: 600;">${escapeHtml(thema)}</td></tr>
+        <tr><td style="padding: 7px 0; color: #888;">Gästeanzahl</td><td style="padding: 7px 0; color: #163A4E;">${escapeHtml(String(gaeste))}</td></tr>
+        <tr><td style="padding: 7px 0; color: #888;">Wunschdatum</td><td style="padding: 7px 0; color: #163A4E;">${escapeHtml(datum)}</td></tr>
+        <tr><td style="padding: 7px 0; color: #888;">Alternativdatum</td><td style="padding: 7px 0; color: #163A4E;">${altDatum && altDatumWert ? escapeHtml(altDatumWert) : '—'}</td></tr>
+        <tr><td style="padding: 7px 0; color: #888;">Budget</td><td style="padding: 7px 0; color: #163A4E;">${escapeHtml(budget || '—')}</td></tr>
       </table>
 
       ${nachricht ? `
-      <h2 style="font-size: 1rem; color: #555; text-transform: uppercase; letter-spacing: 0.08em;">
+      <h2 style="font-size: 0.85rem; color: #2A7FA5; text-transform: uppercase; letter-spacing: 0.1em; border-bottom: 2px solid #E8614D; padding-bottom: 6px;">
         Nachricht
       </h2>
-      <p style="background: #f9f9f9; border-left: 3px solid #111; padding: 12px 16px; margin: 0 0 24px;">
+      <p style="background: #EAF6FB; border-left: 3px solid #2A7FA5; padding: 12px 16px; margin: 0 0 24px; color: #163A4E; line-height: 1.6;">
         ${escapeHtml(nachricht).replace(/\n/g, '<br>')}
       </p>
       ` : ''}
@@ -102,13 +113,14 @@ router.post(
 </html>`;
 
     const mailOptions = {
-      from: `"Ocean Pub Anfrage" <${process.env.MAIL_FROM}>`,
-      to: process.env.MAIL_FROM,
+      from: `"Ocean Pub Anfrage" <${process.env.GMAIL_USER}>`,
+      to: process.env.GMAIL_USER,
       replyTo: `"${name}" <${email}>`,
-      subject: `Neue Anfrage: ${thema} — ${name}`,
+      subject: `Neue Anfrage [${buchungsart}]: ${thema} — ${name}`,
       html: htmlBody,
     };
 
+    const transporter = createTransporter();
     await transporter.sendMail(mailOptions);
 
     res.status(200).json({ message: 'Anfrage erfolgreich gesendet.' });
