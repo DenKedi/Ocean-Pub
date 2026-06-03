@@ -20,7 +20,7 @@ const logger = require('./middleware/logger');
 const app = express();
 
 // CORS Configuration
-const allowedDomains = ["http://localhost:5172", "http://localhost:5173", "https://ocean-pub.bleck.it", "https://ocean-pub.pages.dev"];
+const allowedDomains = ["http://localhost:5172", "http://localhost:5173", "https://ocean-pub.bleck.it", "https://ocean-pub.pages.dev", "https://ocean-pub.de", "https://www.ocean-pub.de"];
 if (process.env.FRONTEND_URL) {
   allowedDomains.push(process.env.FRONTEND_URL);
 }
