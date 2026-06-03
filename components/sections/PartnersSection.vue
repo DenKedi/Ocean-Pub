@@ -35,6 +35,7 @@ const partners = [
   { id: 8, name: 'Aperol',     logo: '/partners/aperol.png' },
   { id: 9, name: 'Lillet',          logo: '/partners/lillet.png' },
   { id: 10, name: 'Jägermeister',   logo: '/partners/jaegermeister.png' },
+  { id: 11, name: 'Sky Sport',      logo: '/partners/sky.png' },
 ]
 </script>
 
