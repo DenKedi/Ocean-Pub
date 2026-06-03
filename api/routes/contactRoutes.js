@@ -114,7 +114,7 @@ router.post(
 
     const mailOptions = {
       from: `"Ocean Pub Anfrage" <${process.env.GMAIL_USER}>`,
-      to: process.env.GMAIL_USER,
+      to: 'info@ocean-bar.de',
       replyTo: `"${name}" <${email}>`,
       subject: `Neue Anfrage [${buchungsart}]: ${thema} — ${name}`,
       html: htmlBody,
@@ -122,6 +122,47 @@ router.post(
 
     const transporter = createTransporter();
     await transporter.sendMail(mailOptions);
+
+    // Confirmation email to requester
+    const confirmHtml = `
+<!DOCTYPE html>
+<html lang="de">
+<head><meta charset="UTF-8" /></head>
+<body style="font-family: Arial, sans-serif; background: #EAF6FB; padding: 24px;">
+  <div style="max-width: 600px; margin: auto; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(22,58,78,0.1);">
+    <div style="background: linear-gradient(135deg, #163A4E 0%, #2A7FA5 100%); padding: 28px 32px;">
+      <h1 style="color: #fff; font-size: 1.4rem; margin: 0; font-weight: 800;">Danke für deine Anfrage!</h1>
+      <p style="color: rgba(255,255,255,0.75); margin: 6px 0 0; font-size: 0.9rem;">Ocean Pub Dahme</p>
+    </div>
+    <div style="padding: 32px;">
+      <p style="color: #163A4E; font-size: 1rem; line-height: 1.7;">
+        Hallo <strong>${escapeHtml(name)}</strong>,<br><br>
+        wir haben deine Anfrage erhalten und melden uns schnellstmöglich bei dir.<br><br>
+        <strong>Deine Angaben:</strong>
+      </p>
+      <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
+        <tr><td style="padding: 6px 0; color: #888; width: 40%;">Buchungsart</td><td style="padding: 6px 0; color: #163A4E;">${escapeHtml(buchungsart)}</td></tr>
+        <tr><td style="padding: 6px 0; color: #888;">Thema / Anlass</td><td style="padding: 6px 0; color: #163A4E;">${escapeHtml(thema)}</td></tr>
+        <tr><td style="padding: 6px 0; color: #888;">Gästeanzahl</td><td style="padding: 6px 0; color: #163A4E;">${escapeHtml(String(gaeste))}</td></tr>
+        <tr><td style="padding: 6px 0; color: #888;">Wunschdatum</td><td style="padding: 6px 0; color: #163A4E;">${escapeHtml(datum)}</td></tr>
+      </table>
+      <p style="color: #163A4E; font-size: 0.9rem; line-height: 1.7;">
+        Bei Fragen erreichst du uns jederzeit unter <a href="mailto:info@ocean-bar.de" style="color: #2A7FA5;">info@ocean-bar.de</a>.
+      </p>
+    </div>
+    <div style="background: #f4f4f4; padding: 16px 32px; font-size: 0.8rem; color: #aaa;">
+      Ocean Pub Dahme — Strandbar, Drinks &amp; Events
+    </div>
+  </div>
+</body>
+</html>`;
+
+    await transporter.sendMail({
+      from: `"Ocean Pub Dahme" <${process.env.GMAIL_USER}>`,
+      to: email,
+      subject: `Deine Anfrage bei Ocean Pub — ${thema}`,
+      html: confirmHtml,
+    });
 
     res.status(200).json({ message: 'Anfrage erfolgreich gesendet.' });
   })

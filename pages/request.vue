@@ -203,12 +203,6 @@ const resetForm = () => {
                   <span v-if="formErrors.datum" class="form-error">{{ formErrors.datum }}</span>
                 </div>
 
-                <!-- Ocean Bike specific: location -->
-                <div v-if="bookingType === 'bike'" class="form-group full-width">
-                  <label class="form-label" for="req-ort">Veranstaltungsort / Adresse</label>
-                  <input id="req-ort" v-model="form.firma" type="text" class="form-input" placeholder="Straße, Ort oder Beschreibung des Standorts" />
-                </div>
-
                 <div class="form-group form-group-flex full-width">
                   <label class="form-toggle">
                     <input type="checkbox" v-model="form.altDatum" />
