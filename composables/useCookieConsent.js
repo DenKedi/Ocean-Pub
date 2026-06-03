@@ -1,16 +1,20 @@
-import { ref } from 'vue'
+import { ref, onMounted } from 'vue'
 
 const STORAGE_KEY = 'ocean_pub_consent'
 const EXPIRY_MONTHS = 6
 const EMBED_KEYS = []
 
+// Module-level singleton — shared across all component instances on the client.
+// On the server each request gets a fresh module context, so this is safe.
+const consentGiven = ref(false)
+const embedsAllowed = ref(false)
+let initialized = false
+
 function readConsent() {
-  if (!import.meta.client) return null
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return null
     const parsed = JSON.parse(raw)
-    // Check expiry
     if (parsed.timestamp) {
       const expiry = new Date(parsed.timestamp)
       expiry.setMonth(expiry.getMonth() + EXPIRY_MONTHS)
@@ -25,14 +29,22 @@ function readConsent() {
   }
 }
 
+function init() {
+  if (initialized) return
+  initialized = true
+  const stored = readConsent()
+  if (stored !== null) {
+    consentGiven.value = true
+    embedsAllowed.value = stored.embeds === true
+  }
+}
+
 function writeConsent(embeds) {
-  if (!import.meta.client) return
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({
       embeds,
       timestamp: new Date().toISOString()
     }))
-    // Sync per-embed keys for backward compatibility
     const PREFIX = 'ocean_pub_embed_consent_'
     for (const key of EMBED_KEYS) {
       if (embeds) {
@@ -47,15 +59,10 @@ function writeConsent(embeds) {
 }
 
 export function useCookieConsent() {
-  const consentGiven = ref(false)
-  const embedsAllowed = ref(false)
-
-  // Re-read from localStorage
-  const stored = readConsent()
-  if (stored !== null) {
-    consentGiven.value = true
-    embedsAllowed.value = stored.embeds === true
-  }
+  // Read from localStorage after mount (client-only, avoids SSR hydration mismatch)
+  onMounted(() => {
+    init()
+  })
 
   function acceptAll() {
     writeConsent(true)
@@ -70,7 +77,6 @@ export function useCookieConsent() {
   }
 
   function revokeConsent() {
-    if (!import.meta.client) return
     try {
       localStorage.removeItem(STORAGE_KEY)
       const PREFIX = 'ocean_pub_embed_consent_'
