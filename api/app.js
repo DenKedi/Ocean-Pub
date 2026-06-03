@@ -95,12 +95,14 @@ async function logCurrentIP() {
 }
 
 // Connect to MongoDB
-mongoose.connect(process.env.MONGO_URI)
+mongoose.connect(process.env.MONGO_URI, {
+  serverSelectionTimeoutMS: 10000,
+})
   .then(() => logger.dbConnect())
   .catch(async (err) => {
     logger.dbError(err);
     await logCurrentIP();
-    process.exit(1);  // Exit process with failure
+    // Do not exit — Heroku dyno would crash loop. App will retry on next request.
   });
   mongoose.set("debug", false);
 
