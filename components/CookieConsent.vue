@@ -4,7 +4,7 @@
       <div class="cookie-inner">
         <div class="cookie-text">
           <p>
-            Wir nutzen Cookies und externe Dienste (Instagram). Mehr dazu in unserer <NuxtLink to="/datenschutz" class="cookie-link">Datenschutzerklärung</NuxtLink>.
+            Wir nutzen Cookies. Mehr dazu in unserer <RouterLink to="/datenschutz" class="cookie-link">Datenschutzerklärung</RouterLink>.
           </p>
         </div>
         <div class="cookie-actions">
@@ -17,6 +17,7 @@
 </template>
 
 <script setup>
+import { useCookieConsent } from '../composables/useCookieConsent.js'
 const { consentGiven, acceptAll, acceptEssentialOnly } = useCookieConsent()
 </script>
 
@@ -40,32 +41,30 @@ const { consentGiven, acceptAll, acceptEssentialOnly } = useCookieConsent()
   gap: 1.5rem;
   padding: 1.25rem 1.75rem;
   position: relative;
-  background: rgba(10, 10, 10, 0.92);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.5);
+  background: var(--beach-sand, #FBF3E4);
+  border: 1.5px solid rgba(22, 58, 78, 0.15);
+  border-radius: 20px;
+  box-shadow: 0 8px 32px rgba(22, 58, 78, 0.14), 0 2px 8px rgba(22, 58, 78, 0.08);
 }
 
 .cookie-text p {
   margin: 0;
   font-size: 0.82rem;
   line-height: 1.6;
-  color: rgba(255, 255, 255, 0.7);
-  font-weight: 300;
+  color: rgba(22, 58, 78, 0.75);
+  font-weight: 400;
   letter-spacing: 0.01em;
 }
 
 .cookie-link {
-  color: rgba(255, 255, 255, 0.9);
+  color: var(--beach-ocean, #2A7FA5);
   text-decoration: underline;
   text-underline-offset: 2px;
   transition: color 0.3s ease;
 }
 
 .cookie-link:hover {
-  color: #fff;
+  color: var(--beach-coral, #E8614D);
 }
 
 .cookie-actions {
@@ -78,35 +77,36 @@ const { consentGiven, acceptAll, acceptEssentialOnly } = useCookieConsent()
   padding: 0.6rem 1.25rem;
   border-radius: 50px;
   font-size: 0.78rem;
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: 0.04em;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
   white-space: nowrap;
   font-family: inherit;
 }
 
 .cookie-btn-primary {
-  background: rgba(255, 255, 255, 0.95);
-  color: #0a0a0a !important;
-  border: 1px solid rgba(255, 255, 255, 0.95);
+  background: var(--beach-coral, #E8614D);
+  color: #fff !important;
+  border: 1.5px solid var(--beach-coral, #E8614D);
 }
 
 .cookie-btn-primary:hover {
-  background: #fff;
+  background: #d44f3c;
+  border-color: #d44f3c;
   transform: translateY(-1px);
-  box-shadow: 0 4px 16px rgba(255, 255, 255, 0.15);
+  box-shadow: 0 4px 16px rgba(232, 97, 77, 0.3);
 }
 
 .cookie-btn-secondary {
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: var(--beach-navy, #163A4E) !important;
+  border: 1.5px solid rgba(22, 58, 78, 0.3);
 }
 
 .cookie-btn-secondary:hover {
-  color: rgba(255, 255, 255, 0.9);
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--beach-navy, #163A4E);
+  background: rgba(22, 58, 78, 0.06);
   transform: translateY(-1px);
 }
 

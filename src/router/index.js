@@ -1,115 +1,56 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomePage from '../views/HomePage.vue'
-import StoriesPage from '../views/StoriesPage.vue'
-import EventsPage from '../views/EventsPage.vue'
-import ParallaxPage from '../views/ParallaxPage.vue'
-import FriendsPage from '../views/FriendsPage.vue'
-import RequestPage from '../views/RequestPage.vue'
-import ImpressumPage from '../components/pages/ImpressumPage.vue'
-import DatenschutzPage from '../components/pages/DatenschutzPage.vue'
-import DrinksPage from '../views/DrinksPage.vue'
-import JobsPage from '../views/JobsPage.vue'
-import AdminLogin from '../views/admin/AdminLogin.vue'
-import AdminDashboard from '../views/admin/AdminDashboard.vue'
 
 const routes = [
   {
     path: '/',
-    name: 'Home',
-    component: HomePage
-  },
-  {
-    path: '/stories',
-    name: 'Stories',
-    component: StoriesPage
+    component: () => import('../../pages/index.vue'),
   },
   {
     path: '/events',
-    name: 'Events', 
-    component: EventsPage
-  },
-  {
-    path: '/parallax',
-    name: 'Parallax',
-    component: ParallaxPage
+    component: () => import('../../pages/events.vue'),
   },
   {
     path: '/drinks',
-    name: 'Drinks',
-    component: DrinksPage
-  },
-  {
-    path: '/friends',
-    name: 'Friends',
-    component: FriendsPage
+    component: () => import('../../pages/drinks.vue'),
   },
   {
     path: '/request',
-    name: 'Request',
-    component: RequestPage
-  },
-  {
-    path: '/jobs',
-    name: 'Jobs',
-    component: JobsPage
+    component: () => import('../../pages/request.vue'),
   },
   {
     path: '/impressum',
-    name: 'Impressum',
-    component: ImpressumPage
+    component: () => import('../../pages/impressum.vue'),
   },
   {
     path: '/datenschutz',
-    name: 'Datenschutz',
-    component: DatenschutzPage
+    component: () => import('../../pages/datenschutz.vue'),
   },
-  // Admin Routes
   {
     path: '/admin',
-    name: 'AdminLogin',
-    component: AdminLogin
+    component: () => import('../../pages/admin/index.vue'),
   },
   {
     path: '/admin/dashboard',
-    name: 'AdminDashboard',
-    component: AdminDashboard,
-    meta: { requiresAuth: true }
+    component: () => import('../../pages/admin/dashboard.vue'),
+    meta: { requiresAuth: true },
   },
-  // Catch-all redirect to home for non-existent pages
-  {
-    path: '/:pathMatch(.*)*',
-    redirect: '/'
-  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
   routes,
-  scrollBehavior(to, from, savedPosition) {
-    if (savedPosition) {
-      return savedPosition
-    } else if (to.hash) {
-      return {
-        el: to.hash,
-        behavior: 'smooth'
-      }
-    } else {
-      return { top: 0 }
-    }
-  }
+  scrollBehavior() {
+    return { top: 0 }
+  },
 })
 
-// Navigation Guard für geschützte Routes
-router.beforeEach((to, from, next) => {
+// Auth guard (replaces middleware/auth.js)
+router.beforeEach((to) => {
   if (to.meta.requiresAuth) {
     const token = localStorage.getItem('token')
     if (!token) {
-      next({ path: '/admin', query: { redirect: to.fullPath } })
-    } else {
-      next()
+      return { path: '/admin', query: { redirect: to.fullPath } }
     }
-  } else {
-    next()
   }
 })
 

@@ -1,6 +1,10 @@
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from "vue";
-import iconImage from "~/assets/icons/Pallas_Logo_III-cropped.svg";
+import { RouterLink } from 'vue-router'
+import { useAuth } from '../composables/useAuth.js'
+import BurgerMenu from '../components/BurgerMenu.vue'
+import CookieConsent from '../components/CookieConsent.vue'
+import FooterSection from '../components/sections/FooterSection.vue'
 
 const { state: authState } = useAuth();
 
@@ -77,9 +81,7 @@ const baseNavItems = [
   { path: '/', label: 'Home' },
   { path: '/drinks', label: 'Drinks' },
   { path: '/events', label: 'Events' },
-  { path: '/stories', label: 'Stories' },
-  { path: '/request', label: 'Request' },
-  { path: '/jobs', label: 'Jobs' }
+  { path: '/request', label: 'Request' }
 ];
 
 // Add Admin link if authenticated
@@ -104,7 +106,7 @@ const navItems = computed(() => {
     <!-- Desktop Navigation Bar -->
     <nav class="desktop-nav" :class="{ 'nav-hidden': isNavHidden, 'nav-dark': props.theme === 'dark', 'nav-light': props.theme === 'light' }">
       <div class="desktop-nav-content">
-        <NuxtLink 
+        <RouterLink 
           v-for="item in navItems" 
           :key="item.path"
           :to="item.path" 
@@ -112,7 +114,7 @@ const navItems = computed(() => {
         >
           {{ item.label }}
           <svg v-if="item.showArrow" class="nav-arrow" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-        </NuxtLink>
+        </RouterLink>
       </div>
     </nav>
 
@@ -124,34 +126,34 @@ const navItems = computed(() => {
     <!-- Navigation Overlay (Mobile) -->
     <nav class="main-nav" :class="{ 'nav-open': isMenuOpen }">
       <div class="nav-logo">
-        <img :src="iconImage" alt="Pallas Logo" class="logo-image" />
+        <img src="/icon.png" alt="Ocean Pub Logo" class="logo-image" />
       </div>
       
       <div class="nav-content">
-        <NuxtLink 
+        <RouterLink 
           v-for="item in navItems" 
           :key="item.path"
           :to="item.path" 
           @click="isMenuOpen = false" 
           class="nav-link"
         >
-          <span class="prefix">Pallas</span><span class="dot">.</span>{{ item.label }}
+          {{ item.label }}
           <svg v-if="item.showArrow" class="nav-arrow-mobile" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
-        </NuxtLink>
+        </RouterLink>
       </div>
 
       <div class="nav-footer">
-        <NuxtLink
+        <RouterLink
           to="/impressum"
           @click="isMenuOpen = false"
           class="footer-link"
-          >Impressum</NuxtLink
+          >Impressum</RouterLink
         >
-        <NuxtLink
+        <RouterLink
           to="/datenschutz"
           @click="isMenuOpen = false"
           class="footer-link"
-          >Datenschutz</NuxtLink
+          >Datenschutz</RouterLink
         >
       </div>
     </nav>
@@ -162,7 +164,7 @@ const navItems = computed(() => {
     </main>
 
     <!-- Footer -->
-    <SectionsFooterSection :theme="theme" />
+    <FooterSection :theme="theme" />
 
     <!-- Cookie Consent Banner -->
     <CookieConsent />
@@ -179,8 +181,8 @@ const navItems = computed(() => {
 }
 
 .layout-light {
-  background-color: #fff;
-  color: #1d1d1d;
+  background-color: #fbf1dd;
+  color: #163a4e;
 }
 
 .background-image {
@@ -227,10 +229,10 @@ const navItems = computed(() => {
 }
 
 .desktop-nav-link {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(22, 58, 78, 0.7);
   text-decoration: none;
   font-size: 0.75rem;
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   padding: 0.5rem 0;
@@ -244,27 +246,27 @@ const navItems = computed(() => {
   bottom: 0;
   left: 50%;
   width: 0;
-  height: 1px;
-  background: rgba(255, 255, 255, 0.5);
+  height: 2px;
+  background: #ff6f59;
   transition: all 0.3s ease;
   transform: translateX(-50%);
 }
 
 .desktop-nav-link:hover {
-  color: rgba(255, 255, 255, 1);
+  color: #ff6f59;
 }
 
 .desktop-nav-link:hover::after {
   width: 100%;
 }
 
-.desktop-nav-link.NuxtLink-exact-active {
-  color: rgba(255, 255, 255, 1);
+.desktop-nav-link.router-link-exact-active {
+  color: #163a4e;
 }
 
-.desktop-nav-link.NuxtLink-exact-active::after {
+.desktop-nav-link.router-link-exact-active::after {
   width: 100%;
-  background: rgba(255, 255, 255, 0.8);
+  background: #ff6f59;
 }
 
 .nav-arrow {
@@ -294,11 +296,11 @@ const navItems = computed(() => {
   color: rgba(0, 0, 0, 1) !important;
 }
 
-.desktop-nav.nav-light .desktop-nav-link.NuxtLink-exact-active {
+.desktop-nav.nav-light .desktop-nav-link.router-link-exact-active {
   color: rgba(0, 0, 0, 1) !important;
 }
 
-.desktop-nav.nav-light .desktop-nav-link.NuxtLink-exact-active::after {
+.desktop-nav.nav-light .desktop-nav-link.router-link-exact-active::after {
   background: rgba(0, 0, 0, 0.8);
 }
 
@@ -314,7 +316,7 @@ const navItems = computed(() => {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0, 0, 0, 1);
+  background: linear-gradient(180deg, #7fc9e3 0%, #aee3da 38%, #fbf1dd 100%);
   display: none;
   flex-direction: column;
   justify-content: space-between;
@@ -340,7 +342,6 @@ const navItems = computed(() => {
   width: 80px;
   height: auto;
   object-fit: contain;
-  filter: brightness(0) invert(1);
 }
 
 .nav-content {
@@ -356,48 +357,39 @@ const navItems = computed(() => {
   display: flex;
   gap: 2rem;
   padding: 0.5rem 0 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(22, 58, 78, 0.12);
 }
 
 .footer-link {
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(22, 58, 78, 0.55);
   text-decoration: none;
   font-size: 0.7rem;
-  font-weight: 200;
+  font-weight: 500;
   letter-spacing: 0.05em;
   transition: color 0.3s ease;
 }
 
 .footer-link:hover {
-  color: rgba(255, 255, 255, 0.6);
+  color: #ff6f59;
 }
 
 .nav-link {
-  color: white;
+  color: #163a4e;
   text-decoration: none;
-  font-size: 1.1rem;
-  font-weight: 300;
+  font-size: 1.4rem;
+  font-weight: 700;
   padding: 0.5rem 0;
   transition: all 0.3s ease;
   cursor: pointer;
   text-align: center;
   display: block;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.02em;
   border-bottom: 1px solid transparent;
   margin: 0.2rem 0;
 }
 
-.nav-link .prefix {
-  opacity: 0;
-  transition: opacity 0.8s ease-in-out !important;
-}
-
-.nav-link:hover .prefix {
-  opacity: 1;
-}
-
 .nav-link:hover {
-  color: #87ceeb;
+  color: #ff6f59;
 }
 
 .nav-arrow-mobile {
@@ -427,14 +419,9 @@ const navItems = computed(() => {
 /* ===== Mobile Optimization ===== */
 @media (max-width: 767px) {
   .nav-link {
-    font-size: 1rem;
+    font-size: 1.25rem;
     padding: 0.5rem 0;
     margin: 0.5rem 0;
-  }
-
-  .nav-link .prefix,
-  .nav-link .dot {
-    display: none;
   }
 
   .nav-content {

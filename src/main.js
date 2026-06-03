@@ -1,16 +1,11 @@
 import { createApp } from 'vue'
-import './assets/styles/style.css'
-import './assets/styles/themes.css'
-import App from './App.vue'
-import router from './router'
-import { initTheme } from './stores/themeStore.js'
-import { useAuth } from './stores/authStore.js'
+import { createPinia } from 'pinia'
+import App from '../app.vue'
+import router from './router/index.js'
+import '../assets/styles/style.css'
+import '../assets/styles/themes.css'
 
-// Theme System initialisieren
-initTheme()
-
-// Auth-Status aus localStorage wiederherstellen
-const { init: initAuth } = useAuth()
-initAuth()
-
-createApp(App).use(router).mount('#app')
+const app = createApp(App)
+app.use(createPinia())
+app.use(router)
+app.mount('#app')

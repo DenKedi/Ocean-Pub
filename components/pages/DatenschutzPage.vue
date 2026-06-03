@@ -6,7 +6,7 @@ import MainLayout from '~/layouts/MainLayout.vue'
   <MainLayout>
   <div class="legal-page">
     <div class="container">
-      <h1 class="page-title pallas-heading">Datenschutzerklärung</h1>
+      <h1 class="page-title brand-heading">Datenschutzerklärung</h1>
       
       <div class="legal-content">
         <section class="legal-section">
@@ -49,12 +49,12 @@ import MainLayout from '~/layouts/MainLayout.vue'
           <h3>Hinweis zur verantwortlichen Stelle</h3>
           <p>
             Die verantwortliche Stelle für die Datenverarbeitung auf dieser Website ist:<br><br>
-            <strong>PALLAS.WORLD UG (haftungsbeschränkt)</strong><br>
-            Neuer Pferdemarkt 13<br>
-            20359 Hamburg<br>
+            <strong>Ocean Pub Dahme</strong><br>
+            An d. Strandpromenade 20<br>
+            23747 Dahme<br>
             Deutschland<br><br>
-            Telefon: +49 40 98246368<br>
-            E-Mail: adjsavedmylife@pallas.world
+            Telefon: +49 15205714152<br>
+            E-Mail: info@ocean-bar.de
           </p>
           <p>
             Verantwortliche Stelle ist die natürliche oder juristische Person, die allein oder gemeinsam mit 
@@ -106,7 +106,7 @@ import MainLayout from '~/layouts/MainLayout.vue'
             <li>Recht auf Beschwerde bei einer Aufsichtsbehörde</li>
           </ul>
           <p>
-            Wenn Sie Fragen zum Datenschutz haben, schreiben Sie uns gerne unter adjsavedmylife@pallas.world
+            Wenn Sie Fragen zum Datenschutz haben, schreiben Sie uns gerne unter info@ocean-bar.de
           </p>
         </section>
 
@@ -137,43 +137,6 @@ import MainLayout from '~/layouts/MainLayout.vue'
           </p>
         </section>
 
-        <section class="legal-section">
-          <h2>7. Spotify-Einbettung</h2>
-          <p>
-            Auf dieser Website besteht die Möglichkeit, Inhalte des Musikdienstes Spotify einzubetten. 
-            Anbieter ist die Spotify AB, Regeringsgatan 19, 111 53 Stockholm, Schweden.
-          </p>
-          <p>
-            Die Spotify-Inhalte werden erst geladen, wenn Sie aktiv auf die Schaltfläche 
-            „Spotify-Inhalt laden" klicken (2-Klick-Lösung). Erst dann wird eine Verbindung zu den 
-            Servern von Spotify hergestellt und dabei Ihre IP-Adresse sowie Nutzungsdaten übertragen. 
-            Ihre Zustimmung wird im lokalen Speicher Ihres Browsers gespeichert, sodass Sie beim nächsten 
-            Besuch nicht erneut zustimmen müssen.
-          </p>
-          <p>
-            Weitere Informationen finden Sie in der 
-            <a href="https://www.spotify.com/de/legal/privacy-policy/" target="_blank" rel="noopener noreferrer">Datenschutzerklärung von Spotify</a>.
-          </p>
-        </section>
-
-        <section class="legal-section">
-          <h2>8. Instagram-Einbettung</h2>
-          <p>
-            Auf dieser Website werden Inhalte des sozialen Netzwerks Instagram eingebettet. 
-            Anbieter ist die Meta Platforms Ireland Limited, 4 Grand Canal Square, Dublin 2, Irland.
-          </p>
-          <p>
-            Die Instagram-Inhalte (Beiträge) werden erst geladen, wenn Sie aktiv auf die Schaltfläche 
-            „Instagram-Inhalte laden" klicken (2-Klick-Lösung). Erst dann wird eine Verbindung zu den 
-            Servern von Instagram/Meta hergestellt und dabei Ihre IP-Adresse sowie das Instagram-Einbettungs-Script 
-            übertragen. Ihre Zustimmung wird im lokalen Speicher Ihres Browsers gespeichert.
-          </p>
-          <p>
-            Weitere Informationen finden Sie im 
-            <a href="https://privacycenter.instagram.com/policy" target="_blank" rel="noopener noreferrer">Datenschutzcenter von Instagram</a>.
-          </p>
-        </section>
-
         <div class="legal-footer">
           <p><small>Stand: März 2026</small></p>
         </div>
@@ -186,8 +149,8 @@ import MainLayout from '~/layouts/MainLayout.vue'
 <style scoped>
 .legal-page {
   min-height: 100vh;
-  background: rgba(0, 0, 0, 0.9);
-  color: white;
+  background: var(--beach-sky, #EAF6FB);
+  color: var(--beach-navy, #163A4E);
   padding: 6rem 0 4rem;
 }
 
@@ -198,19 +161,20 @@ import MainLayout from '~/layouts/MainLayout.vue'
 }
 
 .page-title {
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  font-size: clamp(2rem, 5vw, 3rem);
   text-align: center;
   margin-bottom: 3rem;
-  font-weight: 300;
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--beach-navy, #163A4E);
 }
 
 .legal-content {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  background: var(--beach-sand, #FBF3E4);
+  border-radius: 20px;
   padding: 3rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1.5px solid rgba(22, 58, 78, 0.12);
+  box-shadow: 0 4px 24px rgba(22, 58, 78, 0.08);
 }
 
 .legal-section {
@@ -222,30 +186,30 @@ import MainLayout from '~/layouts/MainLayout.vue'
 }
 
 .legal-section h2 {
-  color: white;
-  font-size: 1.5rem;
-  font-weight: 600;
-  margin-bottom: 1.5rem;
+  color: var(--beach-navy, #163A4E);
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin-bottom: 1.25rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+  border-bottom: 2px solid var(--beach-coral, #E8614D);
 }
 
 .legal-section h3 {
-  color: white;
-  font-size: 1.2rem;
-  font-weight: 500;
-  margin: 1.5rem 0 1rem 0;
+  color: var(--beach-ocean, #2A7FA5);
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin: 1.5rem 0 0.75rem 0;
 }
 
 .legal-section p {
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.6;
+  color: rgba(22, 58, 78, 0.85);
+  line-height: 1.7;
   margin-bottom: 1rem;
 }
 
 .legal-section ul {
-  color: rgba(255, 255, 255, 0.85);
-  line-height: 1.6;
+  color: rgba(22, 58, 78, 0.85);
+  line-height: 1.7;
   margin: 1rem 0;
   padding-left: 1.5rem;
 }
@@ -257,21 +221,22 @@ import MainLayout from '~/layouts/MainLayout.vue'
 .legal-footer {
   margin-top: 3rem;
   padding-top: 2rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1.5px solid rgba(22, 58, 78, 0.12);
   text-align: center;
 }
 
 .legal-footer small {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(22, 58, 78, 0.55);
 }
 
 .legal-content a {
-  color: rgba(255, 255, 255, 0.7);
+  color: var(--beach-ocean, #2A7FA5);
   text-underline-offset: 3px;
+  transition: color 0.2s ease;
 }
 
 .legal-content a:hover {
-  color: #fff;
+  color: var(--beach-coral, #E8614D);
 }
 
 /* Mobile Optimization */
@@ -279,25 +244,25 @@ import MainLayout from '~/layouts/MainLayout.vue'
   .legal-page {
     padding: 4rem 0 2rem;
   }
-  
+
   .container {
     padding: 0 1rem;
   }
-  
+
   .legal-content {
-    padding: 2rem;
+    padding: 2rem 1.5rem;
   }
-  
+
   .page-title {
     margin-bottom: 2rem;
   }
-  
+
   .legal-section {
     margin-bottom: 2rem;
   }
-  
+
   .legal-section h2 {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
   }
   
   .legal-section h3 {

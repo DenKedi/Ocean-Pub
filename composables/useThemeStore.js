@@ -2,49 +2,53 @@ import { ref, reactive } from 'vue'
 
 // Theme Store for different design concepts
 export const useThemeStore = () => {
-  const currentTheme = ref('glassmorphism')
+  const currentTheme = ref('beach')
 
   const themes = reactive({
-    'glassmorphism': {
-      name: 'Glassmorphism',
-      description: 'Frosted glass effect with subtle transparency and blur',
+    'beach': {
+      name: 'Beach',
+      description: 'Bright airy Schleswig-Holstein beach-bar: sand, sky and sea-foam',
       colors: {
-        sectionBg: 'rgba(255, 255, 255, 0.05)',
-        containerBg: 'rgba(255, 255, 255, 0.1)',
-        itemBg: 'rgba(255, 255, 255, 0.08)',
-        textPrimary: '#ffffff',
-        textSecondary: 'rgba(255, 255, 255, 0.9)',
-        textMuted: 'rgba(255, 255, 255, 0.7)',
-        border: 'rgba(255, 255, 255, 0.18)',
-        borderHover: 'rgba(255, 255, 255, 0.35)',
+        sectionBg: '#fbf1dd',
+        containerBg: '#fffaf0',
+        itemBg: '#fff6e6',
+        textPrimary: '#163a4e',
+        textSecondary: '#1f4c63',
+        textMuted: '#4f6b78',
+        border: 'rgba(22, 58, 78, 0.12)',
+        borderHover: 'rgba(255, 111, 89, 0.55)',
+        accent: '#ff6f59',
+        accentSecondary: '#2f8fb0',
       },
       effects: {
-        backdropBlur: '20px',
-        borderRadius: '16px',
-        shadow: '0 8px 32px rgba(0, 0, 0, 0.37)',
-        shadowHover: '0 12px 48px rgba(0, 0, 0, 0.45)',
+        backdropBlur: '0px',
+        borderRadius: '22px',
+        shadow: '0 14px 34px rgba(22, 58, 78, 0.12)',
+        shadowHover: '0 20px 48px rgba(22, 58, 78, 0.18)',
         borderWidth: '1px',
       }
     },
 
-    'minimalist': {
-      name: 'Minimalist',
-      description: 'Clean and simple with ample white space',
+    'sunset': {
+      name: 'Sunset',
+      description: 'Warm dusk variant with deeper sand and golden hour tones',
       colors: {
-        sectionBg: 'rgba(0, 0, 0, 0.02)',
-        containerBg: 'rgba(0, 0, 0, 0.05)',
-        itemBg: 'rgba(0, 0, 0, 0.03)',
-        textPrimary: '#ffffff',
-        textSecondary: 'rgba(255, 255, 255, 0.85)',
-        textMuted: 'rgba(255, 255, 255, 0.6)',
-        border: 'rgba(255, 255, 255, 0.08)',
-        borderHover: 'rgba(255, 255, 255, 0.15)',
+        sectionBg: '#f6e3c8',
+        containerBg: '#fff1d9',
+        itemBg: '#ffe9c7',
+        textPrimary: '#163a4e',
+        textSecondary: '#1f4c63',
+        textMuted: '#5a6f78',
+        border: 'rgba(22, 58, 78, 0.14)',
+        borderHover: 'rgba(247, 179, 43, 0.6)',
+        accent: '#f7b32b',
+        accentSecondary: '#ff6f59',
       },
       effects: {
         backdropBlur: '0px',
-        borderRadius: '2px',
-        shadow: 'none',
-        shadowHover: '0 2px 8px rgba(255, 255, 255, 0.1)',
+        borderRadius: '22px',
+        shadow: '0 14px 34px rgba(22, 58, 78, 0.14)',
+        shadowHover: '0 20px 48px rgba(22, 58, 78, 0.2)',
         borderWidth: '1px',
       }
     }
@@ -71,12 +75,12 @@ export const useThemeStore = () => {
   }
 
   const initTheme = () => {
-    setTheme('glassmorphism')
+    setTheme('beach')
   }
 
   const saveTheme = (themeName) => {
     if (import.meta.client) {
-      localStorage.setItem('pallas-theme', themeName)
+      localStorage.setItem('oceanpub-theme', themeName)
     }
     setTheme(themeName)
   }

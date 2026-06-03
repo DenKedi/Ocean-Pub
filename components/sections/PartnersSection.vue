@@ -1,6 +1,6 @@
 <template>
   <section class="partners-section theme-section-bg">
-    <p class="partners-label theme-text-muted">Partners of Pallas</p>
+    <p class="partners-label theme-text-muted">Unsere Partner</p>
     <div class="ticker-wrapper">
       <div class="ticker-track">
         <div
@@ -25,12 +25,16 @@
 
 <script setup>
 const partners = [
-  { id: 1, name: 'Irie Daily',    logo: '/partners/IRIEDAILY.png' },
-  { id: 2, name: 'Birra Moretti', logo: '/partners/Birra_Moretti_Logo.png' },
-  { id: 3, name: 'Cramer Möbel',  logo: '/partners/Cramer_Logo.png', size: '28px' },
-  { id: 4, name: 'Typeholics',    logo: '/partners/typeholics.png' },
-  { id: 5, name: 'Slomo',         logo: '/partners/Slomo.png', size: '52px' },
-  { id: 6, name: 'Flor de Caña',  logo: '/partners/Flor_de_Cana_logo.png' },
+  { id: 1, name: 'Astra',      logo: '/partners/Astra_Logo.svg.png' },
+  { id: 2, name: 'Duckstein',  logo: '/partners/Duckstein_Logo.svg.png', size: '60px' },
+  { id: 3, name: 'Carlsberg',  logo: '/partners/carlsberg.png' },
+  { id: 4, name: 'Holsten',    logo: '/partners/holsten.png' },
+  { id: 5, name: 'Sommersby',  logo: '/partners/sommersby.png' },
+  { id: 6, name: '1664',       logo: '/partners/1664.png' },
+  { id: 7, name: 'Pitu',       logo: '/partners/Pitu.png' },
+  { id: 8, name: 'Aperol',     logo: '/partners/aperol.png' },
+  { id: 9, name: 'Lillet',          logo: '/partners/lillet.png' },
+  { id: 10, name: 'Jägermeister',   logo: '/partners/jaegermeister.png' },
 ]
 </script>
 
@@ -104,7 +108,6 @@ const partners = [
   height: 52px;
   width: auto;
   object-fit: contain;
-  filter: brightness(0) invert(1);
   opacity: 0.75;
   transition: opacity 0.3s ease;
 }

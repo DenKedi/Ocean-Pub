@@ -1,6 +1,4 @@
 <script setup>
-import pallasLogo from '~/assets/icons/Pallas_Logo_III.svg'
-
 const props = defineProps({
   theme: {
     type: String,
@@ -20,14 +18,14 @@ const scrollToSection = (sectionId) => {
   <footer class="footer theme-section-bg" :class="{ 'footer-light': theme === 'light' }">
     <div class="container">
       <div class="footer-content">
-        <!-- PALLAS Info Section -->
+        <!-- Ocean Pub Info Section -->
         <div class="footer-section brand-section">
-          <img :src="pallasLogo" alt="Pallas.world Logo" class="footer-logo" width="160" height="48" />
-          <p class="theme-text-secondary footer-slogan">Everybody Welcome</p>
+          <img src="/icon.png" alt="Ocean Pub Logo" class="footer-logo" width="160" height="48" />
+          <p class="theme-text-secondary footer-slogan">Die Beste Bar in Dahme</p>
           <div class="footer-address theme-text-secondary">
             <p>
-              <a href="https://maps.app.goo.gl/LvaqP8szwttLZEneA" target="_blank" rel="noopener noreferrer" class="footer-link theme-text-secondary">
-                Neuer Pferdemarkt 13, 20359 Hamburg, Germany
+              <a href="https://maps.app.goo.gl/WQWnzB3psH2qgkCy6" target="_blank" rel="noopener noreferrer" class="footer-link theme-text-secondary">
+                An d. Strandpromenade 20, 23747 Dahme
               </a>
             </p>
           </div>
@@ -37,8 +35,8 @@ const scrollToSection = (sectionId) => {
         <div class="footer-section contact-section">
           <h4 class="theme-text-primary">Kontakt</h4>
           <div class="contact-info">
-            <span class="contact-item theme-text-secondary">adjsavedmylife@pallas.world</span>
-            <a href="https://instagram.com/pallas_world" target="_blank" class="contact-item footer-link theme-text-secondary">@pallas_world</a>
+            <a href="mailto:info@ocean-bar.de" class="contact-item footer-link theme-text-secondary">info@ocean-bar.de</a>
+            <a href="tel:+4915205714152" class="contact-item footer-link theme-text-secondary">015205714152</a>
           </div>
         </div>
         
@@ -46,14 +44,14 @@ const scrollToSection = (sectionId) => {
         <div class="footer-section legal-section">
           <h4 class="theme-text-primary">Rechtliches</h4>
           <div class="footer-links">
-            <NuxtLink to="/impressum" class="footer-link theme-text-secondary">Impressum</NuxtLink>
-            <NuxtLink to="/datenschutz" class="footer-link theme-text-secondary">Datenschutz</NuxtLink>
+            <RouterLink to="/impressum" class="footer-link theme-text-secondary">Impressum</RouterLink>
+            <RouterLink to="/datenschutz" class="footer-link theme-text-secondary">Datenschutz</RouterLink>
           </div>
         </div>
       </div>
       
       <div class="footer-bottom"> 
-        <p class="theme-text-muted">&copy; 2026 PALLAS.WORLD. All rights reserved. | Made with ♥ by <a href="mailto:cedric@bleck.it">Cedric Bleck</a></p>
+        <p class="theme-text-muted">&copy; 2026 OCEAN PUB. All rights reserved. | Made with ♥ by <a href="mailto:cedric@bleck.it">Cedric Bleck</a></p>
       </div>
     </div>
   </footer>
@@ -101,7 +99,6 @@ const scrollToSection = (sectionId) => {
   height: 48px;
   width: auto;
   margin-bottom: 2rem;
-  filter: invert(1) brightness(100);
   transition: filter 0.3s ease;
 }
 
@@ -113,21 +110,21 @@ const scrollToSection = (sectionId) => {
   font-size: 1.1rem;
   margin-bottom: 1.2rem;
   margin-top: 0;
-  font-weight: 400;
-  letter-spacing: 0.1em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-family: 'Montserrat', sans-serif;
-  color: #ffffff !important;
+  font-family: var(--font-primary);
+  color: #163a4e !important;
 }
 
 .footer-section p {
   line-height: 1.8;
   margin: 0 0 0.8rem 0;
-  font-family: 'Source Sans 3', sans-serif;
-  font-weight: 400;
+  font-family: var(--font-text);
+  font-weight: 500;
   font-size: 0.95rem;
   letter-spacing: 0.01em;
-  color: #ffffff !important;
+  color: #1f4c63 !important;
 }
 
 .footer-section p:last-child {
@@ -160,17 +157,17 @@ const scrollToSection = (sectionId) => {
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.23, 1, 0.32, 1);
-  font-family: 'Source Sans 3', sans-serif;
-  font-weight: 400;
+  font-family: var(--font-text);
+  font-weight: 500;
   font-size: 0.95rem;
   letter-spacing: 0.02em;
   padding: 0.3rem 0;
   position: relative;
-  color: #ffffff !important;
+  color: #1f4c63 !important;
 }
 
 .footer-link:hover {
-  color: rgba(255, 255, 255, 0.7) !important;
+  color: #ff6f59 !important;
 }
 
 .footer-bottom {
@@ -180,25 +177,23 @@ const scrollToSection = (sectionId) => {
   position: relative;
 }
 
-/* Light Theme (Glassmorphism Override) */
+/* Light Theme Override */
 .footer-light.theme-section-bg {
-  background: rgba(255, 255, 255, 0.2) !important;
-  backdrop-filter: blur(8px) !important;
-  -webkit-backdrop-filter: blur(8px) !important;
-  border-top: 1px solid rgba(255, 255, 255, 0.6) !important;
-  box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.05);
+  background: #fffaf0 !important;
+  border-top: 1px solid rgba(22, 58, 78, 0.12) !important;
+  box-shadow: 0 -4px 30px rgba(22, 58, 78, 0.06);
 }
 
 .footer-light .theme-text-primary,
 .footer-light h4 {
-  color: #1d1d1d !important;
+  color: #163a4e !important;
 }
 
 .footer-light .theme-text-secondary,
 .footer-light p,
 .footer-light .contact-item,
 .footer-light .theme-text-muted {
-  color: rgba(0, 0, 0, 0.75) !important;
+  color: #1f4c63 !important;
 }
 
 .footer-light .footer-logo {
@@ -206,19 +201,19 @@ const scrollToSection = (sectionId) => {
 }
 
 .footer-light .footer-link {
-  color: rgba(0, 0, 0, 0.75) !important;
+  color: #1f4c63 !important;
 }
 
 .footer-light .footer-link:hover {
-  color: #2b2c77 !important;
+  color: #ff6f59 !important;
 }
 
 .footer-light .footer-bottom {
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid rgba(22, 58, 78, 0.1);
 }
 
 .footer-light .footer-address p {
-  color: rgba(0, 0, 0, 0.75) !important;
+  color: #1f4c63 !important;
 }
 
 .footer-bottom::before {

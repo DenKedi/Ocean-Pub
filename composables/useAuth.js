@@ -1,4 +1,5 @@
 import { reactive } from 'vue'
+import useApi from './useApi.js'
 
 const state = reactive({
   user: null,
@@ -11,7 +12,6 @@ export const useAuth = () => {
   const api = useApi()
 
   async function init() {
-    if (!import.meta.client) return
     const token = localStorage.getItem('token')
     if (token) {
       try {
@@ -51,16 +51,13 @@ export const useAuth = () => {
   }
 
   function logout() {
-    if (import.meta.client) {
-      localStorage.removeItem('token')
-    }
+    localStorage.removeItem('token')
     state.user = null
     state.isAuthenticated = false
     state.error = null
   }
 
   function isLoggedIn() {
-    if (!import.meta.client) return false
     return state.isAuthenticated || !!localStorage.getItem('token')
   }
 

@@ -3,8 +3,7 @@
  * Handles both development and production environments
  */
 export const useImageUrl = () => {
-  const config = useRuntimeConfig()
-  const API_URL = config.public.apiUrl
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5051'
 
   const getImageUrl = (imagePath) => {
     if (!imagePath) return null

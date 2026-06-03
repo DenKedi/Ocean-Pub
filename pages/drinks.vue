@@ -1,29 +1,16 @@
 <script setup>
-import { ref, onMounted, onUnmounted, computed, defineAsyncComponent } from 'vue'
+import { ref, onMounted, defineAsyncComponent } from 'vue'
+import DefaultLayout from '../layouts/default.vue'
 
 const VuePdfEmbed = defineAsyncComponent(() => import('vue-pdf-embed'))
-import defaultPdf from '~/assets/Karten/drinks-menu.pdf?url'
+const defaultPdf = '/drinks/Ocean%20Bar%20Karte.pdf'
 
-let QRCode
-if (import.meta.client) {
-  QRCode = (await import('qrcode')).default
-}
+let QRCode = null
 
-const config = useRuntimeConfig()
-const API_BASE = config.public.apiBaseUrl
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5051/api'
 
-// SEO
-useSeoMeta({
-  title: 'Getränkekarte | PALLAS.WORLD',
-  ogTitle: 'Getränkekarte | PALLAS.WORLD',
-  description: 'Die Getränkekarte der PALLAS Bar in der Hamburger Schanze. Hochwertige Drinks und ausgewählte Cocktails.',
-  ogDescription: 'Die Getränkekarte der PALLAS Bar in der Hamburger Schanze.',
-  ogImage: 'https://pallas.world/og-drinks.jpg',
-  ogUrl: 'https://pallas.world/drinks',
-})
-
-useHead({
-  link: [{ rel: 'canonical', href: 'https://pallas.world/drinks' }],
+onMounted(() => {
+  document.title = 'Getränkekarte | PALLAS.WORLD'
 })
 
 const pdfUrl = ref(defaultPdf)
@@ -34,50 +21,17 @@ const pageCount = ref(0)
 const currentPage = ref(null)
 
 const isMobile = ref(false)
-
-const drinkImages = Array.from({ length: 20 }, (_, i) => `/drinks/${i + 1}.webp`)
-
-const leftCol = ref(null)
-const rightCol = ref(null)
-let rafId = null
 const usingFallback = ref(false)
-
-function updateParallax() {
-  const col = leftCol.value
-  if (!col) return
-  const pageH = document.documentElement.scrollHeight - window.innerHeight
-  const colH = col.scrollHeight - window.innerHeight
-  if (colH <= 0 || pageH <= 0) return
-  // Images shorter than page → positive translateY pushes them back down = slower scroll
-  const speed = colH / pageH
-  const ty = window.scrollY * (1 - speed)
-  col.style.transform = `translateY(${ty}px)`
-  if (rightCol.value) {
-    rightCol.value.style.transform = `scaleX(-1) translateY(${ty}px)`
-  }
-}
-
-function onScroll() {
-  if (rafId) return
-  rafId = requestAnimationFrame(() => {
-    updateParallax()
-    rafId = null
-  })
-}
 
 onMounted(async () => {
   isMobile.value = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
-  window.addEventListener('scroll', onScroll, { passive: true })
-  // initial position after images load
-  setTimeout(updateParallax, 200)
   try {
     const res = await fetch(`${API_BASE}/settings`)
     if (res.ok) {
       const data = await res.json()
       if (data.drinksPdfUrl) {
         directUrl.value = data.drinksPdfUrl
-        // Use proxy to avoid CORS issues with R2 CDN
-        pdfUrl.value = `${API_BASE}/settings/drinks-pdf`
+        pdfUrl.value = data.drinksPdfUrl
         console.log('Karte geladen aus R2:', data.drinksPdfUrl)
       }
     }
@@ -86,11 +40,6 @@ onMounted(async () => {
   } finally {
     loading.value = false
   }
-})
-
-onUnmounted(() => {
-  window.removeEventListener('scroll', onScroll)
-  if (rafId) cancelAnimationFrame(rafId)
 })
 
 function onPdfLoaded(pdf) {
@@ -112,6 +61,9 @@ const qrDataUrl = ref('')
 const drinksPageUrl = 'https://pallas.world/drinks'
 
 async function openQrModal() {
+  if (!QRCode) {
+    QRCode = (await import('qrcode')).default
+  }
   qrDataUrl.value = await QRCode.toDataURL(drinksPageUrl, {
     width: 280,
     margin: 2,
@@ -122,35 +74,9 @@ async function openQrModal() {
 </script>
 
 <template>
-  <NuxtLayout>
+  <DefaultLayout>
     <div class="drinks-page">
-      <!-- Left image column -->
-      <div ref="leftCol" class="drinks-col drinks-col--left" aria-hidden="true">
-        <img
-          v-for="(img, idx) in drinkImages"
-          :key="idx"
-          :src="img"
-          alt=""
-          class="drinks-col-img"
-          :loading="idx === 0 ? 'eager' : 'lazy'"
-          :fetchpriority="idx === 0 ? 'high' : 'auto'"
-        />
-      </div>
-
-      <!-- Right column: mirrored + blurred -->
-      <div ref="rightCol" class="drinks-col drinks-col--right" aria-hidden="true">
-        <img
-          v-for="(img, idx) in drinkImages"
-          :key="idx"
-          :src="img"
-          alt=""
-          class="drinks-col-img"
-          :loading="idx === 0 ? 'eager' : 'lazy'"
-          :fetchpriority="idx === 0 ? 'high' : 'auto'"
-        />
-      </div>
-
-      <!-- QR Modal -->
+    <!-- QR Modal -->
       <Teleport to="body">
         <div v-if="showQrModal" class="qr-overlay" @click.self="showQrModal = false">
           <div class="qr-modal">
@@ -178,7 +104,6 @@ async function openQrModal() {
               @loading-failed="onPdfError"
             />
             </ClientOnly>
-            <h1 class="pdf-title">Pallas.Drinks</h1>
             <div class="pdf-corner-group">
               <button class="pdf-corner-btn" @click="openQrModal" title="QR Code anzeigen">
                 <img src="/qr-code-outline.svg" alt="" aria-hidden="true" class="pdf-corner-icon pdf-corner-icon--qr" />
@@ -199,7 +124,7 @@ async function openQrModal() {
         </template>
       </div>
     </div>
-  </NuxtLayout>
+  </DefaultLayout>
 </template>
 
 <style scoped>
@@ -211,37 +136,6 @@ async function openQrModal() {
   padding-top: 0;
   position: relative;
   overflow: hidden;
-}
-
-/* ── Side image columns ── */
-.drinks-col {
-  position: absolute;
-  top: 0;
-  width: 22vw;
-  pointer-events: none;
-  z-index: 0;
-  display: flex;
-  flex-direction: column;
-  will-change: transform;
-}
-
-.drinks-col--left {
-  left: 0;
-  mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.6) 60%, transparent 100%);
-}
-
-.drinks-col--right {
-  right: 0;
-  transform: scaleX(-1);
-  filter: blur(28px) saturate(1.4) brightness(0.85);
-  mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
-  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,0.5) 50%, transparent 100%);
-}
-
-.drinks-col-img {
-  width: 100%;
-  display: block;
 }
 
 /* ── PDF content ── */

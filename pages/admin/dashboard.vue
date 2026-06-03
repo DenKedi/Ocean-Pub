@@ -1,5 +1,8 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuth } from '../../composables/useAuth.js'
+import useApi from '../../composables/useApi.js'
 
 import { Cropper } from 'vue-advanced-cropper'
 import 'vue-advanced-cropper/dist/style.css'
@@ -7,13 +10,8 @@ import 'vue-advanced-cropper/dist/style.css'
 const router = useRouter()
 const { state: authState, logout } = useAuth()
 const api = useApi()
-const config = useRuntimeConfig()
-const API_URL = config.public.apiUrl
-const API_BASE = config.public.apiBaseUrl
-
-definePageMeta({
-  middleware: 'auth',
-})
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5051'
+const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5051/api'
 
 // State
 const events = ref([])
@@ -224,7 +222,7 @@ const pastEvents = computed(() => {
 
 const previewData = computed(() => {
   const cat = categories.value.find(c => c._id === form.value.category)
-  const image = eventImagePreview.value || (cat?.defaultImageUrl ? getFullImageUrl(cat.defaultImageUrl) : null) || '/images/placeholders/event_default_bw.webp'
+  const image = eventImagePreview.value || (cat?.defaultImageUrl ? getFullImageUrl(cat.defaultImageUrl) : null) || '/images/placeholders/Ocean_Bar_Icon.png'
   return {
     title: form.value.title || 'Event-Titel',
     description: form.value.description,
@@ -1087,9 +1085,9 @@ async function deleteJob(job) {
     <!-- Sidebar -->
     <aside class="sidebar">
       <div class="sidebar-header">
-        <NuxtLink to="/" class="logo-link">
-          <img src="~/assets/icons/Pallas_Logo_III.svg" alt="Pallas Logo" class="logo" />
-        </NuxtLink>
+        <RouterLink to="/" class="logo-link">
+          <span class="sidebar-brand">Ocean Pub</span>
+        </RouterLink>
         <button @click="toggleMobileMenu" class="hamburger-btn">
           <span></span>
           <span></span>
@@ -1102,23 +1100,8 @@ async function deleteJob(job) {
           <a href="#" class="nav-item" :class="{ active: activeSection === 'events' }" @click.prevent="activeSection = 'events'; toggleMobileMenu()">
             Events
           </a>
-          <a href="#" class="nav-item" :class="{ active: activeSection === 'rooms' }" @click.prevent="activeSection = 'rooms'; toggleMobileMenu()">
-            Räume
-          </a>
-          <a href="#" class="nav-item" :class="{ active: activeSection === 'users' }" @click.prevent="activeSection = 'users'; toggleMobileMenu()">
-            Benutzer
-          </a>
-          <a href="#" class="nav-item" :class="{ active: activeSection === 'instagram' }" @click.prevent="activeSection = 'instagram'; toggleMobileMenu()">
-            Instagram
-          </a>
-          <a href="#" class="nav-item" :class="{ active: activeSection === 'jobs' }" @click.prevent="activeSection = 'jobs'; toggleMobileMenu()">
-            Jobs
-          </a>
           <a href="#" class="nav-item" :class="{ active: activeSection === 'drinks' }" @click.prevent="activeSection = 'drinks'; toggleMobileMenu()">
             Drinks
-          </a>
-          <a href="#" class="nav-item" :class="{ active: activeSection === 'analytics' }" @click.prevent="activeSection = 'analytics'; fetchAnalytics(); toggleMobileMenu()">
-            Analytics
           </a>
         </nav>
 
@@ -1267,7 +1250,7 @@ async function deleteJob(job) {
         <section v-if="activeSection === 'users'" class="section">
           <div class="section-header">
             <h2>Admins</h2>
-            <button @click="showUserModal = true" class="btn-primary">+ Admin erstellen</button>
+            <button v-if="authState.user?.isSuperAdmin" @click="showUserModal = true" class="btn-primary">+ Admin erstellen</button>
           </div>
 
           <div v-if="usersLoading" class="loading-state"><div class="spinner"></div></div>
@@ -1276,6 +1259,7 @@ async function deleteJob(job) {
               <div class="user-info-block">
                 <div class="user-row-name-line">
                   <span class="user-row-name">{{ u.name || '–' }}</span>
+                  <span v-if="u.isSuperAdmin" class="user-badge-superadmin">Super Admin</span>
                 </div>
                 <span class="user-row-email">{{ u.email }}</span>
               </div>
@@ -1301,7 +1285,7 @@ async function deleteJob(job) {
         <!-- Rooms Section -->
         <section v-if="activeSection === 'rooms'" class="section">
           <div class="section-header">
-            <h2>Räume &amp; Hotspots</h2>
+            <h2>Räume</h2>
           </div>
 
           <div v-if="roomsLoading" class="loading-state"><div class="spinner"></div></div>
@@ -2036,7 +2020,7 @@ async function deleteJob(job) {
                     :src="previewData.image"
                     alt="Vorschau"
                     class="preview-image"
-                    @error="$event.target.src = '/images/placeholders/event_default_bw.webp'"
+                    @error="$event.target.src = '/images/placeholders/Ocean_Bar_Icon.png'"
                   />
                   <div
                     v-if="previewData.category"
@@ -2197,8 +2181,8 @@ async function deleteJob(job) {
   display: flex;
   height: 100vh;
   overflow: hidden;
-  background: #0f0f1a;
-  color: #fff;
+  background: #EAF6FB;
+  color: #163A4E;
 }
 
 /* Sidebar */
@@ -2206,8 +2190,8 @@ async function deleteJob(job) {
   width: 260px;
   height: 100%;
   flex-shrink: 0;
-  background: rgba(255, 255, 255, 0.03);
-  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(22, 58, 78, 0.02);
+  border-right: 1px solid rgba(22, 58, 78, 0.07);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -2216,7 +2200,7 @@ async function deleteJob(job) {
 .sidebar-header {
   height: 90px;
   padding: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(22, 58, 78, 0.07);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -2231,14 +2215,15 @@ async function deleteJob(job) {
 }
 
 .logo-link:hover {
-  opacity: 0.8;
+  opacity: 0.75;
 }
 
-.sidebar-header .logo {
-  width: 100%;
-  max-width: 200px;
-  height: auto;
-  filter: brightness(0) invert(1);
+.sidebar-brand {
+  font-family: var(--font-primary, 'Nunito', sans-serif);
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--beach-navy, #163A4E) !important;
+  letter-spacing: -0.5px;
 }
 
 .hamburger-btn {
@@ -2258,7 +2243,7 @@ async function deleteJob(job) {
 .hamburger-btn span {
   width: 24px;
   height: 2px;
-  background: #fff;
+  background: #163A4E;
   transition: all 0.3s ease;
 }
 
@@ -2278,24 +2263,24 @@ async function deleteJob(job) {
   align-items: center;
   gap: 0.75rem;
   padding: 0.875rem 1.5rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(22, 58, 78, 0.65);
   text-decoration: none;
   transition: all 0.2s ease;
 }
 
 .nav-item:hover {
-  background: rgba(255, 255, 255, 0.05);
-  color: #fff;
+  background: rgba(22, 58, 78, 0.04);
+  color: #163A4E;
 }
 
 .nav-item.active {
-  background: rgba(100, 108, 255, 0.15);
-  color: #646cff;
+  background: rgba(42, 127, 165, 0.15);
+  color: #2A7FA5;
 }
 
 .sidebar-footer {
   padding: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(22, 58, 78, 0.07);
 }
 
 .user-info {
@@ -2304,15 +2289,15 @@ async function deleteJob(job) {
 
 .user-name {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(22, 58, 78, 0.75);
 }
 
 .logout-btn {
   width: 100%;
   padding: 0.5rem;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  color: rgba(255, 255, 255, 0.7);
+  border: 1px solid rgba(22, 58, 78, 0.18);
+  color: rgba(22, 58, 78, 0.65) !important;
   border-radius: 6px;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -2321,7 +2306,7 @@ async function deleteJob(job) {
 .logout-btn:hover {
   background: rgba(255, 82, 82, 0.15);
   border-color: #ff5252;
-  color: #ff5252;
+  color: #ff5252 !important;
 }
 
 /* Main Content */
@@ -2340,7 +2325,7 @@ async function deleteJob(job) {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem 2rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(22, 58, 78, 0.07);
   flex-shrink: 0;
 }
 
@@ -2362,8 +2347,8 @@ async function deleteJob(job) {
 }
 
 .stat-card {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(22, 58, 78, 0.04);
+  border: 1px solid rgba(22, 58, 78, 0.07);
   border-radius: 12px;
   padding: 1.5rem;
   display: flex;
@@ -2374,12 +2359,12 @@ async function deleteJob(job) {
 .stat-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #646cff;
+  color: #2A7FA5;
 }
 
 .stat-label {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(22, 58, 78, 0.55);
 }
 
 /* Section */
@@ -2410,27 +2395,27 @@ async function deleteJob(job) {
 
 .sort-controls label {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(22, 58, 78, 0.65);
 }
 
 .sort-select {
   padding: 0.5rem 3rem 0.5rem 0.75rem;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(22, 58, 78, 0.04);
+  border: 1px solid rgba(22, 58, 78, 0.13);
   border-radius: 6px;
-  color: #fff;
+  color: #163A4E;
   font-size: 0.9rem;
   cursor: pointer;
   transition: all 0.3s ease;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23163a4e' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
 }
 
 .sort-select:hover {
-  background: rgba(255, 255, 255, 0.08);
-  border-color: rgba(255, 255, 255, 0.25);
+  background: rgba(22, 58, 78, 0.07);
+  border-color: rgba(22, 58, 78, 0.22);
 }
 
 .sort-btn {
@@ -2444,8 +2429,8 @@ async function deleteJob(job) {
 
 /* Table */
 .events-table {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(22, 58, 78, 0.02);
+  border: 1px solid rgba(22, 58, 78, 0.07);
   border-radius: 12px;
   overflow: visible;
 }
@@ -2462,7 +2447,7 @@ async function deleteJob(job) {
   align-items: center;
   margin-top: 2.5rem;
   padding: 1rem 0 0.75rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(22, 58, 78, 0.06);
   cursor: pointer;
   user-select: none;
 }
@@ -2503,12 +2488,12 @@ async function deleteJob(job) {
 }
 
 .events-table th {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(22, 58, 78, 0.04);
   font-weight: 600;
   font-size: 0.85rem;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(22, 58, 78, 0.65);
 }
 
 .events-table th.sortable {
@@ -2518,20 +2503,20 @@ async function deleteJob(job) {
 }
 
 .events-table th.sortable:hover {
-  background: rgba(255, 255, 255, 0.08);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(22, 58, 78, 0.07);
+  color: rgba(22, 58, 78, 0.85);
 }
 
 .events-table th.sortable.active {
-  color: #646cff;
+  color: #2A7FA5;
 }
 
 .events-table tr:not(:last-child) td {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(22, 58, 78, 0.05);
 }
 
 .events-table tr:hover td {
-  background: rgba(255, 255, 255, 0.03);
+  background: rgba(22, 58, 78, 0.02);
 }
 
 .category-badge {
@@ -2561,7 +2546,7 @@ async function deleteJob(job) {
 .btn-context-menu {
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(22, 58, 78, 0.55);
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.25rem 0.5rem;
@@ -2572,16 +2557,16 @@ async function deleteJob(job) {
 }
 
 .btn-context-menu:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(22, 58, 78, 0.08);
+  color: rgba(22, 58, 78, 0.85);
 }
 
 .context-menu {
   position: absolute;
   right: 0;
   top: calc(100% + 0.25rem);
-  background: #1a1a2e;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: #ffffff;
+  border: 1px solid rgba(22, 58, 78, 0.13);
   border-radius: 8px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
   z-index: 9999;
@@ -2605,7 +2590,7 @@ async function deleteJob(job) {
   width: 100%;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(22, 58, 78, 0.85);
   padding: 0.75rem 1rem;
   text-align: left;
   cursor: pointer;
@@ -2614,7 +2599,7 @@ async function deleteJob(job) {
 }
 
 .context-menu-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(22, 58, 78, 0.08);
 }
 
 .context-menu-item.danger {
@@ -2627,8 +2612,8 @@ async function deleteJob(job) {
 
 /* Buttons */
 .btn-primary {
-  background: linear-gradient(135deg, #646cff, #535bf2);
-  color: #fff;
+  background: linear-gradient(135deg, #2A7FA5, #206e92);
+  color: #fff !important;
   border: none;
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
@@ -2639,7 +2624,7 @@ async function deleteJob(job) {
 
 .btn-primary:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(42, 127, 165, 0.3);
 }
 
 .btn-primary:disabled {
@@ -2649,8 +2634,8 @@ async function deleteJob(job) {
 
 .btn-secondary {
   background: transparent;
-  color: rgba(255, 255, 255, 0.8);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(22, 58, 78, 0.75);
+  border: 1px solid rgba(22, 58, 78, 0.18);
   padding: 0.75rem 1.5rem;
   border-radius: 8px;
   font-weight: 500;
@@ -2659,7 +2644,7 @@ async function deleteJob(job) {
 }
 
 .btn-secondary:hover {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(22, 58, 78, 0.04);
 }
 
 .btn-icon {
@@ -2673,7 +2658,7 @@ async function deleteJob(job) {
 }
 
 .btn-icon:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(22, 58, 78, 0.08);
 }
 
 .btn-danger:hover {
@@ -2698,14 +2683,14 @@ async function deleteJob(job) {
   align-items: center;
   justify-content: center;
   padding: 4rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(22, 58, 78, 0.55);
 }
 
 .spinner {
   width: 40px;
   height: 40px;
-  border: 3px solid rgba(255, 255, 255, 0.1);
-  border-top-color: #646cff;
+  border: 3px solid rgba(22, 58, 78, 0.08);
+  border-top-color: #2A7FA5;
   border-radius: 50%;
   animation: spin 1s linear infinite;
   margin-bottom: 1rem;
@@ -2719,7 +2704,7 @@ async function deleteJob(job) {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgba(22, 58, 78, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2728,8 +2713,8 @@ async function deleteJob(job) {
 }
 
 .modal {
-  background: #1a1a2e;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #ffffff;
+  border: 1px solid rgba(22, 58, 78, 0.08);
   border-radius: 16px;
   width: 100%;
   max-width: 600px;
@@ -2755,7 +2740,7 @@ async function deleteJob(job) {
   flex: 1;
   min-width: 0;
   overflow-y: auto;
-  border-right: 1px solid rgba(255, 255, 255, 0.07);
+  border-right: 1px solid rgba(22, 58, 78, 0.06);
 }
 
 .modal-preview-col {
@@ -2763,7 +2748,7 @@ async function deleteJob(job) {
   flex-shrink: 0;
   padding: 1.25rem 1.25rem 1.5rem;
   overflow-y: auto;
-  background: #13131f;
+  background: #f8f5ef;
 }
 
 .preview-label {
@@ -2776,7 +2761,7 @@ async function deleteJob(job) {
 
 /* Preview card — mirrors EventsPage .event-card */
 .preview-event-card {
-  background: #111;
+  background: #f0f4f8;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -2797,7 +2782,7 @@ async function deleteJob(job) {
   width: 100%; height: 100%;
   object-fit: cover;
   filter: grayscale(20%) contrast(1.1);
-  background: #1a1a1a;
+  background: #e0ddd4;
 }
 
 .preview-category-badge {
@@ -2838,7 +2823,7 @@ async function deleteJob(job) {
   letter-spacing: 0.05em;
   text-transform: uppercase;
   line-height: 1.3;
-  color: #fff;
+  color: #163A4E;
 }
 
 .preview-meta {
@@ -2883,7 +2868,7 @@ async function deleteJob(job) {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #fff;
+  color: #163A4E;
 }
 
 .preview-price.free {
@@ -2908,7 +2893,7 @@ async function deleteJob(job) {
   display: none;
   background: rgba(255,255,255,0.06);
   border: 1px solid rgba(255,255,255,0.12);
-  color: #fff;
+  color: #163A4E;
   font-size: 0.8rem;
   padding: 0.35rem 0.85rem;
   border-radius: 6px;
@@ -2934,7 +2919,7 @@ async function deleteJob(job) {
   justify-content: space-between;
   align-items: center;
   padding: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(22, 58, 78, 0.07);
 }
 
 .modal-header h2 {
@@ -2944,7 +2929,7 @@ async function deleteJob(job) {
 .close-btn {
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(22, 58, 78, 0.55);
   font-size: 1.5rem;
   cursor: pointer;
   padding: 0.5rem;
@@ -2952,7 +2937,7 @@ async function deleteJob(job) {
 }
 
 .close-btn:hover {
-  color: #fff;
+  color: #163A4E;
 }
 
 .modal-form {
@@ -2976,17 +2961,17 @@ async function deleteJob(job) {
 
 .form-group label {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(22, 58, 78, 0.75);
 }
 
 .form-group input,
 .form-group select,
 .form-group textarea {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  background: rgba(22, 58, 78, 0.04);
+  border: 1px solid rgba(22, 58, 78, 0.13);
   border-radius: 8px;
   padding: 0.75rem 1rem;
-  color: #fff;
+  color: #163A4E;
   font-size: 0.95rem;
 }
 
@@ -2994,7 +2979,7 @@ async function deleteJob(job) {
 .form-group select:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #646cff;
+  border-color: #2A7FA5;
 }
 
 .form-group textarea {
@@ -3029,8 +3014,8 @@ async function deleteJob(job) {
 }
 
 .add-btn {
-  background: linear-gradient(135deg, #646cff, #535bf2);
-  color: #fff;
+  background: linear-gradient(135deg, #2A7FA5, #206e92);
+  color: #163A4E;
   border: none;
   border-radius: 8px;
   width: 40px;
@@ -3045,7 +3030,7 @@ async function deleteJob(job) {
 
 .add-btn:hover {
   transform: scale(1.05);
-  box-shadow: 0 4px 15px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(42, 127, 165, 0.3);
 }
 
 /* Color Picker */
@@ -3059,7 +3044,7 @@ async function deleteJob(job) {
   width: 60px;
   height: 40px;
   padding: 0;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(22, 58, 78, 0.13);
   border-radius: 8px;
   cursor: pointer;
   background: transparent;
@@ -3091,8 +3076,8 @@ async function deleteJob(job) {
 }
 
 .file-input::file-selector-button {
-  background: linear-gradient(135deg, #646cff, #535bf2);
-  color: #fff;
+  background: linear-gradient(135deg, #2A7FA5, #206e92);
+  color: #163A4E;
   border: none;
   border-radius: 6px;
   padding: 0.5rem 1rem;
@@ -3103,12 +3088,12 @@ async function deleteJob(job) {
 
 .file-input::file-selector-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 4px 10px rgba(42, 127, 165, 0.3);
 }
 
 .image-preview {
   margin-top: 0.75rem;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(22, 58, 78, 0.13);
   border-radius: 8px;
   overflow: hidden;
   max-width: 400px;
@@ -3128,8 +3113,8 @@ async function deleteJob(job) {
   bottom: 0;
   left: 0;
   right: 0;
-  background: rgba(0, 0, 0, 0.7);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(22, 58, 78, 0.5);
+  color: rgba(22, 58, 78, 0.85);
   padding: 0.5rem;
   font-size: 0.75rem;
   text-align: center;
@@ -3183,18 +3168,18 @@ async function deleteJob(job) {
 
 .custom-badge {
   background: rgba(76, 175, 80, 0.9);
-  color: #fff;
+  color: #163A4E;
   border: 1px solid rgba(76, 175, 80, 1);
 }
 
 .image-placeholder {
-  border: 2px dashed rgba(255, 255, 255, 0.2);
+  border: 2px dashed rgba(22, 58, 78, 0.18);
   border-radius: 12px;
   padding: 3rem 2rem;
   text-align: center;
   color: rgba(255, 255, 255, 0.5);
   max-width: 400px;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(22, 58, 78, 0.06);
 }
 
 .image-upload-actions {
@@ -3205,7 +3190,7 @@ async function deleteJob(job) {
 
 .form-help {
   display: block;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(22, 58, 78, 0.55);
   font-size: 0.85rem;
   margin-top: 0.25rem;
 }
@@ -3224,7 +3209,7 @@ async function deleteJob(job) {
     height: auto;
     flex-shrink: 0;
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(22, 58, 78, 0.07);
   }
 
   .sidebar-header {
@@ -3261,7 +3246,7 @@ async function deleteJob(job) {
 
   .nav-item.active {
     border-right: none;
-    border-left: 3px solid #646cff;
+    border-left: 3px solid #2A7FA5;
   }
 
   .sidebar-footer {
@@ -3399,7 +3384,7 @@ async function deleteJob(job) {
 
   .modal-with-preview .modal-form {
     border-right: none;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    border-bottom: 1px solid rgba(22, 58, 78, 0.06);
     max-height: 55dvh;
   }
 
@@ -3458,8 +3443,8 @@ async function deleteJob(job) {
 }
 
 .rooms-spot-list {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(22, 58, 78, 0.02);
+  border: 1px solid rgba(22, 58, 78, 0.07);
   border-radius: 10px;
   padding: 1.25rem;
   display: flex;
@@ -3477,14 +3462,14 @@ async function deleteJob(job) {
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(22, 58, 78, 0.38);
   margin: 0 0 0.25rem;
 }
 
 .rooms-spot-btn {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.75);
+  background: rgba(22, 58, 78, 0.04);
+  border: 1px solid rgba(22, 58, 78, 0.08);
+  color: rgba(22, 58, 78, 0.70);
   border-radius: 6px;
   padding: 0.55rem 1rem;
   text-align: left;
@@ -3494,19 +3479,19 @@ async function deleteJob(job) {
 }
 
 .rooms-spot-btn:hover {
-  background: rgba(255, 255, 255, 0.09);
-  color: #fff;
+  background: rgba(22, 58, 78, 0.07);
+  color: #163A4E;
 }
 
 .rooms-spot-btn.active {
-  background: rgba(100, 108, 255, 0.15);
-  border-color: rgba(100, 108, 255, 0.5);
-  color: #fff;
+  background: rgba(42, 127, 165, 0.15);
+  border-color: rgba(42, 127, 165, 0.5);
+  color: #163A4E;
 }
 
 .rooms-form {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(22, 58, 78, 0.02);
+  border: 1px solid rgba(22, 58, 78, 0.07);
   border-radius: 10px;
   padding: 2rem;
   display: flex;
@@ -3517,10 +3502,10 @@ async function deleteJob(job) {
 .rooms-form-title {
   font-size: 1.25rem;
   font-weight: 600;
-  color: #fff;
+  color: #163A4E;
   margin: 0;
   padding-bottom: 1rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  border-bottom: 1px solid rgba(22, 58, 78, 0.07);
 }
 
 .rooms-textarea {
@@ -3540,8 +3525,8 @@ async function deleteJob(job) {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #f0f4f8;
+  border: 1px solid rgba(22, 58, 78, 0.18);
   padding: 0.5rem;
   border-radius: 6px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.5);
@@ -3556,13 +3541,13 @@ async function deleteJob(job) {
   transform: translateX(-50%);
   border-width: 6px;
   border-style: solid;
-  border-color: #111 transparent transparent transparent;
+  border-color: #f0f4f8 transparent transparent transparent;
 }
 
 .link-tooltip-input {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: rgba(22, 58, 78, 0.04);
+  border: 1px solid rgba(22, 58, 78, 0.08);
+  color: #163A4E;
   padding: 0.25rem 0.5rem;
   border-radius: 4px;
   font-size: 0.85rem;
@@ -3571,7 +3556,7 @@ async function deleteJob(job) {
 
 .link-tooltip-input:focus {
   outline: none;
-  border-color: #646cff;
+  border-color: #2A7FA5;
 }
 
 .link-tooltip-btn {
@@ -3591,7 +3576,7 @@ async function deleteJob(job) {
 }
 
 .link-tooltip-close:hover {
-  color: #fff;
+  color: #163A4E;
 }
 
 .feature-tags-editor {
@@ -3606,8 +3591,8 @@ async function deleteJob(job) {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: rgba(100, 108, 255, 0.12);
-  border: 1px solid rgba(100, 108, 255, 0.3);
+  background: rgba(42, 127, 165, 0.12);
+  border: 1px solid rgba(42, 127, 165, 0.3);
   color: rgba(255, 255, 255, 0.85);
   border-radius: 20px;
   padding: 0.25rem 0.75rem;
@@ -3644,7 +3629,7 @@ async function deleteJob(job) {
   align-items: center;
   gap: 1rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(22, 58, 78, 0.07);
 }
 
 .rooms-empty-hint {
@@ -3652,10 +3637,10 @@ async function deleteJob(job) {
   align-items: center;
   justify-content: center;
   min-height: 200px;
-  color: rgba(255, 255, 255, 0.35);
+  color: rgba(22, 58, 78, 0.30);
   font-size: 0.95rem;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px dashed rgba(255, 255, 255, 0.1);
+  background: rgba(22, 58, 78, 0.02);
+  border: 1px dashed rgba(22, 58, 78, 0.08);
   border-radius: 10px;
 }
 
@@ -3690,8 +3675,8 @@ async function deleteJob(job) {
   position: relative;
   border-radius: 8px;
   overflow: hidden;
-  border: 2px solid rgba(255, 255, 255, 0.08);
-  background: rgba(255, 255, 255, 0.04);
+  border: 2px solid rgba(22, 58, 78, 0.07);
+  background: rgba(22, 58, 78, 0.03);
   cursor: grab;
   aspect-ratio: 1;
   transition: border-color 0.15s;
@@ -3703,8 +3688,8 @@ async function deleteJob(job) {
 }
 
 .room-img-item.is-drag-over {
-  border-color: #646cff;
-  box-shadow: 0 0 0 3px rgba(100, 108, 255, 0.2);
+  border-color: #2A7FA5;
+  box-shadow: 0 0 0 3px rgba(42, 127, 165, 0.2);
 }
 
 .room-img-thumb {
@@ -3723,8 +3708,8 @@ async function deleteJob(job) {
   height: 24px;
   background: rgba(15, 15, 15, 0.7);
   backdrop-filter: blur(6px);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  color: rgba(255, 255, 255, 0.8);
+  border: 1px solid rgba(22, 58, 78, 0.10);
+  color: rgba(22, 58, 78, 0.75);
   border-radius: 6px;
   cursor: pointer;
   display: flex;
@@ -3742,7 +3727,7 @@ async function deleteJob(job) {
 .img-delete-btn:hover {
   background: rgba(200, 40, 40, 0.85);
   border-color: rgba(200, 40, 40, 0.6);
-  color: #fff;
+  color: #163A4E;
 }
 
 .img-drag-handle {
@@ -3750,7 +3735,7 @@ async function deleteJob(job) {
   bottom: 4px;
   left: 50%;
   transform: translateX(-50%);
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(22, 58, 78, 0.40);
   font-size: 0.75rem;
   pointer-events: none;
   opacity: 0;
@@ -3763,15 +3748,15 @@ async function deleteJob(job) {
 
 /* Room drop area */
 .room-drop-area {
-  border: 2px dashed rgba(255, 255, 255, 0.12);
+  border: 2px dashed rgba(22, 58, 78, 0.10);
   border-radius: 10px;
   padding: 0.5rem;
   transition: border-color 0.2s, background 0.2s;
 }
 
 .room-drop-area--active {
-  border-color: #646cff;
-  background: rgba(100, 108, 255, 0.07);
+  border-color: #2A7FA5;
+  background: rgba(42, 127, 165, 0.07);
 }
 
 .room-drop-area--uploading {
@@ -3783,7 +3768,7 @@ async function deleteJob(job) {
   margin-top: 0.5rem;
   padding: 0.6rem 1rem;
   text-align: center;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(22, 58, 78, 0.38);
   font-size: 0.82rem;
   cursor: pointer;
   border-radius: 6px;
@@ -3791,8 +3776,8 @@ async function deleteJob(job) {
 }
 
 .room-drop-hint:hover {
-  color: rgba(255, 255, 255, 0.75);
-  background: rgba(255, 255, 255, 0.04);
+  color: rgba(22, 58, 78, 0.70);
+  background: rgba(22, 58, 78, 0.03);
 }
 
 .room-drop-area--active .room-drop-hint {
@@ -3802,7 +3787,7 @@ async function deleteJob(job) {
 /* Generic image drop zone (events + categories) */
 .image-drop-zone {
   position: relative;
-  border: 2px dashed rgba(255, 255, 255, 0.18);
+  border: 2px dashed rgba(22, 58, 78, 0.15);
   border-radius: 12px;
   overflow: hidden;
   cursor: pointer;
@@ -3811,18 +3796,18 @@ async function deleteJob(job) {
 }
 
 .image-drop-zone:hover {
-  border-color: rgba(255, 255, 255, 0.35);
-  background: rgba(255, 255, 255, 0.02);
+  border-color: rgba(22, 58, 78, 0.30);
+  background: rgba(22, 58, 78, 0.02);
 }
 
 .image-drop-zone--active {
-  border-color: #646cff !important;
-  background: rgba(100, 108, 255, 0.08) !important;
+  border-color: #2A7FA5 !important;
+  background: rgba(42, 127, 165, 0.08) !important;
 }
 
 .image-drop-zone--has-image {
   border-style: solid;
-  border-color: rgba(255, 255, 255, 0.12);
+  border-color: rgba(22, 58, 78, 0.10);
 }
 
 .drop-zone-preview-img {
@@ -3836,13 +3821,13 @@ async function deleteJob(job) {
 .drop-zone-overlay {
   position: absolute;
   inset: 0;
-  background: rgba(0, 0, 0, 0.45);
+  background: rgba(22, 58, 78, 0.4);
   display: flex;
   align-items: center;
   justify-content: center;
   opacity: 0;
   transition: opacity 0.2s;
-  color: #fff;
+  color: #163A4E;
   font-size: 0.9rem;
   font-weight: 500;
 }
@@ -3858,7 +3843,7 @@ async function deleteJob(job) {
   align-items: center;
   gap: 0.6rem;
   padding: 2.5rem 1.5rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(22, 58, 78, 0.38);
   text-align: center;
 }
 
@@ -3872,7 +3857,7 @@ async function deleteJob(job) {
 
 .drop-zone-empty small {
   font-size: 0.78rem;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(22, 58, 78, 0.25);
 }
 
 .image-drop-zone--active .drop-zone-empty {
@@ -3905,7 +3890,7 @@ async function deleteJob(job) {
 /* Cropper */
 .cropper-container {
   padding: 1.5rem;
-  background: #0f0f1a;
+  background: #EAF6FB;
   min-height: 400px;
   max-height: 60vh;
 }
@@ -3927,8 +3912,8 @@ async function deleteJob(job) {
   align-items: center;
   gap: 1rem;
   padding: 0.9rem 1.2rem;
-  background: #1a1a2e;
-  border: 1px solid rgba(255, 255, 255, 0.07);
+  background: #ffffff;
+  border: 1px solid rgba(22, 58, 78, 0.06);
   border-radius: 6px;
 }
 
@@ -3942,7 +3927,7 @@ async function deleteJob(job) {
 .user-row-name {
   font-size: 0.95rem;
   font-weight: 500;
-  color: #fff;
+  color: #163A4E;
 }
 
 .user-row-email {
@@ -3956,12 +3941,12 @@ async function deleteJob(job) {
   align-items: flex-end;
   gap: 0.2rem;
   font-size: 0.75rem;
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(22, 58, 78, 0.38);
 }
 
 .user-row-self {
   font-size: 0.7rem;
-  color: #646cff;
+  color: #2A7FA5;
   font-style: italic;
 }
 
@@ -3979,7 +3964,7 @@ async function deleteJob(job) {
 }
 
 .modal-sm .modal-body p {
-  color: rgba(255, 255, 255, 0.75);
+  color: rgba(22, 58, 78, 0.70);
   line-height: 1.6;
 }
 
@@ -3988,14 +3973,14 @@ async function deleteJob(job) {
   justify-content: flex-end;
   gap: 0.75rem;
   padding: 1.25rem 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  border-top: 1px solid rgba(22, 58, 78, 0.06);
 }
 
 .btn-danger {
   padding: 0.55rem 1.25rem;
   background: rgba(231, 76, 60, 0.15);
   border: 1px solid rgba(231, 76, 60, 0.5);
-  color: #e74c3c;
+  color: #e74c3c !important;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.85rem;
@@ -4011,7 +3996,7 @@ async function deleteJob(job) {
   padding: 0.35rem 0.85rem;
   background: rgba(231, 76, 60, 0.1);
   border: 1px solid rgba(231, 76, 60, 0.4);
-  color: #e74c3c;
+  color: #e74c3c !important;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.75rem;
@@ -4041,6 +4026,18 @@ async function deleteJob(job) {
   padding: 0.1rem 0.45rem;
 }
 
+.user-badge-superadmin {
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #2A7FA5 !important;
+  background: rgba(42, 127, 165, 0.1);
+  border: 1px solid rgba(42, 127, 165, 0.35);
+  border-radius: 3px;
+  padding: 0.1rem 0.45rem;
+}
+
 .user-row-actions {
   min-width: 80px;
   display: flex;
@@ -4052,9 +4049,9 @@ async function deleteJob(job) {
 
 .btn-edit-sm {
   padding: 0.35rem 0.85rem;
-  background: rgba(100, 108, 255, 0.1);
-  border: 1px solid rgba(100, 108, 255, 0.4);
-  color: #848bff;
+  background: rgba(42, 127, 165, 0.1);
+  border: 1px solid rgba(42, 127, 165, 0.4);
+  color: #2A7FA5 !important;
   border-radius: 4px;
   cursor: pointer;
   font-size: 0.75rem;
@@ -4062,8 +4059,8 @@ async function deleteJob(job) {
 }
 
 .btn-edit-sm:hover {
-  background: rgba(100, 108, 255, 0.25);
-  border-color: #646cff;
+  background: rgba(42, 127, 165, 0.25);
+  border-color: #2A7FA5;
 }
 
 .edit-user-section-divider {
@@ -4071,8 +4068,8 @@ async function deleteJob(job) {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.06em;
-  color: rgba(255, 255, 255, 0.35);
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  color: rgba(22, 58, 78, 0.30);
+  border-top: 1px solid rgba(22, 58, 78, 0.06);
   padding-top: 1rem;
   margin-top: 0.5rem;
   margin-bottom: 0.25rem;
@@ -4093,7 +4090,7 @@ async function deleteJob(job) {
 }
 
 .instagram-settings-hint code {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(22, 58, 78, 0.07);
   padding: 0.1em 0.4em;
   border-radius: 4px;
   font-size: 0.85em;
@@ -4103,18 +4100,18 @@ async function deleteJob(job) {
   display: inline-block;
   margin-top: 0.4rem;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(22, 58, 78, 0.40);
   text-decoration: none;
 }
 
 .post-preview-link:hover {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(22, 58, 78, 0.75);
 }
 
 .post-id-preview {
   margin-top: 0.4rem;
   font-size: 0.8rem;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(22, 58, 78, 0.40);
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -4130,7 +4127,7 @@ async function deleteJob(job) {
 }
 
 .post-id-preview code {
-  background: rgba(255, 255, 255, 0.08);
+  background: rgba(22, 58, 78, 0.07);
   padding: 0.1em 0.4em;
   border-radius: 4px;
   font-size: 0.85em;
@@ -4142,7 +4139,7 @@ async function deleteJob(job) {
   align-items: center;
   gap: 1rem;
   padding-top: 0.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid rgba(22, 58, 78, 0.07);
 }
 
 .save-success {
@@ -4165,9 +4162,9 @@ async function deleteJob(job) {
 .range-btn {
   padding: 0.4rem 1.1rem;
   border-radius: 50px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(22, 58, 78, 0.13);
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(22, 58, 78, 0.55);
   font-size: 0.85rem;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -4175,9 +4172,9 @@ async function deleteJob(job) {
 
 .range-btn.active,
 .range-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.35);
-  color: #fff;
+  background: rgba(22, 58, 78, 0.08);
+  border-color: rgba(22, 58, 78, 0.30);
+  color: #163A4E;
 }
 
 .analytics-cards {
@@ -4189,8 +4186,8 @@ async function deleteJob(job) {
 
 .analytics-card {
   flex: 1 1 140px;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: rgba(22, 58, 78, 0.03);
+  border: 1px solid rgba(22, 58, 78, 0.08);
   border-radius: 10px;
   padding: 1.25rem 1.5rem;
   display: flex;
@@ -4202,13 +4199,13 @@ async function deleteJob(job) {
   font-size: 0.75rem;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(22, 58, 78, 0.40);
 }
 
 .analytics-card-value {
   font-size: 2rem;
   font-weight: 600;
-  color: #fff;
+  color: #163A4E;
   line-height: 1;
 }
 
@@ -4220,7 +4217,7 @@ async function deleteJob(job) {
   font-size: 1rem;
   font-weight: 500;
   margin-bottom: 1rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(22, 58, 78, 0.65);
 }
 
 .analytics-table {
@@ -4233,11 +4230,11 @@ async function deleteJob(job) {
 .analytics-table td {
   padding: 0.65rem 1rem;
   text-align: left;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(22, 58, 78, 0.06);
 }
 
 .analytics-table th {
-  color: rgba(255, 255, 255, 0.45);
+  color: rgba(22, 58, 78, 0.40);
   font-weight: 400;
   font-size: 0.78rem;
   text-transform: uppercase;
@@ -4255,7 +4252,7 @@ async function deleteJob(job) {
 
 .analytics-loading,
 .analytics-empty {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(22, 58, 78, 0.38);
   padding: 2rem 0;
   font-size: 0.9rem;
 }
@@ -4272,7 +4269,7 @@ async function deleteJob(job) {
   width: 36px;
   height: 36px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(22, 58, 78, 0.05);
 }
 
 .analytics-event-img {
@@ -4287,7 +4284,7 @@ async function deleteJob(job) {
   width: 36px;
   height: 36px;
   border-radius: 4px;
-  background: rgba(255, 255, 255, 0.06);
+  background: rgba(22, 58, 78, 0.05);
 }
 
 .analytics-error {

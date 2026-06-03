@@ -1,7 +1,12 @@
+import { defineLocalBusiness } from 'nuxt-schema-org/schema'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2025-05-01',
   devtools: { enabled: true },
+  experimental: {
+    appManifest: false,
+  },
 
   // Nitro for Cloudflare Pages
   nitro: {
@@ -42,30 +47,30 @@ export default defineNuxtConfig({
       htmlAttrs: { lang: 'de' },
       charset: 'utf-8',
       viewport: 'width=device-width, initial-scale=1',
-      title: 'PALLAS.WORLD – Bar, Events & Kultur in Hamburg',
+      title: 'OCEAN PUB - Die Beste Bar in Dahme',
       meta: [
-        { name: 'description', content: 'PALLAS.WORLD – Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.' },
-        { name: 'theme-color', content: '#000000' },
+        { name: 'description', content: 'OCEAN PUB – Deine Strandbar an der Ostsee in Dahme. Drinks, Sonnenuntergänge, Events & gute Laune direkt an der Strandpromenade. Everybody Welcome.' },
+        { name: 'theme-color', content: '#7fc9e3' },
 
         // Open Graph
         { property: 'og:type', content: 'website' },
-        { property: 'og:site_name', content: 'PALLAS.WORLD' },
-        { property: 'og:title', content: 'PALLAS.WORLD – Bar, Events & Kultur in Hamburg' },
-        { property: 'og:description', content: 'Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.' },
-        { property: 'og:image', content: 'https://pallas.world/og-image.jpg' },
-        { property: 'og:url', content: 'https://pallas.world' },
+        { property: 'og:site_name', content: 'OCEAN PUB' },
+        { property: 'og:title', content: 'OCEAN PUB – Strandbar, Drinks & Events in Dahme' },
+        { property: 'og:description', content: 'Deine Strandbar an der Ostsee in Dahme. Drinks, Sonnenuntergänge, Events & gute Laune an der Strandpromenade. Everybody Welcome.' },
+        { property: 'og:image', content: 'https://ocean-bar.de/og-image.jpg' },
+        { property: 'og:url', content: 'https://ocean-bar.de' },
         { property: 'og:locale', content: 'de_DE' },
 
         // Twitter Card
         { name: 'twitter:card', content: 'summary_large_image' },
-        { name: 'twitter:title', content: 'PALLAS.WORLD – Bar, Events & Kultur in Hamburg' },
-        { name: 'twitter:description', content: 'Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13.' },
-        { name: 'twitter:image', content: 'https://pallas.world/og-image.jpg' },
+        { name: 'twitter:title', content: 'OCEAN PUB – Strandbar, Drinks & Events in Dahme' },
+        { name: 'twitter:description', content: 'Deine Strandbar an der Ostsee in Dahme. Drinks, Sonnenuntergänge & Events an der Strandpromenade.' },
+        { name: 'twitter:image', content: 'https://ocean-bar.de/og-image.jpg' },
       ],
       link: [
         { rel: 'icon', type: 'image/png', href: '/icon.png' },
         { rel: 'apple-touch-icon', href: '/icon.png' },
-        { rel: 'canonical', href: 'https://pallas.world' },
+        { rel: 'canonical', href: 'https://ocean-bar.de' },
       ],
     },
   },
@@ -73,9 +78,10 @@ export default defineNuxtConfig({
   // Google Fonts (optimized loading)
   googleFonts: {
     families: {
-      'Krona One': true,
-      'Montserrat': [300, 400, 500, 600, 700],
-      'Source Sans 3': [300, 400, 600, 700],
+      'Baloo 2': [400, 500, 600, 700, 800],
+      'Quicksand': [400, 500, 600, 700],
+      'Nunito': [300, 400, 500, 600, 700],
+      'Montserrat': [400, 500, 600, 700],
     },
     display: 'swap',
     preconnect: true,
@@ -84,8 +90,8 @@ export default defineNuxtConfig({
 
   // Sitemap
   site: {
-    url: 'https://pallas.world',
-    name: 'PALLAS.WORLD',
+    url: 'https://ocean-bar.de',
+    name: 'OCEAN PUB',
   },
 
   sitemap: {
@@ -93,9 +99,7 @@ export default defineNuxtConfig({
       { loc: '/', priority: 1.0, changefreq: 'weekly' },
       { loc: '/events', priority: 0.9, changefreq: 'daily' },
       { loc: '/request', priority: 0.8, changefreq: 'monthly' },
-      { loc: '/jobs', priority: 0.7, changefreq: 'weekly' },
       { loc: '/drinks', priority: 0.7, changefreq: 'monthly' },
-      { loc: '/stories', priority: 0.6, changefreq: 'monthly' },
     ],
   },
 
@@ -108,29 +112,29 @@ export default defineNuxtConfig({
         disallow: ['/admin', '/admin/'],
       },
     ],
-    sitemap: 'https://pallas.world/sitemap.xml',
+    sitemap: 'https://ocean-bar.de/sitemap.xml',
   },
 
   // Schema.org
   schemaOrg: {
-    identity: {
-      type: 'BarOrPub',
-      name: 'PALLAS.WORLD',
-      url: 'https://pallas.world',
-      logo: 'https://pallas.world/icon.png',
-      image: 'https://pallas.world/og-image.jpg',
-      description: 'Bar, Events & Kultur in der Hamburger Schanze. Everybody Welcome.',
-      address: {
-        streetAddress: 'Neuer Pferdemarkt 13',
-        addressLocality: 'Hamburg',
-        postalCode: '20359',
+    identity: defineLocalBusiness({
+      '@type': 'BarOrPub',
+      'name': 'OCEAN PUB',
+      'url': 'https://ocean-bar.de',
+      'logo': 'https://ocean-bar.de/icon.png',
+      'image': 'https://ocean-bar.de/og-image.jpg',
+      'description': 'Strandbar an der Ostsee in Dahme. Drinks, Sonnenuntergänge & Events an der Strandpromenade. Everybody Welcome.',
+      'address': {
+        streetAddress: 'An d. Strandpromenade 20',
+        addressLocality: 'Dahme',
+        postalCode: '23747',
         addressCountry: 'DE',
       },
-      email: 'adjsavedmylife@pallas.world',
-      sameAs: [
-        'https://instagram.com/pallas_world',
+      'email': 'info@ocean-bar.de',
+      'sameAs': [
+        'https://instagram.com/oceanpub_dahme',
       ],
-    },
+    }),
   },
 
   // Vite config

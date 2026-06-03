@@ -1,0 +1,262 @@
+/* Import custom fonts - moved to index.html via Google Fonts */
+
+:root {
+  /* Ocean Pub Typography - friendly rounded display for headings, clean text */
+  --font-primary: 'Baloo 2', 'Quicksand', 'Montserrat', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-secondary: 'Quicksand', 'Montserrat', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-text: 'Nunito', 'Montserrat', system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  
+  font-family: var(--font-text);
+  line-height: 1.5;
+  font-weight: 400;
+
+  color-scheme: light;
+  color: #163a4e;
+  background-color: #fbf1dd;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  min-height: 100%; /* Changed to min-height to allow scrolling */
+  background-color: #fbf1dd;
+  overflow-x: hidden;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+a {
+  font-weight: 600;
+  color: #2f8fb0 !important;
+  text-decoration: inherit;
+}
+a:hover {
+  color: #ff6f59 !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-family: var(--font-primary);
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: 0.01em;
+  color: #163a4e;
+}
+
+h1 {
+  font-size: 3.2em;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #163a4e;
+}
+
+/* Ocean Pub Brand Typography */
+.brand-title,
+.pallas-title {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #163a4e;
+}
+
+.brand-subtitle,
+.pallas-subtitle {
+  font-family: var(--font-secondary);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #1f4c63;
+}
+
+.brand-heading,
+.pallas-heading {
+  font-family: var(--font-primary);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: #163a4e;
+}
+
+/* Section Title Styling */
+.section-title {
+  font-size: clamp(2.5rem, 5vw, 3.5rem);
+  color: #163a4e;
+  text-align: center;
+  margin-bottom: 3rem;
+  font-family: var(--font-primary);
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+button {
+  border-radius: 999px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.4em;
+  font-size: 1em;
+  font-weight: 600;
+  font-family: inherit;
+  background-color: #ff6f59;
+  color: #fffaf0;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+
+button:hover {
+  background-color: #e85a45;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(255, 111, 89, 0.35);
+}
+
+button:focus,
+button:focus-visible {
+  outline: 2px solid rgba(47, 143, 176, 0.6);
+  outline-offset: 2px;
+}
+
+.card {
+  padding: 2em;
+  background: #fffaf0;
+  border-radius: 22px;
+  border: 1px solid rgba(22, 58, 78, 0.12);
+  box-shadow: 0 14px 34px rgba(22, 58, 78, 0.12);
+}
+
+#app {
+  width: 100%;
+  min-height: 100vh;
+  min-height: 100dvh;
+  background-color: #fbf1dd;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(255, 201, 77, 0.55);
+  color: #163a4e;
+}
+
+/* Focus outline for accessibility */
+:focus-visible {
+  outline: 2px solid rgba(47, 143, 176, 0.75);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Mobile optimization */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+  
+  body {
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+}
+
+/* Global text styling overrides */
+* {
+  color: #163a4e !important;
+}
+
+p, span, div, h1, h2, h3, h4, h5, h6 {
+  color: #163a4e !important;
+}
+
+/* Theme classes override */
+.theme-text-primary {
+  color: #163a4e !important;
+}
+.theme-text-secondary {
+  color: #1f4c63 !important;
+}
+.theme-text-muted {
+  color: #4f6b78 !important;
+}
+
+/* iOS auto-linking underline fix */
+a[x-apple-data-detectors],
+a[href^="tel"],
+a[href^="mailto"] {
+  color: inherit !important;
+  text-decoration: none !important;
+  border-bottom: none !important;
+}
+
+/* vue-easy-lightbox overlay fix */
+.vel-app,
+.vel-modal {
+  z-index: 100000 !important;
+}
+
+/* vue-easy-lightbox toolbar off (keep only X + arrows) */
+.vel-modal .vel-toolbar,
+.vel-toolbar,
+.vel-toolbar .toolbar-btn,
+.vel-toolbar .toolbar-btn__zoomin,
+.vel-toolbar .toolbar-btn__zoomout,
+.vel-toolbar .toolbar-btn__resize,
+.vel-toolbar .toolbar-btn__rotate {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* extra guard: hide resize button specifically */
+.vel-modal .vel-toolbar .toolbar-btn__resize {
+  display: none !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+/* vue-easy-lightbox mobile arrow spacing */
+@media (max-width: 768px) {
+  .vel-btns-wrapper .btn__next {
+    right: 28px !important;
+  }
+
+  .vel-btns-wrapper .btn__prev {
+    left: 28px !important;
+  }
+}
+
+/* Remove global background override - let themes handle this */
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  :root {
+    color: #ffffff;
+    background-color: #000000;
+  }
+  
+  button {
+    border: 2px solid #ffffff;
+  }
+}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

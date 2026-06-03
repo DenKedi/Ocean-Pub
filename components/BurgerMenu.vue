@@ -62,19 +62,22 @@ defineEmits(['toggle'])
 
 .burger-button:hover {
   transform: scale(1.05);
+  background: transparent;
+  box-shadow: none;
 }
 
 .burger-line {
-  width: 20px;
-  height: 2px;
-  background: white;
+  width: 22px;
+  height: 2.5px;
+  background: #163a4e;
+  border-radius: 2px;
   transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   transform-origin: center;
 }
 
 /* Light Theme support for the Burger Lines */
 .burger-button.is-light-theme:not(.is-open) .burger-line {
-  background: black;
+  background: #163a4e;
 }
 
 /* Hamburger to X animation */

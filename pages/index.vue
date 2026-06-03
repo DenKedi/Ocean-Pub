@@ -1,81 +1,26 @@
 <script setup>
-import { onMounted, ref } from 'vue'
-
-import sitzeckeImg from '~/assets/pictures/sitzecke.webp'
-import spinnexImg from '~/assets/pictures/spinnex.webp'
-
-// SEO
-useSeoMeta({
-  title: 'PALLAS.WORLD – Bar, Events & Kultur in der Hamburger Schanze',
-  ogTitle: 'PALLAS.WORLD – Bar, Events & Kultur in der Hamburger Schanze',
-  description: 'Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.',
-  ogDescription: 'Dein Wohnzimmer in der Hamburger Schanze. Bar, Events, Kultur & Nachtleben am Neuen Pferdemarkt 13. Everybody Welcome.',
-  ogImage: 'https://pallas.world/og-image.jpg',
-  ogUrl: 'https://pallas.world',
-})
-
-useHead({
-  link: [{ rel: 'canonical', href: 'https://pallas.world' }],
-})
-
-// Structured Data for BarOrPub
-useSchemaOrg([
-  defineWebPage(),
-])
-
-const currentBackgroundImage = ref(sitzeckeImg)
-
-const updateBackgroundImage = () => {
-  const now = new Date()
-  const hour = now.getHours()
-  
-  // Zwischen 18 Uhr und 6 Uhr Morgens -> spinnex
-  if (hour >= 18 || hour < 6) {
-    currentBackgroundImage.value = spinnexImg
-  } else {
-    currentBackgroundImage.value = sitzeckeImg
-  }
-}
-
-const preloadStoriesImages = async () => {
-  const modules = await Promise.all([
-    import('~/assets/pictures/spinne_full.webp'),
-    import('~/assets/pictures/spinne_front.webp'),
-    import('~/assets/pictures/stories/supreme/djs1.webp'),
-    import('~/assets/pictures/stories/supreme/floor1.webp'),
-    import('~/assets/pictures/stories/supreme/flyer1.webp'),
-    import('~/assets/pictures/stories/supreme/platten.webp'),
-    import('~/assets/pictures/stories/supreme/barkeeper1.webp'),
-  ])
-
-  modules.forEach(mod => {
-    const img = new Image()
-    img.src = mod.default
-  })
-}
+import { onMounted } from 'vue'
+import DefaultLayout from '../layouts/default.vue'
+import HeroSection from '../components/sections/HeroSection.vue'
+import EventsPreviewSection from '../components/sections/EventsPreviewSection.vue'
+import AboutSection from '../components/sections/AboutSection.vue'
+import ContactSection from '../components/sections/ContactSection.vue'
+import PartnersSection from '../components/sections/PartnersSection.vue'
 
 onMounted(() => {
-  updateBackgroundImage()
-  
-  // Preload Stories images with a delay to not block Home page rendering
-  setTimeout(() => {
-    requestAnimationFrame(() => {
-      preloadStoriesImages()
-    })
-  }, 1000)
+  document.title = 'OCEAN PUB – Strandbar, Drinks & Events in Dahme'
 })
 </script>
 
 <template>
-  <NuxtLayout :bg-image="currentBackgroundImage">
-    <h1 class="sr-only">PALLAS.WORLD – Bar, Events & Kultur in der Hamburger Schanze</h1>
-    <SectionsHeroSection />
-    <SectionsEventsPreviewSection />
-    <SectionsAboutSection />
-    <SectionsInstagramSection />
-    <SectionsContactSection />
-    <SectionsPartnersSection />
-  </NuxtLayout>
+  <DefaultLayout>
+    <h1 class="sr-only">OCEAN PUB – Strandbar, Drinks & Events an der Ostsee in Dahme</h1>
+    <HeroSection />
+    <EventsPreviewSection />
+    <AboutSection />
+    <ContactSection />
+    <PartnersSection />
+  </DefaultLayout>
 </template>
 
 <style>

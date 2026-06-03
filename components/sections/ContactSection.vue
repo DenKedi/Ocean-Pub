@@ -6,20 +6,32 @@
       <div class="hours-content">
         <div class="hours-card theme-container-bg">
           <div class="day-row">
+            <span class="day">Montag</span>
+            <span class="time">16:00 – 00:00</span>
+          </div>
+          <div class="day-row">
+            <span class="day">Dienstag</span>
+            <span class="time">16:00 – 00:00</span>
+          </div>
+          <div class="day-row">
             <span class="day">Mittwoch</span>
-            <span class="time">19:00 - 01:00</span>
+            <span class="time">16:00 – 00:00</span>
           </div>
           <div class="day-row">
             <span class="day">Donnerstag</span>
-            <span class="time">19:00 - 01:00</span>
+            <span class="time">16:00 – 00:00</span>
           </div>
           <div class="day-row">
             <span class="day">Freitag</span>
-            <span class="time">19:00 - 03:00</span>
+            <span class="time">16:00 – 00:00</span>
           </div>
           <div class="day-row">
             <span class="day">Samstag</span>
-            <span class="time">19:00 - 03:00</span>
+            <span class="time">13:00 – 00:00</span>
+          </div>
+          <div class="day-row">
+            <span class="day">Sonntag</span>
+            <span class="time">13:00 – 00:00</span>
           </div>
         </div>
         <p class="hours-disclaimer theme-text-muted">Tatsächliche Öffnungszeiten können abweichen</p>

@@ -72,11 +72,16 @@ router.put(
   })
 );
 
-// POST /api/users/register (protected — only existing admins can create new ones)
+// POST /api/users/register (protected — only super admins can create new ones)
 router.post(
   "/register",
   auth,
   asyncHandler(async (req, res) => {
+    const requester = await User.findById(req.user.id).select('isSuperAdmin')
+    if (!requester || !requester.isSuperAdmin) {
+      return res.status(403).json({ msg: 'Nur Super-Admins können neue Benutzer anlegen' })
+    }
+
     const { name, email, password } = req.body;
 
     let user = await User.findOne({ email });
@@ -86,7 +91,6 @@ router.post(
 
     user = new User({ name, email, password});
     await user.save();
-
 
     res.status(200).json({ msg: "Registrierung erfolgreich." });
   })

@@ -1,19 +1,18 @@
 import axios from 'axios'
+import { useRouter } from 'vue-router'
 
 export default function useApi() {
-  const config = useRuntimeConfig()
-  
+  const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5051/api'
+
   const api = axios.create({
-    baseURL: config.public.apiBaseUrl,
+    baseURL: API_BASE,
     withCredentials: true,
   })
 
   // Token an jede Anfrage hängen
   api.interceptors.request.use(cfg => {
-    if (import.meta.client) {
-      const token = localStorage.getItem('token')
-      if (token) cfg.headers['x-auth-token'] = token
-    }
+    const token = localStorage.getItem('token')
+    if (token) cfg.headers['x-auth-token'] = token
     return cfg
   })
 
@@ -21,7 +20,7 @@ export default function useApi() {
   api.interceptors.response.use(
     res => res,
     err => {
-      if (import.meta.client && err?.response?.status === 401) {
+      if (err?.response?.status === 401) {
         localStorage.removeItem('token')
         const router = useRouter()
         if (router.currentRoute.value.path !== '/') {

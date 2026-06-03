@@ -1,25 +1,21 @@
 <script setup>
 import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
-
+import { RouterLink } from 'vue-router'
+import { gsap } from 'gsap'
+import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import DefaultLayout from '../layouts/default.vue'
+import useApi from '../composables/useApi.js'
+import { useImageUrl } from '../composables/useImageUrl.js'
 import { trackClick } from '~/utils/tracking'
 import bgImage from '~/assets/pictures/decke5.webp'
 
-const { $gsap: gsap, $ScrollTrigger: ScrollTrigger } = useNuxtApp()
+gsap.registerPlugin(ScrollTrigger)
+
 const api = useApi()
 const { getImageUrl } = useImageUrl()
 
-// SEO
-useSeoMeta({
-  title: 'Events & Veranstaltungen | PALLAS.WORLD',
-  ogTitle: 'Events & Veranstaltungen | PALLAS.WORLD',
-  description: 'Aktuelle Events und Veranstaltungen in der PALLAS Bar in der Hamburger Schanze. Konzerte, DJ-Sets, Kunst und mehr.',
-  ogDescription: 'Aktuelle Events und Veranstaltungen in der PALLAS Bar in der Hamburger Schanze.',
-  ogImage: 'https://pallas.world/og-events.jpg',
-  ogUrl: 'https://pallas.world/events',
-})
-
-useHead({
-  link: [{ rel: 'canonical', href: 'https://pallas.world/events' }],
+onMounted(() => {
+  document.title = 'Events & Veranstaltungen | PALLAS.WORLD'
 })
 
 // State
@@ -120,7 +116,7 @@ const truncateText = (text, maxChars = 15) => {
 // Get image URL with fallback
 const getEventImageUrl = (event) => {
   const imagePath = event.eventImageUrl || event.category?.defaultImageUrl
-  return imagePath ? getImageUrl(imagePath) : '/images/placeholders/event_default_bw.webp'
+  return imagePath ? getImageUrl(imagePath) : '/images/placeholders/Ocean_Bar_Icon.png'
 }
 
 // Format rooms
@@ -198,7 +194,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <NuxtLayout>
+  <DefaultLayout>
     <div ref="eventsPage" class="events-page">
       <!-- Parallax Background -->
       <div ref="backgroundLayer" class="background-layer">
@@ -278,9 +274,9 @@ onUnmounted(() => {
         <div class="container">
           <div class="cta-content">
             <p class="cta-text">Du möchtest bei uns veranstalten? Jetzt Anfragen unter</p>
-            <NuxtLink to="/request" class="cta-button">
+            <RouterLink to="/request" class="cta-button">
               Pallas.Request
-            </NuxtLink>
+            </RouterLink>
           </div>
         </div>
       </section>
@@ -319,7 +315,7 @@ onUnmounted(() => {
                   :alt="event.title"
                   class="event-image"
                   loading="lazy"
-                  @error="$event.target.src = '/images/placeholders/event_default_bw.webp'"
+                  @error="$event.target.src = '/images/placeholders/Ocean_Bar_Icon.png'"
                 />
                 <div 
                   v-if="event.category" 
@@ -403,7 +399,7 @@ onUnmounted(() => {
                     :alt="event.title"
                     class="list-image"
                     loading="lazy"
-                    @error="$event.target.src = '/images/placeholders/event_default_bw.webp'"
+                    @error="$event.target.src = '/images/placeholders/Ocean_Bar_Icon.png'"
                   />
                 </div>
 
@@ -453,7 +449,7 @@ onUnmounted(() => {
         </div>
       </section>
     </div>
-  </NuxtLayout>
+  </DefaultLayout>
 </template>
 
 <style scoped>

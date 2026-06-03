@@ -1,6 +1,8 @@
+import { ref } from 'vue'
+
 const STORAGE_KEY = 'pallas_consent'
 const EXPIRY_MONTHS = 6
-const EMBED_KEYS = ['instagram', 'spotify']
+const EMBED_KEYS = []
 
 function readConsent() {
   if (!import.meta.client) return null
@@ -45,16 +47,14 @@ function writeConsent(embeds) {
 }
 
 export function useCookieConsent() {
-  const consentGiven = useState('cookie_consent_given', () => false)
-  const embedsAllowed = useState('cookie_consent_embeds', () => false)
+  const consentGiven = ref(false)
+  const embedsAllowed = ref(false)
 
-  // Re-read from localStorage after hydration on the client
-  if (import.meta.client) {
-    const stored = readConsent()
-    if (stored !== null) {
-      consentGiven.value = true
-      embedsAllowed.value = stored.embeds === true
-    }
+  // Re-read from localStorage
+  const stored = readConsent()
+  if (stored !== null) {
+    consentGiven.value = true
+    embedsAllowed.value = stored.embeds === true
   }
 
   function acceptAll() {

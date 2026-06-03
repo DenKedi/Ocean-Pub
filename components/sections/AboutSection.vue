@@ -1,14 +1,10 @@
 <template>
   <section class="content-section theme-section-bg about-section">
     <div class="container">
-      <h2 class="section-title theme-text-primary">Über das Pallas</h2>
-      <p class="section-subtitle theme-text-secondary">Das Pallas versteht sich als dein persönliches Wohnzimmer - ein Ort, an dem Begegnung, Kultur und Nachtleben miteinander verschmelzen ganz ohne Timing, ohne Hektik, aber mit Haltung.
-Sorgsam kuratierte Musik trifft auf hochwertige Drinks und künstlerische Impulse. 
-
-Am Wochenende verwandelt sich dieses Wohnzimmer in einen pulsierenden Mikrokosmos voller Energie und Leichtigkeit. Zwischen Beats und Begegnungen entsteht eine Dynamik, die trägt - mal subtil, mal mitreißend, aber immer authentisch</p>
-      <p class="about-body theme-text-secondary">
-
-      </p>
+      <h2 class="section-title theme-text-primary">Über uns</h2>
+      <p class="section-subtitle theme-text-secondary">Die Beste Bar in Dahme - eine Bar, in der man sich vom ersten Moment an willkommen fühlt. Leckere Cocktails zu fairen Preisen, gute Musik und eine entspannte, lebendige Stimmung, die genau die richtige Mischung für einen gelungenen Abend trifft.</p>
+      <p class="about-body theme-text-secondary">Ob Billard, Dart oder Live-Sport - bei uns ist immer etwas los. Hinter der Theke steht Elias, der mit Herzblut dabei ist und für jeden Gast ein offenes Ohr hat. Egal ob du mit Freunden feierst oder einfach nur entspannt etwas trinken möchtest: Hier bist du genau richtig.</p>
+      <p class="about-body theme-text-secondary">Du möchtest deinen Geburtstag, deine Feier oder ein privates Event bei uns ausrichten? Wir lassen sich für private Anlässe buchen - sprich uns einfach an.</p>
     </div>
   </section>
 </template>

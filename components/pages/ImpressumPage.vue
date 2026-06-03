@@ -10,29 +10,18 @@ import MainLayout from '~/layouts/MainLayout.vue'
       
       <div class="legal-content">
         <div class="company-info">
-          <h2>PALLAS.WORLD GmbH & Co. KG</h2>
+          <h2>Ocean Pub Dahme</h2>
           <p>
-            Neuer Pferdemarkt 13<br>
-            20359 Hamburg<br>
-            Germany
+            An d. Strandpromenade 20<br>
+            23747 Dahme<br>
+            Deutschland
           </p>
-          
-          <p>
-            <strong>AG / RG:</strong> Hamburg – HRA 121215
-          </p>
-          
-          <h3>Persönlich haftende Gesellschafterin:</h3>
-          <p>
-            NPM 13 GmbH – Sitz: Hamburg<br>
-            <strong>AG / RG:</strong> Hamburg – HRB 166704<br>
-            <strong>Geschäftsführer:</strong> Erkan Alkasi
-          </p>
-          
+
           <div class="contact-details">
             <h3>Kontakt:</h3>
             <p>
-              <strong>E-Mail:</strong> adjsavedmylife@pallas.world<br>
-              <strong>Telefon:</strong> +49 40 98246368
+              <strong>E-Mail:</strong> info@ocean-bar.de<br>
+              <strong>Telefon:</strong> +49 15205714152
             </p>
           </div>
         </div>
@@ -44,9 +33,8 @@ import MainLayout from '~/layouts/MainLayout.vue'
 
 <style scoped>
 .legal-section {
-  padding: 8rem 0 4rem;
-  background: rgba(0, 0, 0, 0.9);
-  backdrop-filter: blur(10px);
+  padding: 8rem 0 5rem;
+  background: var(--beach-sky, #EAF6FB);
   min-height: 100vh;
 }
 
@@ -57,47 +45,52 @@ import MainLayout from '~/layouts/MainLayout.vue'
 }
 
 .legal-title {
-  font-size: clamp(2.5rem, 5vw, 3.5rem);
-  color: white;
+  font-size: clamp(2rem, 5vw, 3rem);
+  color: var(--beach-navy, #163A4E);
   text-align: center;
   margin-bottom: 3rem;
   font-family: var(--font-primary);
-  font-weight: 200;
-  letter-spacing: 0.08em;
+  font-weight: 700;
+  letter-spacing: 0.04em;
 }
 
 .legal-content {
-  color: white;
+  color: var(--beach-navy, #163A4E);
   line-height: 1.7;
+  background: var(--beach-sand, #FBF3E4);
+  border-radius: 20px;
+  padding: 3rem;
+  border: 1.5px solid rgba(22, 58, 78, 0.12);
+  box-shadow: 0 4px 24px rgba(22, 58, 78, 0.08);
 }
 
 .company-info h2 {
   font-family: var(--font-primary);
-  font-weight: 300;
+  font-weight: 700;
   font-size: 1.5rem;
   margin-bottom: 1rem;
-  color: white;
+  color: var(--beach-navy, #163A4E);
 }
 
 .company-info h3 {
   font-family: var(--font-primary);
-  font-weight: 300;
-  font-size: 1.2rem;
-  margin: 2rem 0 1rem;
-  color: white;
+  font-weight: 600;
+  font-size: 1.1rem;
+  margin: 2rem 0 0.75rem;
+  color: var(--beach-ocean, #2A7FA5);
 }
 
 .company-info p {
   margin-bottom: 1rem;
-  color: rgba(255, 255, 255, 0.9);
+  color: rgba(22, 58, 78, 0.85);
 }
 
 .contact-details {
   margin-top: 2rem;
-  padding: 2rem;
-  background: rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 1.75rem 2rem;
+  background: rgba(42, 127, 165, 0.08);
+  border-radius: 14px;
+  border: 1.5px solid rgba(42, 127, 165, 0.2);
 }
 
 /* Mobile Optimization */
@@ -105,13 +98,17 @@ import MainLayout from '~/layouts/MainLayout.vue'
   .legal-section {
     padding: 6rem 0 3rem;
   }
-  
+
   .container {
     padding: 0 1rem;
   }
-  
+
+  .legal-content {
+    padding: 2rem 1.5rem;
+  }
+
   .contact-details {
-    padding: 1.5rem;
+    padding: 1.25rem;
   }
 }
 </style>

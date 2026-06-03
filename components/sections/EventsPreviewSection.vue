@@ -1,27 +1,16 @@
 <template>
   <section id="events-preview" class="content-section theme-section-bg events-preview-section">
-    <!-- Decorative Tile Grid Background -->
-    <div class="tile-grid-background">
-      <div class="tile" data-size="large" data-color="teal"></div>
-      <div class="tile" data-size="medium" data-color="orange"></div>
-      <div class="tile" data-size="small" data-color="gold"></div>
-      <div class="tile" data-size="large" data-color="black"></div>
-      <div class="tile" data-size="medium" data-color="rust"></div>
-      <div class="tile" data-size="small" data-color="teal-light"></div>
-      <div class="tile" data-size="medium" data-color="gold-dark"></div>
-      <div class="tile" data-size="large" data-color="orange-bright"></div>
-      <div class="tile" data-size="small" data-color="black"></div>
-      <div class="tile" data-size="medium" data-color="teal"></div>
-      <div class="tile" data-size="large" data-color="rust"></div>
-      <div class="tile" data-size="small" data-color="gold"></div>
-      <div class="tile" data-size="medium" data-color="orange"></div>
-      <div class="tile" data-size="large" data-color="teal-light"></div>
-      <div class="tile" data-size="small" data-color="orange-bright"></div>
-      <div class="tile" data-size="medium" data-color="black"></div>
-      <div class="tile" data-size="large" data-color="gold-dark"></div>
-      <div class="tile" data-size="small" data-color="rust"></div>
-      <div class="tile" data-size="medium" data-color="teal"></div>
-      <div class="tile" data-size="large" data-color="orange"></div>
+    <!-- Decorative Beach Vibe Background -->
+    <div class="beach-background" aria-hidden="true">
+      <!-- Warm sun glow -->
+      <div class="beach-sun"></div>
+
+      <!-- Layered ocean waves -->
+      <svg class="beach-waves" viewBox="0 0 1440 320" preserveAspectRatio="none">
+        <path class="wave wave--back" d="M0,224L48,213.3C96,203,192,181,288,186.7C384,192,480,224,576,224C672,224,768,192,864,186.7C960,181,1056,203,1152,213.3C1248,224,1344,224,1392,224L1440,224L1440,320L0,320Z" />
+        <path class="wave wave--mid" d="M0,256L48,250.7C96,245,192,235,288,229.3C384,224,480,224,576,234.7C672,245,768,267,864,266.7C960,267,1056,245,1152,240C1248,235,1344,245,1392,250.7L1440,256L1440,320L0,320Z" />
+        <path class="wave wave--front" d="M0,288L48,282.7C96,277,192,267,288,272C384,277,480,299,576,298.7C672,299,768,277,864,277.3C960,277,1056,299,1152,298.7C1248,299,1344,277,1392,266.7L1440,256L1440,320L0,320Z" />
+      </svg>
     </div>
     
     <div class="container">
@@ -68,7 +57,7 @@
               <img 
                 :src="getEventImageUrl(event)" 
                 :alt="event.title" 
-                @error="$event.target.src = '/images/placeholders/event_default_bw.webp'"
+                @error="$event.target.src = '/images/placeholders/Ocean_Bar_Icon.png'"
               />
             </div>
             <div class="event-content">
@@ -120,6 +109,9 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import useApi from '../../composables/useApi.js'
+import { useImageUrl } from '../../composables/useImageUrl.js'
 import { trackClick } from '~/utils/tracking'
 
 const router = useRouter()
@@ -158,7 +150,7 @@ const fetchEvents = async () => {
 // Get proper image URL
 const getEventImageUrl = (event) => {
   const imagePath = event.eventImageUrl || event.category?.defaultImageUrl
-  return imagePath ? getImageUrl(imagePath) : '/images/placeholders/event_default_bw.webp'
+  return imagePath ? getImageUrl(imagePath) : '/images/placeholders/Ocean_Bar_Icon.png'
 }
 
 // Get description up to first line break
@@ -223,92 +215,80 @@ onMounted(() => {
   background: var(--theme-sectionBg) !important;
 }
 
-/* Decorative Tile Grid Background */
-.tile-grid-background {
+/* Decorative Beach Vibe Background */
+.beach-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-  grid-auto-rows: 80px;
-  gap: 0;
-  opacity: 0.15;
+  inset: 0;
   z-index: 0;
+  overflow: hidden;
   pointer-events: none;
+  background:
+    linear-gradient(180deg,
+      rgba(135, 206, 224, 0.18) 0%,
+      rgba(174, 222, 233, 0.12) 35%,
+      rgba(251, 241, 221, 0) 70%);
 }
 
-.tile {
-  position: relative;
-  transition: all 0.3s ease;
-}
-
-/* Tile Sizes */
-.tile[data-size="small"] {
-  grid-column: span 1;
-  grid-row: span 1;
-}
-
-.tile[data-size="medium"] {
-  grid-column: span 2;
-  grid-row: span 1;
-}
-
-.tile[data-size="large"] {
-  grid-column: span 2;
-  grid-row: span 2;
-}
-
-/* Tile Colors - inspired by the image */
-.tile[data-color="teal"] {
-  background: linear-gradient(135deg, #2d5f5d 0%, #1a3f3d 100%);
-}
-
-.tile[data-color="teal-light"] {
-  background: linear-gradient(135deg, #5a9b94 0%, #3d7a74 100%);
-}
-
-.tile[data-color="orange"] {
-  background: linear-gradient(135deg, #d97742 0%, #b85a2f 100%);
-}
-
-.tile[data-color="orange-bright"] {
-  background: linear-gradient(135deg, #ff8c42 0%, #e06f28 100%);
-}
-
-.tile[data-color="rust"] {
-  background: linear-gradient(135deg, #8b4726 0%, #6d3318 100%);
-}
-
-.tile[data-color="gold"] {
-  background: linear-gradient(135deg, #c9a961 0%, #a88b47 100%);
-}
-
-.tile[data-color="gold-dark"] {
-  background: linear-gradient(135deg, #8b7355 0%, #6d5838 100%);
-}
-
-.tile[data-color="black"] {
-  background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-}
-
-/* Add subtle pattern overlay */
-.tile::after {
-  content: '';
+/* Warm sun glow in the top corner */
+.beach-sun {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: repeating-linear-gradient(
-    45deg,
-    transparent,
-    transparent 2px,
-    rgba(0, 0, 0, 0.05) 2px,
-    rgba(0, 0, 0, 0.05) 4px
-  );
-  opacity: 0.3;
+  top: -120px;
+  right: -80px;
+  width: 360px;
+  height: 360px;
+  border-radius: 50%;
+  background: radial-gradient(circle at center,
+    rgba(255, 201, 77, 0.45) 0%,
+    rgba(255, 173, 90, 0.25) 35%,
+    rgba(255, 173, 90, 0) 70%);
+  filter: blur(8px);
+  animation: beach-sun-pulse 8s ease-in-out infinite;
+}
+
+@keyframes beach-sun-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.85; }
+  50% { transform: scale(1.08); opacity: 1; }
+}
+
+/* Layered ocean waves at the bottom */
+.beach-waves {
+  position: absolute;
+  bottom: -1px;
+  left: -5%;
+  width: 110%;
+  height: 38%;
+  min-height: 160px;
+}
+
+.wave {
+  transform-origin: center;
+}
+
+.wave--back {
+  fill: rgba(90, 155, 148, 0.22);
+  animation: beach-wave-drift 12s ease-in-out infinite alternate;
+}
+
+.wave--mid {
+  fill: rgba(45, 95, 93, 0.20);
+  animation: beach-wave-drift 9s ease-in-out infinite alternate-reverse;
+}
+
+.wave--front {
+  fill: rgba(135, 206, 224, 0.30);
+  animation: beach-wave-drift 7s ease-in-out infinite alternate;
+}
+
+@keyframes beach-wave-drift {
+  0% { transform: translateX(-2%); }
+  100% { transform: translateX(2%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .beach-sun,
+  .wave {
+    animation: none;
+  }
 }
 
 .container {

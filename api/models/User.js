@@ -22,6 +22,10 @@ const UserSchema = new mongoose.Schema({
   isLegacy: {
     type: Boolean,
     default: false
+  },
+  isSuperAdmin: {
+    type: Boolean,
+    default: false
   }
 });
 

@@ -1,0 +1,113 @@
+/* Theme System - CSS Custom Properties */
+/* Ocean Pub - Bright airy Schleswig-Holstein beach-bar theme */
+:root {
+  /* ===== Beach Palette ===== */
+  --beach-sand: #fbf1dd;          /* warm sand - page background */
+  --beach-sand-deep: #f3e3c4;     /* deeper sand */
+  --beach-cream: #fffaf0;         /* light cream surface */
+  --beach-shell: #fff6e6;         /* soft shell surface */
+  --beach-sky: #7fc9e3;           /* sky / sea blue */
+  --beach-sea: #2f8fb0;           /* deeper sea */
+  --beach-seafoam: #aee3da;       /* sea-foam accent */
+  --beach-sun: #ffc94d;           /* sunny yellow */
+  --beach-sun-deep: #f7b32b;      /* deeper sun */
+  --beach-coral: #ff6f59;         /* crab / coral accent */
+  --beach-coral-deep: #e85a45;    /* deeper coral */
+  --beach-navy: #163a4e;          /* deep sea navy - primary text */
+  --beach-driftwood: #4f6b78;     /* muted blue-grey text */
+
+  /* ===== Themeable tokens (consumed by utility classes) ===== */
+  --theme-sectionBg: #fbf1dd;                  /* sand */
+  --theme-containerBg: #fffaf0;                /* cream card */
+  --theme-itemBg: #fff6e6;                     /* shell item */
+  --theme-textPrimary: #163a4e;                /* navy */
+  --theme-textSecondary: #1f4c63;              /* slightly lighter navy */
+  --theme-textMuted: #4f6b78;                  /* driftwood */
+  --theme-border: rgba(22, 58, 78, 0.12);
+  --theme-borderHover: rgba(255, 111, 89, 0.55);
+  --theme-accent: #ff6f59;                     /* coral */
+  --theme-accentSecondary: #2f8fb0;            /* sea */
+
+  --theme-backdropBlur: 0px;                   /* glass removed */
+  --theme-borderRadius: 22px;                  /* soft organic corners */
+  --theme-borderWidth: 1px;
+  --theme-shadow: 0 14px 34px rgba(22, 58, 78, 0.12);
+  --theme-shadowHover: 0 20px 48px rgba(22, 58, 78, 0.18);
+
+  /* Subtle sand grain texture (tiny SVG noise, data-URI) */
+  --beach-grain:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+}
+
+/* ===== Theme-aware utility classes (solid, textured surfaces) ===== */
+.theme-section-bg {
+  background-color: var(--theme-sectionBg) !important;
+  background-image: var(--beach-grain) !important;
+  background-blend-mode: multiply !important;
+}
+
+.theme-container-bg {
+  background-color: var(--theme-containerBg) !important;
+  background-image: var(--beach-grain) !important;
+  border-radius: var(--theme-borderRadius) !important;
+  box-shadow: var(--theme-shadow) !important;
+  border: var(--theme-borderWidth) solid var(--theme-border) !important;
+}
+
+.theme-item-bg {
+  background-color: var(--theme-itemBg) !important;
+  background-image: var(--beach-grain) !important;
+  border-radius: var(--theme-borderRadius) !important;
+  border: var(--theme-borderWidth) solid var(--theme-border) !important;
+  box-shadow: var(--theme-shadow) !important;
+}
+
+.theme-item-bg:hover {
+  border-color: var(--theme-borderHover) !important;
+  box-shadow: var(--theme-shadowHover) !important;
+  transform: translateY(-2px);
+}
+
+.theme-text-primary {
+  color: var(--theme-textPrimary) !important;
+}
+
+.theme-text-secondary {
+  color: var(--theme-textSecondary) !important;
+}
+
+.theme-text-muted {
+  color: var(--theme-textMuted) !important;
+}
+
+/* Coral pill / accent button used across sections */
+.theme-button {
+  background-color: var(--theme-accent) !important;
+  color: #fffaf0 !important;
+  border: none !important;
+  border-radius: 999px !important;
+  box-shadow: 0 8px 20px rgba(255, 111, 89, 0.32) !important;
+  backdrop-filter: none !important;
+}
+
+.theme-button:hover {
+  background-color: var(--beach-coral-deep) !important;
+  box-shadow: 0 12px 28px rgba(255, 111, 89, 0.42) !important;
+}
+
+/* Smooth transitions for theme changes */
+/* Note: transform kept short so GSAP animations still feel snappy */
+:root {
+  --theme-transition-duration: 0.35s;
+}
+
+.theme-section-bg,
+.theme-container-bg,
+.theme-item-bg,
+.theme-text-primary,
+.theme-text-secondary,
+.theme-text-muted {
+  transition: background-color var(--theme-transition-duration) ease,
+              box-shadow var(--theme-transition-duration) ease,
+              transform 0.3s ease;
+}

@@ -1,5 +1,7 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { useAuth } from '../../composables/useAuth.js'
 
 const router = useRouter()
 const { state, login, isLoggedIn } = useAuth()
@@ -51,7 +53,7 @@ async function handleSubmit() {
             id="email"
             v-model="email"
             type="email"
-            placeholder="admin@pallas.de"
+            placeholder="admin@ocean-bar.de"
             autocomplete="email"
             required
           />
@@ -80,7 +82,7 @@ async function handleSubmit() {
       </form>
 
       <div class="login-footer">
-        <NuxtLink to="/">← Zurück zur Website</NuxtLink>
+        <RouterLink to="/">← Zurück zur Website</RouterLink>
       </div>
     </div>
   </div>
@@ -92,18 +94,18 @@ async function handleSubmit() {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  background: linear-gradient(160deg, #EAF6FB 0%, #FBF3E4 60%, #d4edec 100%);
   padding: 2rem;
 }
 
 .login-container {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
+  background: #ffffff;
+  border: 1.5px solid rgba(22, 58, 78, 0.12);
+  border-radius: 20px;
   padding: 3rem;
   width: 100%;
   max-width: 400px;
+  box-shadow: 0 8px 40px rgba(22, 58, 78, 0.12);
 }
 
 .login-header {
@@ -112,13 +114,14 @@ async function handleSubmit() {
 }
 
 .login-header h1 {
-  color: #fff;
-  font-size: 2rem;
+  color: var(--beach-navy, #163A4E);
+  font-size: 1.8rem;
+  font-weight: 700;
   margin-bottom: 0.5rem;
 }
 
 .login-header p {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(22, 58, 78, 0.6);
   font-size: 0.9rem;
 }
 
@@ -135,56 +138,60 @@ async function handleSubmit() {
 }
 
 .form-group label {
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(22, 58, 78, 0.8);
   font-size: 0.9rem;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .form-group input {
-  background: rgba(255, 255, 255, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  border-radius: 8px;
+  background: var(--beach-sand, #FBF3E4);
+  border: 1.5px solid rgba(22, 58, 78, 0.15);
+  border-radius: 10px;
   padding: 0.875rem 1rem;
-  color: #fff;
+  color: var(--beach-navy, #163A4E);
   font-size: 1rem;
-  transition: all 0.3s ease;
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .form-group input::placeholder {
-  color: rgba(255, 255, 255, 0.4);
+  color: rgba(22, 58, 78, 0.4);
 }
 
 .form-group input:focus {
   outline: none;
-  border-color: #646cff;
-  background: rgba(255, 255, 255, 0.12);
+  border-color: var(--beach-ocean, #2A7FA5);
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(42, 127, 165, 0.12);
 }
 
 .error-message {
-  background: rgba(255, 82, 82, 0.15);
-  border: 1px solid rgba(255, 82, 82, 0.3);
-  color: #ff5252;
+  background: rgba(232, 97, 77, 0.1);
+  border: 1.5px solid rgba(232, 97, 77, 0.35);
+  color: var(--beach-coral, #E8614D);
   padding: 0.75rem 1rem;
-  border-radius: 8px;
+  border-radius: 10px;
   font-size: 0.9rem;
   text-align: center;
 }
 
 .login-btn {
-  background: linear-gradient(135deg, #646cff 0%, #535bf2 100%);
-  color: #fff;
+  background: var(--beach-coral, #E8614D);
+  color: #fff !important;
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 1rem;
   font-size: 1rem;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+  font-family: inherit;
 }
 
 .login-btn:hover:not(:disabled) {
+  background: #d44f3c;
   transform: translateY(-2px);
-  box-shadow: 0 8px 20px rgba(100, 108, 255, 0.3);
+  box-shadow: 0 8px 20px rgba(232, 97, 77, 0.3);
 }
 
 .login-btn:disabled {
@@ -198,13 +205,13 @@ async function handleSubmit() {
 }
 
 .login-footer a {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(22, 58, 78, 0.55);
   text-decoration: none;
   font-size: 0.9rem;
-  transition: color 0.3s ease;
+  transition: color 0.2s ease;
 }
 
 .login-footer a:hover {
-  color: #646cff;
+  color: var(--beach-ocean, #2A7FA5);
 }
 </style>

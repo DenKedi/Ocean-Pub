@@ -1,16 +1,17 @@
 <script setup>
-// Theme System initialisieren
+import { onMounted } from 'vue'
+import { useThemeStore } from './composables/useThemeStore.js'
+import { useAuth } from './composables/useAuth.js'
+
 const { initTheme } = useThemeStore()
 
-if (import.meta.client) {
+onMounted(() => {
   initTheme()
-
-  // Auth-Status aus localStorage wiederherstellen
   const { init: initAuth } = useAuth()
   initAuth()
-}
+})
 </script>
 
 <template>
-  <NuxtPage />
+  <RouterView />
 </template>
