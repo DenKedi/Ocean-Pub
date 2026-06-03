@@ -15,7 +15,7 @@ const api = useApi()
 const { getImageUrl } = useImageUrl()
 
 onMounted(() => {
-  document.title = 'Events & Veranstaltungen | PALLAS.WORLD'
+  document.title = 'Events & Veranstaltungen | Ocean Pub Dahme'
 })
 
 // State
@@ -204,7 +204,7 @@ onUnmounted(() => {
       <!-- Hero Header -->
       <section class="page-hero">
         <div class="container">
-          <h1 class="page-title pallas-heading">Pallas.Events</h1>
+          <h1 class="page-title">Ocean Pub Events</h1>
           <p class="page-subtitle theme-text-secondary">Unser Programm für dich</p>
         </div>
       </section>
@@ -275,7 +275,7 @@ onUnmounted(() => {
           <div class="cta-content">
             <p class="cta-text">Du möchtest bei uns veranstalten? Jetzt Anfragen unter</p>
             <RouterLink to="/request" class="cta-button">
-              Pallas.Request
+              Anfragen
             </RouterLink>
           </div>
         </div>
@@ -453,11 +453,11 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* PALLAS Accent Colors */
+/* Accent Colors */
 :root {
-  --pallas-orange: #FF9d66;
-  --pallas-orange-bright: #FFE4D6;
-  --pallas-orange-dark: #E8B89E;
+  --ocean-orange: #FF9d66;
+  --ocean-orange-bright: #FFE4D6;
+  --ocean-orange-dark: #E8B89E;
 }
 
 .events-page {

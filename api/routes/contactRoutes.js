@@ -95,15 +95,15 @@ router.post(
       ` : ''}
     </div>
     <div style="background: #f4f4f4; padding: 16px 32px; font-size: 0.8rem; color: #aaa;">
-      Diese E-Mail wurde automatisch über das Anfrageformular auf pallas.world gesendet.
+      Diese E-Mail wurde automatisch über das Anfrageformular auf ocean-pub.de gesendet.
     </div>
   </div>
 </body>
 </html>`;
 
     const mailOptions = {
-      from: `"Pallas Anfrage" <${process.env.MAIL_FROM}>`,
-      to: 'request@pallas.world',
+      from: `"Ocean Pub Anfrage" <${process.env.MAIL_FROM}>`,
+      to: process.env.MAIL_FROM,
       replyTo: `"${name}" <${email}>`,
       subject: `Neue Anfrage: ${thema} — ${name}`,
       html: htmlBody,

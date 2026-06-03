@@ -10,7 +10,7 @@ let QRCode = null
 const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5051/api'
 
 onMounted(() => {
-  document.title = 'Getränkekarte | PALLAS.WORLD'
+  document.title = 'Getränkekarte | Ocean Pub Dahme'
 })
 
 const pdfUrl = ref(defaultPdf)
@@ -58,7 +58,7 @@ function onPdfError() {
 
 const showQrModal = ref(false)
 const qrDataUrl = ref('')
-const drinksPageUrl = 'https://pallas.world/drinks'
+const drinksPageUrl = 'https://ocean-pub.pages.dev/drinks'
 
 async function openQrModal() {
   if (!QRCode) {

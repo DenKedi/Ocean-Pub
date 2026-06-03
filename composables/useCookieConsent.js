@@ -1,6 +1,6 @@
 import { ref } from 'vue'
 
-const STORAGE_KEY = 'pallas_consent'
+const STORAGE_KEY = 'ocean_pub_consent'
 const EXPIRY_MONTHS = 6
 const EMBED_KEYS = []
 
@@ -33,7 +33,7 @@ function writeConsent(embeds) {
       timestamp: new Date().toISOString()
     }))
     // Sync per-embed keys for backward compatibility
-    const PREFIX = 'pallas_embed_consent_'
+    const PREFIX = 'ocean_pub_embed_consent_'
     for (const key of EMBED_KEYS) {
       if (embeds) {
         localStorage.setItem(PREFIX + key, 'true')
@@ -73,7 +73,7 @@ export function useCookieConsent() {
     if (!import.meta.client) return
     try {
       localStorage.removeItem(STORAGE_KEY)
-      const PREFIX = 'pallas_embed_consent_'
+      const PREFIX = 'ocean_pub_embed_consent_'
       for (const key of EMBED_KEYS) {
         localStorage.removeItem(PREFIX + key)
       }
