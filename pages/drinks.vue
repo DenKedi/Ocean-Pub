@@ -215,7 +215,7 @@ async function openQrModal() {
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 4px;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.9) !important;
   cursor: pointer;
   text-decoration: none;
   backdrop-filter: blur(4px);
@@ -223,7 +223,7 @@ async function openQrModal() {
 }
 .pdf-corner-btn:hover {
   background: rgba(0, 0, 0, 0.8);
-  color: #ffffff;
+  color: #ffffff !important;
 }
 
 .pdf-corner-icon {

@@ -4,6 +4,7 @@ import DefaultLayout from '../layouts/default.vue'
 import HeroSection from '../components/sections/HeroSection.vue'
 import EventsPreviewSection from '../components/sections/EventsPreviewSection.vue'
 import AboutSection from '../components/sections/AboutSection.vue'
+import InstagramSection from '../components/sections/InstagramSection.vue'
 import ContactSection from '../components/sections/ContactSection.vue'
 import PartnersSection from '../components/sections/PartnersSection.vue'
 
@@ -18,6 +19,7 @@ onMounted(() => {
     <HeroSection />
     <EventsPreviewSection />
     <AboutSection />
+    <InstagramSection />
     <ContactSection />
     <PartnersSection />
   </DefaultLayout>

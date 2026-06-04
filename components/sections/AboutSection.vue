@@ -2,8 +2,8 @@
   <section class="content-section theme-section-bg about-section">
     <div class="container">
       <h2 class="section-title theme-text-primary">Über uns</h2>
-      <p class="section-subtitle theme-text-secondary">Die Beste Bar in Dahme - eine Bar, in der man sich vom ersten Moment an willkommen fühlt. Leckere Cocktails zu fairen Preisen, gute Musik und eine entspannte, lebendige Stimmung, die genau die richtige Mischung für einen gelungenen Abend trifft.</p>
-      <p class="about-body theme-text-secondary">Ob Billard, Dart oder Live-Sport - bei uns ist immer etwas los. Hinter der Theke steht Ilias, der mit Herzblut dabei ist und für jeden Gast ein offenes Ohr hat. Egal ob du mit Freunden feierst oder einfach nur entspannt etwas trinken möchtest: Hier bist du genau richtig.</p>
+      <p class="section-subtitle theme-text-secondary">Die Beste Bar in Dahme - Hier ist jeder herzlich willkommen. Leckere Cocktails zu fairen Preisen, gute Musik und eine entspannte, lebendige Stimmung, genau die richtige Mischung für einen gelungenen Abend.</p>
+      <p class="about-body theme-text-secondary">Billard, Dart, Flippern oder Live-Sport - wir sind die erste Anlaufstelle für alle, die auch im Urlaub das Nachtleben genießen möchten. Hinter der Theke steht Ilias, der mit Herzblut dabei ist und für jeden Gast ein offenes Ohr hat. Komm mit Freunden oder alleine und eine gute Zeit ist dir garantiert.</p>
       <p class="about-body theme-text-secondary">Du möchtest deinen Geburtstag, deine Feier oder ein privates Event bei uns ausrichten? Wir lassen uns für private Anlässe buchen - schicke uns einfach eine <router-link to="/request" class="request-link">Anfrage</router-link>.</p>
     </div>
   </section>

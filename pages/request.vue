@@ -466,6 +466,7 @@ const resetForm = () => {
 }
 
 .form-input {
+  box-sizing: border-box;
   background: var(--beach-sand, #FBF3E4);
   border: 1.5px solid rgba(22, 58, 78, 0.15);
   border-radius: 10px;

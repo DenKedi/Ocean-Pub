@@ -57,9 +57,21 @@ const checkTimeAndPhase = async () => {
         sunProgress.value = 1
       } else {
         isNight.value = false
-        const midDay = sunrise.getTime() + (sunset.getTime() - sunrise.getTime()) / 2
-        // Sonne wandert zwischen 0 (Mittag) und 1 (Sonnenauf/untergang)
-        sunProgress.value = Math.abs((now.getTime() - midDay) / (sunset.getTime() - midDay))
+        const twoHours = 2 * 60 * 60 * 1000
+        
+        let p = 0
+        if (now.getTime() - sunrise.getTime() < twoHours) {
+          // Within 2 hours of sunrise: transitions from 1 (at sunrise) to 0 (at +2h)
+          p = 1 - ((now.getTime() - sunrise.getTime()) / twoHours)
+        } else if (sunset.getTime() - now.getTime() < twoHours) {
+          // Within 2 hours of sunset: transitions from 0 (at -2h) to 1 (at sunset)
+          p = 1 - ((sunset.getTime() - now.getTime()) / twoHours)
+        } else {
+          // Over 2 hours from sunrise/sunset, perfectly midday (0 = pure yellow)
+          p = 0
+        }
+        
+        sunProgress.value = Math.max(0, Math.min(1, p))
       }
     }
 
