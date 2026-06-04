@@ -13,7 +13,6 @@
             :src="partner.logo"
             :alt="partner.name"
             class="partner-logo"
-            :style="partner.size ? { height: partner.size } : {}"
           />
           <span v-else class="partner-name theme-text-secondary">{{ partner.name }}</span>
           <span class="ticker-dot">•</span>
@@ -26,7 +25,7 @@
 <script setup>
 const partners = [
   { id: 1, name: 'Astra',      logo: '/partners/Astra_Logo.svg.png' },
-  { id: 2, name: 'Duckstein',  logo: '/partners/Duckstein_Logo.svg.png', size: '60px' },
+  { id: 2, name: 'Duckstein',  logo: '/partners/Duckstein_Logo.svg.png' },
   { id: 3, name: 'Carlsberg',  logo: '/partners/carlsberg.png' },
   { id: 4, name: 'Holsten',    logo: '/partners/holsten.png' },
   { id: 5, name: 'Sommersby',  logo: '/partners/sommersby.png' },
@@ -106,8 +105,8 @@ const partners = [
 }
 
 .partner-logo {
-  height: 52px;
-  width: auto;
+  height: 60px;
+  width: 120px;
   object-fit: contain;
   opacity: 0.75;
   transition: opacity 0.3s ease;

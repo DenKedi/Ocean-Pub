@@ -15,7 +15,7 @@
     
     <div class="container">
       <h2 class="section-title theme-text-primary">Demnächst</h2>
-      <p class="section-subtitle theme-text-secondary">Folgende Events haben wir für dich in der Pipeline</p>
+      <p class="section-subtitle theme-text-secondary">Diese Events stehen bald an</p>
       
       <!-- Loading State -->
       <div v-if="isLoading" class="loading-state">

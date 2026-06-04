@@ -1,0 +1,169 @@
+@@ -1,12 +1,165 @@
+ <script setup>
++import { ref, onMounted, onUnmounted, computed } from 'vue'
++
++const isBeaming = ref(false)
++const isNight = ref(false)
++const sunProgress = ref(0)
++const horizonProgress = ref(0)
++const moonPhaseIndex = ref(4)
++
++const moonBoundingPaths = {
++  1: "M 0.5 0 A 0.5 0.5 0 0 1 0.5 1 A 0.25 0.5 0 0 0 0.5 0 Z",
++  2: "M 0.5 0 A 0.5 0.5 0 0 1 0.5 1 L 0.5 0 Z",
++  3: "M 0.5 0 A 0.5 0.5 0 0 1 0.5 1 A 0.25 0.5 0 0 1 0.5 0 Z",
++  4: "M 0.5 0 A 0.5 0.5 0 0 1 0.5 1 A 0.5 0.5 0 0 1 0.5 0 Z",
++  5: "M 0.5 0 A 0.5 0.5 0 0 0 0.5 1 A 0.25 0.5 0 0 0 0.5 0 Z",
++  6: "M 0.5 0 A 0.5 0.5 0 0 0 0.5 1 L 0.5 0 Z",
++  7: "M 0.5 0 A 0.5 0.5 0 0 0 0.5 1 A 0.25 0.5 0 0 1 0.5 0 Z"
++}
++
++const moonPhasePath = computed(() => moonBoundingPaths[moonPhaseIndex.value])
++
++const checkTimeAndPhase = async () => {
++  try {
++    // 1. Lokale Mock-Datei für Tests prüfen
++    let mockData = null
++    try {
++      const mockRes = await fetch('/time-mock.json')
++      if (mockRes.ok) {
++        mockData = await mockRes.json()
++      }
++    } catch (e) {
++      // Ignorieren, ist eventuell in Produktion gar nicht vorhanden
++    }
++
++    let now, sunrise, sunset
++
++    if (mockData && mockData.useMock) {
++      // Mock-Daten nutzen
++      now = new Date(mockData.now)
++      sunrise = new Date(mockData.sunrise)
++      sunset = new Date(mockData.sunset)
++    } else {
++      // Reale Daten von Open-Meteo abfragen
++      const today = new Date().toISOString().split('T')[0]
++      const res = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=54.22&longitude=11.08&daily=sunrise,sunset&timezone=Europe%2FBerlin&start_date=${today}&end_date=${today}`)
++      const data = await res.json()
++      
++      now = new Date()
++      if (data.daily?.sunrise) {
++        sunrise = new Date(data.daily.sunrise[0])
++        sunset = new Date(data.daily.sunset[0])
++      }
++    }
++
++    if (sunrise && sunset) {
++      if (now < sunrise || now >= sunset) {
++        isNight.value = true
++        sunProgress.value = 1
++      } else {
++        isNight.value = false
++        const midDay = sunrise.getTime() + (sunset.getTime() - sunrise.getTime()) / 2
++        // Sonne wandert zwischen 0 (Mittag) und 1 (Sonnenauf/untergang)
++        sunProgress.value = Math.abs((now.getTime() - midDay) / (sunset.getTime() - midDay))
++      }
++
++      const halfHourMs = 30 * 60 * 1000
++      const msUntilSunset = sunset.getTime() - now.getTime()
++      const msAfterSunset = now.getTime() - sunset.getTime()
++      const msUntilSunrise = sunrise.getTime() - now.getTime()
++      const msAfterSunrise = now.getTime() - sunrise.getTime()
++
++      if (msUntilSunset >= 0 && msUntilSunset <= halfHourMs) {
++        horizonProgress.value = 1 - (msUntilSunset / halfHourMs)
++      } else if (msAfterSunset >= 0 && msAfterSunset <= halfHourMs) {
++        horizonProgress.value = 1 - (msAfterSunset / halfHourMs)
++      } else if (msUntilSunrise >= 0 && msUntilSunrise <= halfHourMs) {
++        horizonProgress.value = 1 - (msUntilSunrise / halfHourMs)
++      } else if (msAfterSunrise >= 0 && msAfterSunrise <= halfHourMs) {
++        horizonProgress.value = 1 - (msAfterSunrise / halfHourMs)
++      } else {
++        horizonProgress.value = 0
++      }
++    }
++
++    // Näherungswert für die aktuelle Mondphase berechnen (0 bis 7)
++    const lp = 2551443 // Ein Mondmonat in Sekunden
++    const knownNewMoon = new Date("2024-01-11T11:57:00Z")
++    let phase = ((now.getTime() - knownNewMoon.getTime()) / 1000 % lp) / lp
++    if (phase < 0) phase += 1
++    moonPhaseIndex.value = Math.floor((phase + (1/16)) % 1 * 8)
++
++  } catch (e) {
++    console.error('Konnte Sonnen/Monddaten nicht laden', e)
++  }
++}
++
++let intervalId
++onMounted(() => {
++  checkTimeAndPhase()
++  intervalId = setInterval(checkTimeAndPhase, 60000) // jede Minute updaten
++})
++onUnmounted(() => clearInterval(intervalId))
++
++const stars = Array.from({ length: 80 }, () => ({
++  left: Math.random() * 100 + '%',
++  top: Math.random() * 70 + '%',
++  size: Math.random() * 2 + 1 + 'px',
++  opacity: Math.random() * 0.8 + 0.2,
++  animationDelay: Math.random() * 4 + 's'
++}))
++
++const shootingStars = ref([])
++
++const triggerRays = () => {
++  if (isNight.value) {
++    const angle = Math.random() * 360
++    const distance = 30 + Math.random() * 40 // 30vw bis 70vw Flugweite
++    const newStar = {
++      id: Date.now() + Math.random(),
++      top: Math.random() * 60 + 10 + '%',
++      left: Math.random() * 80 + 10 + '%',
++      angle: angle,
++      distance: distance
++    }
++    shootingStars.value.push(newStar)
++    setTimeout(() => {
++      shootingStars.value = shootingStars.value.filter(s => s.id !== newStar.id)
++    }, 1200)
++    return
++  }
++
++  if (isBeaming.value) return
++  isBeaming.value = true
++  setTimeout(() => {
++    isBeaming.value = false
++  }, 700)
++}
+ </script>
+ 
+ <template>
+-  <section id="home" class="hero-section">
++  <section id="home" class="hero-section" :class="{ 'is-night': isNight }" :style="{ '--p': sunProgress, '--horizon': horizonProgress }">
++    <!-- SVG Clip Path Definition for the Moon Phase -->
++    <svg v-if="isNight" width="0" height="0" style="position: absolute;">
++      <defs>
++        <clipPath id="moon-phase-clip" clipPathUnits="objectBoundingBox">
++          <path v-if="moonPhaseIndex !== 0" :d="moonPhasePath" />
++        </clipPath>
++      </defs>
++    </svg>
++
+     <!-- Sky / sun backdrop -->
+     <div class="hero-sky" aria-hidden="true">
+-      <div class="sun"></div>
+-      <div class="sun-glow"></div>
++      <!-- Stars (Night only) -->
++      <div v-if="isNight" class="stars-container">
++        <div v-for="(star, index) in stars" :key="'star-' + index" class="star"
+ 
++             :style="{ left: star.left, top: star.top, width: star.size, height: star.size, opacity: star.opacity, animationDelay: star.animationDelay }"></div>
++      </div>
++
++      <!-- Shooting Stars (Night only) -->
++      <div v-if="isNight" class="shooting-stars-container">
++        <div v-for="star in shootingStars" :key="star.id" class="shooting-star"
+ :style="{ left: star.left, top: star.top, '--angle': star.angle + 'deg', '--dist': star.distance + 'vw' }"></div>
++      </div>
+ 

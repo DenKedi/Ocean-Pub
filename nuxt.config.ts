@@ -82,6 +82,8 @@ export default defineNuxtConfig({
       'Quicksand': [400, 500, 600, 700],
       'Nunito': [300, 400, 500, 600, 700],
       'Montserrat': [400, 500, 600, 700],
+      'Playfair Display': [700, 900],
+      'Great Vibes': [400],
     },
     display: 'swap',
     preconnect: true,
