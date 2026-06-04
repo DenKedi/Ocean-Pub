@@ -226,6 +226,12 @@ async function openQrModal() {
   color: #ffffff !important;
 }
 
+.pdf-corner-btn svg,
+.pdf-corner-btn svg * {
+  color: inherit !important;
+  stroke: currentColor !important;
+}
+
 .pdf-corner-icon {
   display: block;
   width: 16px;

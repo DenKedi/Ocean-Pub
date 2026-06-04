@@ -406,13 +406,13 @@ onMounted(() => {
 .event-date-badge .day {
   font-size: 1.2rem;
   font-weight: 700;
-  color: #ffffff;
+  color: #ffffff !important;
   line-height: 1;
 }
 
 .event-date-badge .month {
   font-size: 0.7rem;
-  color: rgba(255, 255, 255, 0.8);
+  color: rgba(255, 255, 255, 0.8) !important;
   letter-spacing: 0.05em;
   margin-top: 0.2rem;
 }

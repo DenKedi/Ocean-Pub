@@ -195,16 +195,22 @@ onUnmounted(() => {
 
 <template>
   <DefaultLayout>
-    <div ref="eventsPage" class="events-page">
+    <div ref="eventsPage" class="events-page theme-section-bg">
       <!-- Parallax Background -->
-      <div ref="backgroundLayer" class="background-layer">
-        <img :src="bgImage" alt="" class="parallax-bg-image" fetchpriority="high" />
+      <!-- Decorative Beach Vibe Background -->
+      <div class="beach-background" aria-hidden="true">
+        <div class="beach-sun"></div>
+        <svg class="beach-waves" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path class="wave wave--back" d="M0,224L48,213.3C96,203,192,181,288,186.7C384,192,480,224,576,224C672,224,768,192,864,186.7C960,181,1056,203,1152,213.3C1248,224,1344,224,1392,224L1440,224L1440,320L0,320Z" />
+          <path class="wave wave--mid" d="M0,256L48,250.7C96,245,192,235,288,229.3C384,224,480,224,576,234.7C672,245,768,267,864,266.7C960,267,1056,245,1152,240C1248,235,1344,245,1392,250.7L1440,256L1440,320L0,320Z" />
+          <path class="wave wave--front" d="M0,288L48,282.7C96,277,192,267,288,272C384,277,480,299,576,298.7C672,299,768,277,864,277.3C960,277,1056,299,1152,298.7C1248,299,1344,277,1392,266.7L1440,256L1440,320L0,320Z" />
+        </svg>
       </div>
       
       <!-- Hero Header -->
       <section class="page-hero">
         <div class="container">
-          <h1 class="page-title">Ocean Pub Events</h1>
+          <h1 class="page-title theme-text-primary">Ocean Pub Events</h1>
           <p class="page-subtitle theme-text-secondary">Unser Programm für dich</p>
         </div>
       </section>
@@ -453,6 +459,49 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
+
+/* Beach decorative background */
+.beach-background {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 50vh;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--beach-sky) 0%, transparent 100%);
+}
+
+.beach-sun {
+  position: absolute;
+  top: 4rem;
+  right: 15%;
+  width: clamp(120px, 20vw, 200px);
+  aspect-ratio: 1;
+  background: radial-gradient(circle at center, var(--beach-sun) 0%, var(--beach-sun-deep) 100%);
+  border-radius: 50%;
+  filter: blur(8px);
+  opacity: 0.8;
+  mix-blend-mode: overlay;
+}
+
+.beach-waves {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: clamp(80px, 15vw, 150px);
+  transform: translateY(2px); /* overlap prevention */
+}
+
+.wave {
+  fill: var(--theme-sectionBg);
+}
+.wave--back { opacity: 0.3; }
+.wave--mid { opacity: 0.6; }
+.wave--front { opacity: 1; }
+
 /* Accent Colors */
 :root {
   --ocean-orange: #FF9d66;
@@ -462,7 +511,6 @@ onUnmounted(() => {
 
 .events-page {
   min-height: 100vh;
-  background: #000000;
   position: relative;
   isolation: isolate;
   overflow: hidden;
@@ -512,31 +560,31 @@ onUnmounted(() => {
   transform: translateX(-50%);
   width: 120px;
   height: 2px;
-  background: linear-gradient(90deg, transparent, #FF9d66, transparent);
+  background: linear-gradient(90deg, transparent, var(--theme-textPrimary), transparent);
 }
 
-.page-title {
+.page-title { color: var(--theme-textPrimary) !important; 
   font-size: clamp(2.2rem, 5.2vw, 3.4rem);
   font-weight: 400;
   letter-spacing: 0.12em;
   text-transform: uppercase;
   margin-bottom: 1rem;
-  color: #fff !important;
+  color: var(--theme-textPrimary) !important;
   white-space: nowrap;
 }
 
 @media (max-width: 768px) {
-  .page-title {
+  .page-title { color: var(--theme-textPrimary) !important; 
     letter-spacing: 0.04em;
     font-size: 2.1rem;
   }
 }
 
-.page-subtitle {
+.page-subtitle { color: var(--theme-textSecondary) !important; 
   font-size: 1rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: var(--theme-textSecondary) !important;
 }
 
 /* Container */
@@ -568,7 +616,7 @@ onUnmounted(() => {
 .cta-text {
   font-size: 0.85rem;
   letter-spacing: 0.02em;
-  color: rgba(255, 255, 255, 0.5) !important;
+  color: var(--theme-textSecondary) !important;
   margin: 0;
 }
 
@@ -614,8 +662,8 @@ onUnmounted(() => {
 .filter-btn {
   padding: 0.6rem 1.2rem;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--theme-border);
+  color: var(--theme-textSecondary);
   font-family: 'Montserrat', sans-serif;
   font-size: 0.8rem;
   font-weight: 500;
@@ -645,8 +693,8 @@ onUnmounted(() => {
 .toggle-btn {
   padding: 0.6rem;
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.15);
-  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid var(--theme-border);
+  color: var(--theme-textSecondary);
   cursor: pointer;
   transition: all 0.3s ease;
   border-radius: 0;
@@ -706,7 +754,7 @@ onUnmounted(() => {
 }
 
 .retry-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: var(--theme-itemBg);
 }
 
 /* Grid View */
@@ -720,13 +768,15 @@ onUnmounted(() => {
   border-radius: 0;
   overflow: hidden;
   border: none;
-  background: #111;
+  background: transparent;
   transition: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
   position: relative;
   height: 100%;
   display: flex;
   flex-direction: column;
-}
+
+  /* Fallback in case var missing */
+  background: var(--theme-containerBg);}
 
 .event-card::before {
   content: '';
@@ -762,7 +812,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background-color: #111;
+  background-color: var(--theme-itemBg);
 }
 
 
@@ -796,7 +846,7 @@ onUnmounted(() => {
 
 .event-details {
   padding: 1.25rem;
-  background: #111;
+  background: transparent;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -909,14 +959,14 @@ onUnmounted(() => {
   border-radius: 0;
   border: none;
   border-left: 3px solid transparent;
-  background: #111;
+  background: transparent;
   transition: all 0.3s ease;
   align-items: start;
 }
 
 .event-list-item:hover {
   border-left-color: #FF9d66;
-  background: #1a1a1a;
+  background: var(--theme-itemBg);
 }
 
 .list-image-container {
@@ -931,7 +981,7 @@ onUnmounted(() => {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  background-color: #111;
+  background-color: transparent;
   transition: none;
 }
 
